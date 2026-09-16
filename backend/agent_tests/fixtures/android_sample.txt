@@ -1,0 +1,109 @@
+# Android 面试核心知识点
+
+## Activity 生命周期
+
+Activity 是 Android 四大组件之一，具有完整的生命周期。
+
+Activity 的生命周期回调方法包括：
+- onCreate(): Activity 被创建时调用，用于初始化操作
+- onStart(): Activity 变为可见时调用
+- onResume(): Activity 开始与用户交互时调用
+- onPause(): Activity 暂停时调用，通常用于保存数据
+- onStop(): Activity 完全不可见时调用
+- onDestroy(): Activity 被销毁前调用
+
+当用户从 Activity A 跳转到 Activity B 时，调用顺序为：
+A.onPause() → B.onCreate() → B.onStart() → B.onResume() → A.onStop()
+
+## Activity 启动模式
+
+Activity 有四种启动模式：
+
+### standard
+默认模式，每次启动都会创建新的 Activity 实例。
+
+### singleTop
+如果栈顶已有该 Activity 实例，则调用 onNewIntent() 而不创建新实例。适用于通知跳转等场景。
+
+### singleTask
+在任务栈中只存在一个实例。如果已存在，则清除其上方所有 Activity。适用于主页等核心页面。
+
+### singleInstance
+Activity 在独立的任务栈中运行，全局只有一个实例。适用于来电界面等系统级页面。
+
+## Handler 消息机制
+
+Handler 是 Android 中线程间通信的核心机制。
+
+核心组件：
+- Handler: 消息的发送和处理者
+- Message: 消息载体
+- MessageQueue: 消息队列，按时间排序
+- Looper: 消息循环，不断从 MessageQueue 取出消息
+
+工作流程：
+1. Handler.sendMessage() 将消息发送到 MessageQueue
+2. Looper.loop() 不断从 MessageQueue 取出消息
+3. Handler.dispatchMessage() 分发消息到 handleMessage()
+
+常见问题：在 Activity 中使用 Handler 可能导致内存泄漏，因为 Handler 持有 Activity 的隐式引用。解决方案是使用静态内部类 + 弱引用。
+
+## RecyclerView 优化
+
+RecyclerView 是 ListView 的升级版，具有更好的性能和灵活性。
+
+### ViewHolder 复用机制
+RecyclerView 通过 ViewHolder 复用机制减少 findViewById 的调用。当 item 滑出屏幕时，ViewHolder 会被放入回收池，供新进入的 item 使用。
+
+### 性能优化技巧
+1. 使用 DiffUtil 进行局部刷新，避免 notifyDataSetChanged()
+2. 设置 setHasFixedSize(true) 当 item 大小固定时
+3. 使用 RecycledViewPool 在多个 RecyclerView 间共享 ViewHolder
+4. 避免在 onBindViewHolder 中创建对象
+
+## 内存泄漏
+
+内存泄漏是指程序中已不再使用的对象无法被垃圾回收器回收。
+
+### 常见原因
+1. 非静态内部类持有外部类引用（如 Handler）
+2. 未取消注册的监听器或广播接收器
+3. 未关闭的资源（Cursor、Stream）
+4. 单例模式持有 Activity Context
+5. WebView 泄漏
+
+### 检测工具
+- Android Profiler: 实时监控内存使用
+- LeakCanary: 自动检测内存泄漏
+- MAT: 分析堆转储文件
+
+## ANR（Application Not Responding）
+
+ANR 是指应用在规定时间内未响应用户操作。
+
+### 触发条件
+- 主线程 5 秒内未响应输入事件
+- BroadcastReceiver 10 秒内未完成处理
+- Service 前台 20 秒、后台 200 秒未完成
+
+### 避免方法
+1. 耗时操作放在子线程执行
+2. 使用 AsyncTask、HandlerThread 或线程池
+3. 避免在主线程进行网络请求或数据库操作
+4. 使用 StrictMode 检测主线程中的潜在问题
+
+## Fragment 生命周期
+
+Fragment 必须依附于 Activity 存在，有自己的生命周期。
+
+关键回调方法：
+- onAttach(): Fragment 与 Activity 关联
+- onCreateView(): 创建 Fragment 视图
+- onViewCreated(): 视图创建完成
+- onDestroyView(): 视图销毁
+- onDetach(): Fragment 与 Activity 解除关联
+
+Fragment 与 Activity 通信方式：
+1. 接口回调
+2. 共享 ViewModel
+3. Fragment Result API
