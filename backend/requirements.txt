@@ -25,10 +25,17 @@ httpx>=0.27.0
 # Logging
 python-json-logger>=2.0.0
 
-# AI Agent (KnowledgeExtractAgent)
+# AI Agent (KnowledgeExtractAgent + KnowledgeDeduplicateAgent)
 langchain>=0.3.0
 langchain-openai>=0.2.0
 langgraph>=0.2.0
+
+# Embedding (本地模型)
+FlagEmbedding>=1.2.0
+
+# Vector store
+faiss-cpu>=1.7.0
+numpy>=1.24.0
 
 # Document parsing
 pdfplumber>=0.11.0

@@ -38,6 +38,7 @@ class KnowledgeService:
         keyword: Optional[str] = None,
         difficulty: Optional[int] = None,
         status: Optional[int] = None,
+        knowledge_base_id: Optional[int] = None,
     ) -> Tuple[List[Knowledge], int]:
         """Get knowledge list with filters."""
         return self.knowledge_repo.get_list(
@@ -46,6 +47,7 @@ class KnowledgeService:
             keyword=keyword,
             difficulty=difficulty,
             status=status,
+            knowledge_base_id=knowledge_base_id,
         )
 
     def create_knowledge(self, **kwargs) -> Knowledge:

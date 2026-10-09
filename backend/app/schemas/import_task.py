@@ -31,6 +31,7 @@ class ImportTaskResponse(BaseModel):
     current_step: Optional[str] = Field(description="当前阶段")
     error_message: Optional[str] = Field(description="错误信息")
     created_by: int = Field(description="创建管理员ID")
+    knowledge_base_id: int = Field(description="目标知识库 ID")
     started_at: Optional[datetime] = Field(description="开始时间")
     finished_at: Optional[datetime] = Field(description="完成时间")
     created_at: datetime = Field(description="创建时间")

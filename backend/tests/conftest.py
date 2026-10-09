@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 # Add project root to path
@@ -44,10 +44,22 @@ def setup_database():
 
 @pytest.fixture(autouse=True)
 def clean_tables():
-    """Clean all tables before each test."""
+    """Clean all tables before each test, then recreate initial knowledge_base data."""
     with engine.begin() as conn:
         for table in reversed(Base.metadata.sorted_tables):
             conn.execute(table.delete())
+
+    # 重新创建初始知识库数据（因为 clean_tables 清空了所有表）
+    with engine.begin() as conn:
+        conn.execute(text("""
+            INSERT IGNORE INTO knowledge_base (code, name, description, status)
+            VALUES
+                ('android', 'Android', 'Android 开发相关知识', 1),
+                ('java', 'Java', 'Java 语言和生态相关知识', 1),
+                ('distributed_systems', '分布式系统', '分布式架构相关知识', 1),
+                ('c_language', 'C 语言', 'C 语言编程相关知识', 1),
+                ('uncategorized', '未分类', '尚未归类的知识点', 1)
+        """))
     yield
 
 

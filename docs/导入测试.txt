@@ -1,0 +1,3 @@
+1、activity和fragment的启动模式：standard、singleTop、singleTask、singleInstance，用于控制 Activity 在任务栈中的复用行为
+2、Activity 生命周期：onCreate → onStart → onResume → onPause → onStop → onDestroy。横竖屏切换默认会销毁重建，可通过 configChanges 或 ViewModel 保存状态。
+3、Fragment 生命周期：比 Activity 多出 onCreateView、onViewCreated、onDestroyView 等。视图与实例分离是常见坑点，推荐用 viewLifecycleOwner 管理视图相关逻辑。

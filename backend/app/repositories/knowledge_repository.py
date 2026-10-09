@@ -30,6 +30,7 @@ class KnowledgeRepository:
         keyword: Optional[str] = None,
         difficulty: Optional[int] = None,
         status: Optional[int] = None,
+        knowledge_base_id: Optional[int] = None,
     ) -> Tuple[List[Knowledge], int]:
         """Get knowledge list with filters and pagination."""
         query = self.db.query(Knowledge)
@@ -40,6 +41,8 @@ class KnowledgeRepository:
             query = query.filter(Knowledge.difficulty == difficulty)
         if status is not None:
             query = query.filter(Knowledge.status == status)
+        if knowledge_base_id is not None:
+            query = query.filter(Knowledge.knowledge_base_id == knowledge_base_id)
 
         total = query.count()
         items = (

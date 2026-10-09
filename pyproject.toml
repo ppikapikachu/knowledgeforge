@@ -4,4 +4,9 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "flagembedding>=1.4.2",
+    "ipykernel>=7.3.0",
+    "langchain-openai>=1.6.2",
+    "pydantic-settings>=2.15.0",
+]

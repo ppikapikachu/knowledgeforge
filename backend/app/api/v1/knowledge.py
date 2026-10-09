@@ -34,6 +34,7 @@ def get_knowledge_list(
     keyword: Optional[str] = Query(default=None, description="关键词搜索"),
     difficulty: Optional[int] = Query(default=None, ge=1, le=3, description="难度"),
     status: Optional[int] = Query(default=None, ge=0, le=1, description="状态"),
+    knowledge_base_id: Optional[int] = Query(default=None, description="按知识库筛选"),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ):
@@ -45,6 +46,7 @@ def get_knowledge_list(
         keyword=keyword,
         difficulty=difficulty,
         status=status,
+        knowledge_base_id=knowledge_base_id,
     )
 
     # Get question counts for all knowledge items
@@ -101,7 +103,17 @@ def create_knowledge(
 ) -> ApiResponse:
     """Create a new knowledge point."""
     service = KnowledgeService(db)
-    knowledge = service.create_knowledge(**request.model_dump())
+
+    data = request.model_dump()
+
+    # 处理默认知识库
+    if not data.get("knowledge_base_id"):
+        from app.repositories.knowledge_base_repository import KnowledgeBaseRepository
+        kb_repo = KnowledgeBaseRepository(db)
+        uncategorized = kb_repo.get_by_code("uncategorized")
+        data["knowledge_base_id"] = uncategorized.id if uncategorized else 1
+
+    knowledge = service.create_knowledge(**data)
     return ApiResponse(data=KnowledgeResponse.model_validate(knowledge))
 
 

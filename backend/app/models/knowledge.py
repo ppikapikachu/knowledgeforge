@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from sqlalchemy import BigInteger, Index, String, Text
+from sqlalchemy import BigInteger, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.mysql import JSON, LONGTEXT
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,6 +19,13 @@ class Knowledge(Base, TimestampMixin):
         primary_key=True,
         autoincrement=True,
         comment="主键ID",
+    )
+    knowledge_base_id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(BigInteger, "mysql"),
+        ForeignKey("knowledge_base.id", ondelete="RESTRICT"),
+        nullable=False,
+        default=0,
+        comment="所属知识库 ID",
     )
     name: Mapped[str] = mapped_column(
         String(200),

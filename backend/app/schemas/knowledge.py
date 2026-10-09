@@ -42,6 +42,10 @@ class RelationType(str, Enum):
 class KnowledgeCreate(BaseModel):
     """Schema for creating a knowledge point."""
 
+    knowledge_base_id: Optional[int] = Field(
+        default=None,
+        description="所属知识库 ID。不传时默认使用未分类(uncategorized)",
+    )
     name: str = Field(
         ..., min_length=1, max_length=200, description="知识点名称"
     )
@@ -70,6 +74,9 @@ class KnowledgeCreate(BaseModel):
 class KnowledgeUpdate(BaseModel):
     """Schema for updating a knowledge point."""
 
+    knowledge_base_id: Optional[int] = Field(
+        default=None, description="所属知识库 ID"
+    )
     name: Optional[str] = Field(
         default=None, min_length=1, max_length=200, description="知识点名称"
     )
@@ -96,6 +103,7 @@ class KnowledgeResponse(BaseModel):
     """Knowledge point response schema."""
 
     id: int = Field(description="知识点ID")
+    knowledge_base_id: int = Field(description="所属知识库 ID")
     name: str = Field(description="知识点名称")
     summary: Optional[str] = Field(description="简要说明")
     content: Optional[str] = Field(description="完整内容")

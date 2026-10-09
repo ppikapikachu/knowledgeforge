@@ -85,6 +85,31 @@ class AgentSettings(BaseSettings):
     # 重试时会附带错误信息，引导 LLM 修正输出格式
     # 设置为 0 表示不重试，设置过大可能浪费 Token
 
+    # ==================== Embedding 配置 ====================
+    # 用于将知识点文本转换为向量，支持向量检索和相似度计算
+
+    EMBEDDING_MODEL: str = "D:/python/ai_model/models--BAAI--bge-small-zh-v1.5/snapshots/7999e1d3359715c523056ef9478215996d62a620"
+    # Embedding 模型本地路径
+    # 当前使用: BAAI/bge-small-zh-v1.5（中文小模型，512维）
+
+    EMBEDDING_USE_FP16: bool = True
+    # 是否使用 FP16 半精度推理
+    # 开启可减少显存占用、加快推理速度
+
+    # ==================== 去重配置 ====================
+    # 控制去重 Pipeline 的判定阈值
+
+    DEDUP_LOW_THRESHOLD: float = 0.60
+    # 低于此阈值判定为 NEW（新知识点）
+    # 建议范围：0.50~0.70
+
+    DEDUP_HIGH_THRESHOLD: float = 0.88
+    # 高于此阈值判定为 DUPLICATE（重复）
+    # 建议范围：0.85~0.95
+
+    DEDUP_TOP_K: int = 3
+    # 向量检索返回的最大相似知识点数量
+
 
 # 全局配置单例
 # 在模块加载时自动读取 .env 文件，后续通过 agent_settings 直接访问

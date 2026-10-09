@@ -71,6 +71,13 @@ class KnowledgeImportTask(Base, TimestampMixin):
         nullable=False,
         comment="创建管理员ID",
     )
+    knowledge_base_id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(BigInteger, "mysql"),
+        ForeignKey("knowledge_base.id", ondelete="RESTRICT"),
+        nullable=False,
+        default=0,
+        comment="目标知识库 ID",
+    )
     started_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime().with_variant(MySQL_DATETIME(fsp=3), "mysql"),
         nullable=True,
@@ -82,6 +89,33 @@ class KnowledgeImportTask(Base, TimestampMixin):
         nullable=True,
         default=None,
         comment="完成时间",
+    )
+
+    # ==================== 导入统计字段 ====================
+    candidate_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="候选知识点总数",
+    )
+    new_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="新增知识点数",
+    )
+    duplicate_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="重复知识点数",
+    )
+    merge_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="合并知识点数",
+    )
+    failed_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="失败知识点数",
     )
 
     __table_args__ = (

@@ -71,6 +71,10 @@ def get_llm() -> ChatOpenAI:
         base_url=config.LLM_BASE_URL,    # API 基础地址
         temperature=config.LLM_TEMPERATURE,  # 温度参数
         max_tokens=config.LLM_MAX_TOKENS,    # 最大输出 Token
+        # 关闭思考的核心配置
+        extra_body={
+            "thinking": {"type": "disabled"}
+        }
     )
 
     return _llm_instance
