@@ -13,6 +13,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   User,
+  Database,
 } from 'lucide-vue-next'
 import { ElDropdown, ElDropdownMenu, ElDropdownItem, ElMessageBox } from 'element-plus'
 
@@ -29,9 +30,14 @@ const menuItems = [
   },
   {
     label: '知识库',
+    icon: Database,
+    path: '/knowledge-bases',
+  },
+  {
+    label: '知识点',
     icon: BookOpen,
     children: [
-      { label: '知识点', path: '/knowledge' },
+      { label: '知识点管理', path: '/knowledge' },
       { label: '知识关系', path: '/knowledge-relations' },
     ],
   },
@@ -52,7 +58,7 @@ const menuItems = [
   },
 ]
 
-const expandedMenus = ref<string[]>(['知识库', '题库', '系统'])
+const expandedMenus = ref<string[]>(['知识点', '题库', '系统'])
 
 const breadcrumbs = computed(() => {
   const matched = route.matched.filter((item) => item.meta?.title)

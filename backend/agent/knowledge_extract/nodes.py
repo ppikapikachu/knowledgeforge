@@ -150,8 +150,8 @@ def extract_current_chunk_node(state: Dict[str, Any]) -> Dict[str, Any]:
         f"{chunk.chunk_id} ({len(chunk.text)} 字符)"
     )
 
-    # 获取 LLM 实例和校验器
-    llm = get_llm()
+    # 获取 LLM 实例（知识提取：关闭思考模式）
+    llm = get_llm(thinking="disabled")
     validator = KnowledgeValidator()
 
     # 构造用户提示词，填充文档信息和 Chunk 文本

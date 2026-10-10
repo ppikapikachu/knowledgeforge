@@ -3,7 +3,7 @@
 from decimal import Decimal
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import BigInteger, Index, String
+from sqlalchemy import BigInteger, ForeignKey, Index, String
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -29,6 +29,13 @@ class Question(Base, TimestampMixin):
         String(30),
         nullable=False,
         comment="题型: SINGLE_CHOICE/MULTIPLE_CHOICE/TRUE_FALSE/SHORT_ANSWER",
+    )
+    question_bank_id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(BigInteger, "mysql"),
+        ForeignKey("question_bank.id", ondelete="RESTRICT"),
+        nullable=False,
+        default=0,
+        comment="所属题库 ID",
     )
     content: Mapped[str] = mapped_column(
         LONGTEXT,

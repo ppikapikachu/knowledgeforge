@@ -50,6 +50,7 @@ def get_question_list(
     difficulty: Optional[int] = Query(default=None, ge=1, le=3, description="难度"),
     status: Optional[str] = Query(default=None, description="状态"),
     knowledge_id: Optional[int] = Query(default=None, description="知识点ID"),
+    question_bank_id: Optional[int] = Query(default=None, description="按题库筛选"),
     source_type: Optional[str] = Query(default=None, description="来源"),
     keyword: Optional[str] = Query(default=None, description="关键词"),
     db: Session = Depends(get_db),
@@ -64,6 +65,7 @@ def get_question_list(
         difficulty=difficulty,
         status=status,
         knowledge_id=knowledge_id,
+        question_bank_id=question_bank_id,
         source_type=source_type,
         keyword=keyword,
     )
@@ -107,6 +109,14 @@ def create_question(
     """Create a new question with options and knowledge associations."""
     service = QuestionService(db)
 
+    # 处理默认题库
+    question_bank_id = request.question_bank_id
+    if not question_bank_id:
+        from app.repositories.question_bank_repository import QuestionBankRepository
+        qb_repo = QuestionBankRepository(db)
+        uncategorized = qb_repo.get_by_code("uncategorized")
+        question_bank_id = uncategorized.id if uncategorized else 1
+
     # Convert options to dicts
     options_data = None
     if request.options:
@@ -121,6 +131,7 @@ def create_question(
         status=request.status,
         source_type=request.source_type,
         quality_score=request.quality_score,
+        question_bank_id=question_bank_id,
         options=options_data,
         knowledge_ids=request.knowledge_ids,
     )

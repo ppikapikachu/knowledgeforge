@@ -60,6 +60,11 @@ def clean_tables():
                 ('c_language', 'C 语言', 'C 语言编程相关知识', 1),
                 ('uncategorized', '未分类', '尚未归类的知识点', 1)
         """))
+        conn.execute(text("""
+            INSERT IGNORE INTO question_bank (code, name, description, status)
+            VALUES
+                ('uncategorized', '未分类题库', '未分类题目兜底', 1)
+        """))
     yield
 
 

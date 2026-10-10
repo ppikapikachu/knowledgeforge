@@ -2,7 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getKnowledgeDetail, createKnowledge, updateKnowledge } from '@/api/knowledge'
+import { getKnowledgeBaseList } from '@/api/knowledgeBase'
 import type { KnowledgeCreateRequest } from '@/types/knowledge'
+import type { KnowledgeBase } from '@/types/knowledgeBase'
 import { ElMessage } from 'element-plus'
 import { Save, ArrowLeft } from 'lucide-vue-next'
 
@@ -14,7 +16,10 @@ const saving = ref(false)
 const isEdit = computed(() => !!route.params.id)
 const knowledgeId = computed(() => Number(route.params.id))
 
+const kbOptions = ref<KnowledgeBase[]>([])
+
 const form = ref<KnowledgeCreateRequest>({
+  knowledge_base_id: undefined,
   name: '',
   summary: null,
   content: null,
@@ -28,6 +33,9 @@ const form = ref<KnowledgeCreateRequest>({
 const keywordInput = ref('')
 
 const rules = {
+  knowledge_base_id: [
+    { required: true, message: '请选择所属知识库', trigger: 'change' },
+  ],
   name: [
     { required: true, message: '请输入知识点名称', trigger: 'blur' },
     { max: 200, message: '名称不超过200字符', trigger: 'blur' },
@@ -56,6 +64,15 @@ const sourceOptions = [
   { label: 'AI', value: 'AI' },
 ]
 
+async function fetchKbOptions() {
+  try {
+    const res = await getKnowledgeBaseList({ page: 1, page_size: 100 })
+    kbOptions.value = res.data.items
+  } catch {
+    // Silent
+  }
+}
+
 async function fetchDetail() {
   if (!isEdit.value) return
   loading.value = true
@@ -63,6 +80,7 @@ async function fetchDetail() {
     const res = await getKnowledgeDetail(knowledgeId.value)
     const data = res.data
     form.value = {
+      knowledge_base_id: data.knowledge_base_id,
       name: data.name,
       summary: data.summary || '',
       content: data.content || '',
@@ -118,7 +136,10 @@ function removeKeyword(index: number) {
   form.value.keywords?.splice(index, 1)
 }
 
-onMounted(fetchDetail)
+onMounted(async () => {
+  await fetchKbOptions()
+  fetchDetail()
+})
 </script>
 
 <template>
@@ -151,6 +172,23 @@ onMounted(fetchDetail)
           size="large"
           style="max-width: 800px;"
         >
+          <el-form-item label="所属知识库" prop="knowledge_base_id">
+            <el-select
+              v-model="form.knowledge_base_id"
+              placeholder="选择知识库"
+              style="width: 300px;"
+            >
+              <el-option
+                v-for="kb in kbOptions"
+                :key="kb.id"
+                :label="kb.name"
+                :value="kb.id"
+                :disabled="kb.status === 0"
+              />
+            </el-select>
+            <div class="field-hint">停用的知识库不可选为新建知识点的目标</div>
+          </el-form-item>
+
           <el-form-item label="名称" prop="name">
             <el-input v-model="form.name" placeholder="请输入知识点名称" maxlength="200" show-word-limit />
           </el-form-item>
@@ -256,5 +294,11 @@ onMounted(fetchDetail)
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--color-muted-foreground, #9CA3AF);
+  margin-top: 4px;
 }
 </style>

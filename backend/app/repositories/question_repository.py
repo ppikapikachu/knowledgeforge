@@ -44,6 +44,7 @@ class QuestionRepository:
         difficulty: Optional[int] = None,
         status: Optional[str] = None,
         knowledge_id: Optional[int] = None,
+        question_bank_id: Optional[int] = None,
         source_type: Optional[str] = None,
         keyword: Optional[str] = None,
     ) -> Tuple[List[Question], int]:
@@ -56,6 +57,8 @@ class QuestionRepository:
             query = query.filter(Question.difficulty == difficulty)
         if status:
             query = query.filter(Question.status == status)
+        if question_bank_id is not None:
+            query = query.filter(Question.question_bank_id == question_bank_id)
         if source_type:
             query = query.filter(Question.source_type == source_type)
         if keyword:

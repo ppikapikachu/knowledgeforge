@@ -1,6 +1,7 @@
 """导入任务 API 路由模块。
 
 提供文件上传创建导入任务、查询任务列表/详情、正式执行任务等接口。
+耗时的导入执行在后台线程中运行，不阻塞 API 响应。
 """
 
 import logging
@@ -11,12 +12,16 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.exceptions import ValidationException
 from app.dependencies.auth import get_current_admin
 from app.models.admin import AdminUser
 from app.schemas.common import ApiResponse
 from app.schemas.import_task import ImportTaskResponse
+from app.services.background_runner import (
+    run_import_in_background,
+    run_relations_retry_in_background,
+)
 from app.services.import_task_service import ImportTaskService
-from app.core.exceptions import ValidationException
 from app.utils.file import get_file_type, get_upload_path, is_allowed_file
 from app.utils.response import paginated_response
 
@@ -54,7 +59,6 @@ async def create_import_task(
         if kb.status == 0:
             raise ValidationException(f"知识库 '{kb.name}' 已停用，不能作为导入目标")
     else:
-        # 兜底：使用未分类
         uncategorized = kb_repo.get_by_code("uncategorized")
         knowledge_base_id = uncategorized.id if uncategorized else 1
 
@@ -63,7 +67,7 @@ async def create_import_task(
         max_mb = settings.MAX_UPLOAD_SIZE / (1024 * 1024)
         raise ValidationException(f"文件大小超过限制，最大允许: {max_mb:.0f}MB")
 
-    # 保存文件到 uploads/YYYY/MM/DD/
+    # 保存文件
     relative_path, full_path = get_upload_path(settings.UPLOAD_DIR, file.filename)
     os.makedirs(os.path.dirname(full_path), exist_ok=True)
     with open(full_path, "wb") as f:
@@ -129,8 +133,8 @@ def get_import_task(
     "/{task_id}/run",
     summary="正式执行导入任务",
     description=(
-        "执行完整的知识导入流程：解析文档 → LLM 提取 → 去重 → 落库 → Embedding 同步。"
-        "任务完成后返回导入统计结果。"
+        "后台异步执行完整的知识导入流程。立即返回任务 ID，"
+        "通过 GET /{task_id} 查询进度和结果。"
     ),
 )
 async def run_import_task(
@@ -138,13 +142,59 @@ async def run_import_task(
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:
-    """正式执行导入任务（完整 AI 导入流程）。"""
-    from app.services.knowledge_import_service import KnowledgeImportService
+    """提交导入任务到后台执行（立即返回，不阻塞）。"""
+    from app.models.import_task import KnowledgeImportTask
 
-    service = KnowledgeImportService(db)
-    result = service.execute_import(task_id)
+    # 校验任务存在
+    task = db.query(KnowledgeImportTask).filter(
+        KnowledgeImportTask.id == task_id
+    ).first()
+    if not task:
+        return ApiResponse(code=40401, message=f"任务 {task_id} 不存在", data=None)
 
-    return ApiResponse(data=result)
+    if task.status not in ("PENDING", "FAILED", "PARTIAL_SUCCESS"):
+        return ApiResponse(
+            code=40001,
+            message=f"任务当前状态为 {task.status}，无法执行",
+            data=None,
+        )
+
+    # 提交后台执行（立即返回）
+    run_import_in_background(task_id)
+
+    return ApiResponse(data={
+        "task_id": task_id,
+        "status": "ACCEPTED",
+        "message": "任务已提交后台执行，请通过 GET /api/v1/import-tasks/{id} 查询进度",
+    })
+
+
+@router.post(
+    "/{task_id}/relations/retry",
+    summary="重试关系生成阶段",
+    description="后台重跑关系生成阶段，不重复导入知识。",
+)
+async def retry_import_relations(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_admin: AdminUser = Depends(get_current_admin),
+) -> ApiResponse:
+    """提交关系重试到后台执行。"""
+    from app.models.import_task import KnowledgeImportTask
+
+    task = db.query(KnowledgeImportTask).filter(
+        KnowledgeImportTask.id == task_id
+    ).first()
+    if not task:
+        return ApiResponse(code=40401, message=f"任务 {task_id} 不存在", data=None)
+
+    run_relations_retry_in_background(task_id)
+
+    return ApiResponse(data={
+        "task_id": task_id,
+        "status": "ACCEPTED",
+        "message": "关系重试已提交后台执行",
+    })
 
 
 @router.post(

@@ -1,5 +1,6 @@
 export interface Knowledge {
   id: number
+  knowledge_base_id: number
   name: string
   summary: string | null
   content: string | null
@@ -14,6 +15,7 @@ export interface Knowledge {
 }
 
 export interface KnowledgeCreateRequest {
+  knowledge_base_id?: number | null
   name: string
   summary?: string | null
   content?: string | null
@@ -25,6 +27,7 @@ export interface KnowledgeCreateRequest {
 }
 
 export interface KnowledgeUpdateRequest {
+  knowledge_base_id?: number | null
   name?: string | null
   summary?: string | null
   content?: string | null
@@ -55,4 +58,5 @@ export interface KnowledgeQueryParams {
   keyword?: string | null
   difficulty?: number | null
   status?: number | null
+  knowledge_base_id?: number | null
 }

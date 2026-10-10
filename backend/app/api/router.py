@@ -23,6 +23,8 @@ from app.api.v1.import_task import router as import_task_router
 from app.api.v1.knowledge import router as knowledge_router
 from app.api.v1.knowledge_base import router as knowledge_base_router
 from app.api.v1.question import router as question_router
+from app.api.v1.question_bank import router as question_bank_router
+from app.api.v1.question_plan import router as question_plan_router
 
 # v1 版本的总路由器，所有 v1 接口都挂在此路由器下
 api_v1_router = APIRouter(prefix="/api/v1")
@@ -32,6 +34,8 @@ api_v1_router.include_router(auth_router)         # 认证管理：登录、获�
 api_v1_router.include_router(knowledge_router)    # 知识点管理：CRUD、关系管理
 api_v1_router.include_router(knowledge_base_router)  # 知识库管理
 api_v1_router.include_router(question_router)     # 题目管理：CRUD、选项、知识点关联
+api_v1_router.include_router(question_bank_router)  # 题库管理
+api_v1_router.include_router(question_plan_router)  # 出题计划
 api_v1_router.include_router(import_task_router)  # 导入任务：文件上传、任务查询
 api_v1_router.include_router(dashboard_router)    # 仪表盘：系统统计数据
 api_v1_router.include_router(agent_router)        # Agent 测试：知识点提取测试接口

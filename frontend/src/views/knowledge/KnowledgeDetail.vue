@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getKnowledgeDetail, getKnowledgeRelations, deleteKnowledgeRelation } from '@/api/knowledge'
+import { getKnowledgeBaseDetail } from '@/api/knowledgeBase'
 import type { Knowledge, KnowledgeRelation } from '@/types/knowledge'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Edit, Trash2 } from 'lucide-vue-next'
@@ -13,6 +14,7 @@ const loading = ref(true)
 const knowledge = ref<Knowledge | null>(null)
 const relations = ref<KnowledgeRelation[]>([])
 const activeTab = ref(route.query.tab === 'relations' ? 'relations' : 'info')
+const kbName = ref('')
 
 const knowledgeId = computed(() => Number(route.params.id))
 
@@ -25,6 +27,16 @@ async function fetchData() {
     ])
     knowledge.value = detailRes.data
     relations.value = relationsRes.data
+
+    // 加载知识库名称
+    if (knowledge.value?.knowledge_base_id) {
+      try {
+        const kbRes = await getKnowledgeBaseDetail(knowledge.value.knowledge_base_id)
+        kbName.value = kbRes.data.name
+      } catch {
+        kbName.value = ''
+      }
+    }
   } catch {
     ElMessage.error('获取知识点详情失败')
   } finally {
@@ -116,7 +128,10 @@ onMounted(fetchData)
                 <el-descriptions-item label="名称" :span="2">
                   {{ knowledge.name }}
                 </el-descriptions-item>
-                <el-descriptions-item label="摘要" :span="2">
+                <el-descriptions-item label="所属知识库">
+                  {{ kbName || '#' + knowledge.knowledge_base_id }}
+                </el-descriptions-item>
+                <el-descriptions-item label="摘要" :span="1">
                   {{ knowledge.summary || '-' }}
                 </el-descriptions-item>
                 <el-descriptions-item label="难度">

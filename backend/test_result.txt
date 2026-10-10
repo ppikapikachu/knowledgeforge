@@ -1,5 +1,5 @@
 ﻿1. ���� Embedding ģ��...
-2026-10-09 15:45:49,402 | INFO     | agent.common.embedding | ���ڼ��� Embedding ģ��: D:/python/ai_model/models--BAAI--bge-small-zh-v1.5/snapshots/7999e1d3359715c523056ef9478215996d62a620 (fp16=True)
+2026-10-10 17:16:06,113 | INFO     | agent.common.embedding | ���ڼ��� Embedding ģ��: D:/python/ai_model/models--BAAI--bge-small-zh-v1.5/snapshots/7999e1d3359715c523056ef9478215996d62a620 (fp16=True)
 D:\pythonproject\knowledgeforge\.venv\Scripts\python.exe : 
 At line:1 char:173
 + ... ge\backend; D:\pythonproject\knowledgeforge\.venv\Scripts\python.exe  ...
@@ -8,354 +8,390 @@ At line:1 char:173
     + FullyQualifiedErrorId : NativeCommandError
  
 Loading weights:   0%|          | 0/71 [00:00<?, ?it/s]
-Loading weights:  86%|������������������ | 61/71 [00:00<00:00, 563.63it/s]
-Loading weights: 100%|��������������������| 71/71 [00:00<00:00, 585.47it/s]
-2026-10-09 15:45:49,881 | INFO     | agent.common.embedding | Embedding ģ�ͼ������: dimension=512
+Loading weights:  80%|����������������  | 57/71 [00:00<00:00, 560.34it/s]
+Loading weights: 100%|��������������������| 71/71 [00:00<00:00, 568.26it/s]
+2026-10-10 17:16:06,628 | INFO     | agent.common.embedding | Embedding ģ�ͼ������: dimension=512
    ά��: 512
 2. ���� Embedding...
    ���� 4 ������
 3. д�������洢...
-2026-10-09 15:45:49,950 | INFO     | faiss.loader | Loading faiss with AVX2 support.
-2026-10-09 15:45:49,951 | INFO     | faiss.loader | Could not load library with AVX2 support due to:
+2026-10-10 17:16:06,704 | INFO     | faiss.loader | Loading faiss with AVX2 support.
+2026-10-10 17:16:06,705 | INFO     | faiss.loader | Could not load library with AVX2 support due to:
 ModuleNotFoundError("No module named 'faiss.swigfaiss_avx2'")
-2026-10-09 15:45:49,951 | INFO     | faiss.loader | Loading faiss.
-2026-10-09 15:45:50,007 | INFO     | faiss.loader | Successfully loaded faiss.
-2026-10-09 15:45:50,034 | INFO     | agent.common.vector_store | FAISS �����洢��ʼ��: dimension=512
+2026-10-10 17:16:06,705 | INFO     | faiss.loader | Loading faiss.
+2026-10-10 17:16:06,763 | INFO     | faiss.loader | Successfully loaded faiss.
+2026-10-10 17:16:06,790 | INFO     | agent.common.vector_store | FAISS �����洢��ʼ��: dimension=512
    �洢 4 ����¼
 4. ���ƶȼ���...
    Java�̳߳�: 0.8625
    Activity��������: 0.4670
    TCP��������: 0.3275
 ȫ��ͨ��!
-2026-10-09 15:45:51,542 | INFO     | app.middleware.request_id | request_id=f876f4a6-f862-4c48-b7a5-f87bb53292be POST /api/v1/auth/login status=200 cost=293.3ms
-2026-10-09 15:45:51,543 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-.2026-10-09 15:45:52,113 | INFO     | app.middleware.request_id | request_id=8cc37334-d645-4b77-b9a3-055670ddc497 POST /api/v1/auth/login status=400 cost=274.3ms
-2026-10-09 15:45:52,113 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:45:52,138 | INFO     | app.middleware.request_id | request_id=bdafc0ad-9bf8-4b59-97a5-89a4f0f1e816 POST /api/v1/auth/login status=400 cost=4.7ms
-2026-10-09 15:45:52,138 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:45:52,456 | INFO     | app.middleware.request_id | request_id=9056a9ee-2e53-41af-99c0-14e0aaa35064 POST /api/v1/auth/login status=400 cost=3.9ms
-2026-10-09 15:45:52,457 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:45:52,477 | INFO     | app.middleware.request_id | request_id=3d05a528-fd80-425f-b501-e4e5c9a62424 POST /api/v1/auth/login status=422 cost=2.1ms
-2026-10-09 15:45:52,477 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 422 Unprocessable Content"
-.2026-10-09 15:45:52,497 | INFO     | app.middleware.request_id | request_id=5f7b1240-b47a-4a4c-ada1-7ff86eb7e6db POST /api/v1/auth/login status=422 cost=2.2ms
-2026-10-09 15:45:52,498 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 422 Unprocessable Content"
-.2026-10-09 15:45:53,086 | INFO     | app.middleware.request_id | request_id=42a910d7-13a1-4387-b808-45e76921ce76 POST /api/v1/auth/login status=200 cost=285.2ms
-2026-10-09 15:45:53,086 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:53,092 | INFO     | app.middleware.request_id | request_id=15c22b80-60d2-4e6f-82d4-96a9671f5524 GET /api/v1/auth/me status=200 cost=3.8ms
-2026-10-09 15:45:53,093 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/auth/me "HTTP/1.1 200 OK"
-.2026-10-09 15:45:53,110 | INFO     | app.middleware.request_id | request_id=0ba114b9-de21-4c48-a691-672e915ef07a GET /api/v1/auth/me status=401 cost=0.7ms
-2026-10-09 15:45:53,111 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/auth/me "HTTP/1.1 401 Unauthorized"
-.2026-10-09 15:45:53,132 | INFO     | app.middleware.request_id | request_id=2dcda0d7-1456-4a55-aadb-f72d6975b2e5 GET /api/v1/auth/me status=400 cost=2.5ms
-2026-10-09 15:45:53,133 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/auth/me "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:45:53,689 | INFO     | app.middleware.request_id | request_id=7f3dd32d-74bb-4742-965f-052cb2cc91ab POST /api/v1/auth/login status=200 cost=272.2ms
-2026-10-09 15:45:53,690 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:53,738 | INFO     | app.middleware.request_id | request_id=fb4d6685-d6b3-4adc-9233-4aea4a168ddd GET /api/v1/dashboard/overview status=200 cost=46.2ms
-2026-10-09 15:45:53,738 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/dashboard/overview "HTTP/1.1 200 OK"
-.2026-10-09 15:45:54,332 | INFO     | app.middleware.request_id | request_id=e7102629-a792-42b1-a9b7-a1819b6b8c15 POST /api/v1/auth/login status=200 cost=287.3ms
-2026-10-09 15:45:54,333 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:54,350 | INFO     | app.middleware.request_id | request_id=cf8d00b4-fe10-4f92-9025-cca06c589f3f POST /api/v1/knowledge status=200 cost=15.3ms
-2026-10-09 15:45:54,350 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:45:54,375 | INFO     | app.middleware.request_id | request_id=8b24d4bc-ed79-4a20-ace0-160295334bc7 POST /api/v1/questions status=200 cost=23.6ms
-2026-10-09 15:45:54,376 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:45:54,388 | INFO     | app.middleware.request_id | request_id=1d3efd9e-71a5-41f3-a117-813bb7ae543a POST /api/v1/questions status=200 cost=10.9ms
-2026-10-09 15:45:54,389 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:45:54,397 | INFO     | app.middleware.request_id | request_id=8d3ac13f-8c76-4ca5-ab60-f6495ec2c06b GET /api/v1/dashboard/overview status=200 cost=6.7ms
-2026-10-09 15:45:54,397 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/dashboard/overview "HTTP/1.1 200 OK"
-.2026-10-09 15:45:54,419 | INFO     | app.middleware.request_id | request_id=7e31ce97-1c3a-469e-be42-d2083a739177 GET /api/v1/dashboard/overview status=401 cost=2.2ms
-2026-10-09 15:45:54,420 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/dashboard/overview "HTTP/1.1 401 Unauthorized"
-.2026-10-09 15:45:54,998 | INFO     | app.middleware.request_id | request_id=3d9e63e5-b90f-47fc-83a2-4a10472eec7d POST /api/v1/auth/login status=200 cost=277.1ms
-2026-10-09 15:45:54,999 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:55,019 | INFO     | app.api.v1.import_task | �������񴴽�: id=1, file=test.txt
-2026-10-09 15:45:55,020 | INFO     | app.middleware.request_id | request_id=401354a2-a621-4250-b155-614035a81c26 POST /api/v1/import-tasks status=200 cost=18.8ms
-2026-10-09 15:45:55,020 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
-.2026-10-09 15:45:55,620 | INFO     | app.middleware.request_id | request_id=3c3fcb21-bc2c-41a9-8256-263f4867a43b POST /api/v1/auth/login status=200 cost=290.4ms
-2026-10-09 15:45:55,621 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:55,635 | INFO     | app.api.v1.import_task | �������񴴽�: id=2, file=test.md
-2026-10-09 15:45:55,636 | INFO     | app.middleware.request_id | request_id=ee8705fe-d1a9-41c0-91f3-30e78d83d05b POST /api/v1/import-tasks status=200 cost=12.6ms
-2026-10-09 15:45:55,636 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
-.2026-10-09 15:45:56,200 | INFO     | app.middleware.request_id | request_id=70e8de15-3790-4541-8771-8ed14bfdc9cf POST /api/v1/auth/login status=200 cost=272.5ms
-2026-10-09 15:45:56,201 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:56,207 | INFO     | app.middleware.request_id | request_id=b7cfc678-f750-41f9-af87-cdee30d878be POST /api/v1/import-tasks status=400 cost=4.0ms
-2026-10-09 15:45:56,207 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:45:56,785 | INFO     | app.middleware.request_id | request_id=c2801691-bf19-42db-89d9-7d8bd0cb04b0 POST /api/v1/auth/login status=200 cost=282.8ms
-2026-10-09 15:45:56,785 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:56,798 | INFO     | app.api.v1.import_task | �������񴴽�: id=3, file=test.txt
-2026-10-09 15:45:56,798 | INFO     | app.middleware.request_id | request_id=affbddbc-c164-48f5-a912-24927d532538 POST /api/v1/import-tasks status=200 cost=11.4ms
-2026-10-09 15:45:56,799 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
-2026-10-09 15:45:56,808 | INFO     | app.middleware.request_id | request_id=f304594b-3115-477c-b63e-ba927a1c0633 GET /api/v1/import-tasks/3 status=200 cost=7.4ms
-2026-10-09 15:45:56,808 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/import-tasks/3 "HTTP/1.1 200 OK"
-.2026-10-09 15:45:57,379 | INFO     | app.middleware.request_id | request_id=26f016a6-3f71-4b94-92b7-e6ac2ced1b14 POST /api/v1/auth/login status=200 cost=282.1ms
-2026-10-09 15:45:57,380 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:57,386 | INFO     | app.middleware.request_id | request_id=0d161ae8-aee5-453f-9c54-a82ede3f1211 GET /api/v1/import-tasks/99999 status=400 cost=4.2ms
-2026-10-09 15:45:57,386 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/import-tasks/99999 "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:45:57,955 | INFO     | app.middleware.request_id | request_id=a2311b94-0904-4198-8cad-6f6718b5ab5e POST /api/v1/auth/login status=200 cost=278.1ms
-2026-10-09 15:45:57,955 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:57,969 | INFO     | app.api.v1.import_task | �������񴴽�: id=4, file=test0.txt
-2026-10-09 15:45:57,969 | INFO     | app.middleware.request_id | request_id=7904dc43-4b12-4414-aaf5-5480c1129db5 POST /api/v1/import-tasks status=200 cost=12.0ms
-2026-10-09 15:45:57,970 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
-2026-10-09 15:45:57,983 | INFO     | app.api.v1.import_task | �������񴴽�: id=5, file=test1.txt
-2026-10-09 15:45:57,983 | INFO     | app.middleware.request_id | request_id=cfbaff68-5d14-4773-9d04-181472a55057 POST /api/v1/import-tasks status=200 cost=11.7ms
-2026-10-09 15:45:57,984 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
-2026-10-09 15:45:57,997 | INFO     | app.api.v1.import_task | �������񴴽�: id=6, file=test2.txt
-2026-10-09 15:45:57,998 | INFO     | app.middleware.request_id | request_id=aa64f85d-cdfe-478b-aef9-7b5500abb8e8 POST /api/v1/import-tasks status=200 cost=13.2ms
-2026-10-09 15:45:57,999 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
-2026-10-09 15:45:58,010 | INFO     | app.middleware.request_id | request_id=9735e337-6536-4f03-bc27-f98d88a2aaad GET /api/v1/import-tasks status=200 cost=10.8ms
-2026-10-09 15:45:58,011 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
-.2026-10-09 15:45:58,586 | INFO     | app.middleware.request_id | request_id=2355db13-5a5e-4840-9ed0-ae6e27bb2fbc POST /api/v1/auth/login status=200 cost=276.5ms
-2026-10-09 15:45:58,586 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:58,599 | INFO     | app.api.v1.import_task | �������񴴽�: id=7, file=test.txt
-2026-10-09 15:45:58,599 | INFO     | app.middleware.request_id | request_id=e3d2c55c-1e1d-42c6-b925-df2a6882680a POST /api/v1/import-tasks status=200 cost=11.3ms
-2026-10-09 15:45:58,600 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
-2026-10-09 15:45:58,613 | INFO     | app.middleware.request_id | request_id=9addb498-0a4f-4781-b28f-fd75a346e912 POST /api/v1/import-tasks/7/simulate status=200 cost=11.9ms
-2026-10-09 15:45:58,613 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks/7/simulate "HTTP/1.1 200 OK"
-.2026-10-09 15:45:58,635 | INFO     | app.middleware.request_id | request_id=ae8bd7a6-6730-4e3b-a69c-b68fa489fea3 POST /api/v1/import-tasks status=401 cost=2.5ms
-2026-10-09 15:45:58,636 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 401 Unauthorized"
-.2026-10-09 15:45:59,199 | INFO     | app.middleware.request_id | request_id=16575973-1e0e-4467-b028-f1f5068bbef8 POST /api/v1/auth/login status=200 cost=278.4ms
-2026-10-09 15:45:59,200 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:59,212 | INFO     | app.middleware.request_id | request_id=981f1f61-e300-46c5-9bf9-7bbaa784b24f POST /api/v1/knowledge status=200 cost=10.2ms
-2026-10-09 15:45:59,213 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-.2026-10-09 15:45:59,784 | INFO     | app.middleware.request_id | request_id=b2c2b7cd-9fb3-4f1f-983d-9b52b741ddd8 POST /api/v1/auth/login status=200 cost=277.4ms
-2026-10-09 15:45:59,785 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:45:59,797 | INFO     | app.middleware.request_id | request_id=2642eedc-0cb1-44ea-8327-dfad125cb6c8 POST /api/v1/knowledge status=200 cost=10.6ms
-2026-10-09 15:45:59,798 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-.2026-10-09 15:46:00,374 | INFO     | app.middleware.request_id | request_id=91c2901d-90f5-4e02-8a49-bbbec486e404 POST /api/v1/auth/login status=200 cost=280.7ms
-2026-10-09 15:46:00,375 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:00,386 | INFO     | app.middleware.request_id | request_id=5f27a8ed-4cfc-4ced-a72f-686668cca2c7 POST /api/v1/knowledge status=200 cost=10.2ms
-2026-10-09 15:46:00,387 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:00,396 | INFO     | app.middleware.request_id | request_id=a5fc443d-6c4e-4a39-9b52-b989b86990db GET /api/v1/knowledge/4 status=200 cost=7.1ms
-2026-10-09 15:46:00,397 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge/4 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:00,973 | INFO     | app.middleware.request_id | request_id=b6baa715-7f1d-45d6-9fa1-4f387b58b36c POST /api/v1/auth/login status=200 cost=279.1ms
-2026-10-09 15:46:00,974 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:00,980 | INFO     | app.middleware.request_id | request_id=6e05145c-65f7-4354-82f4-04e3f3d0fc6d GET /api/v1/knowledge/99999 status=400 cost=4.0ms
-2026-10-09 15:46:00,980 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge/99999 "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:46:01,619 | INFO     | app.middleware.request_id | request_id=7915ddc9-4779-4530-bc37-90f8f6491677 POST /api/v1/auth/login status=200 cost=355.6ms
-2026-10-09 15:46:01,620 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:01,633 | INFO     | app.middleware.request_id | request_id=74f70bea-b0b0-41fa-9aeb-70ed053cca03 POST /api/v1/knowledge status=200 cost=11.4ms
-2026-10-09 15:46:01,634 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:01,649 | INFO     | app.middleware.request_id | request_id=7b7fd4f6-4777-48d6-93f8-330c4a7acce9 PUT /api/v1/knowledge/5 status=200 cost=12.9ms
-2026-10-09 15:46:01,650 | INFO     | httpx2 | HTTP Request: PUT http://testserver/api/v1/knowledge/5 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:02,335 | INFO     | app.middleware.request_id | request_id=faddd082-915e-4891-9a31-96c79445682b POST /api/v1/auth/login status=200 cost=329.5ms
-2026-10-09 15:46:02,336 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:02,357 | INFO     | app.middleware.request_id | request_id=26fbf398-5d35-42f6-8e89-a8516f17decf POST /api/v1/knowledge status=200 cost=20.3ms
-2026-10-09 15:46:02,358 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:02,371 | INFO     | app.middleware.request_id | request_id=a80db66f-a320-4172-a23f-055f071d1dfe DELETE /api/v1/knowledge/6 status=200 cost=10.9ms
-2026-10-09 15:46:02,372 | INFO     | httpx2 | HTTP Request: DELETE http://testserver/api/v1/knowledge/6 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:03,033 | INFO     | app.middleware.request_id | request_id=368ed102-4a48-4bf5-a44f-fa1c7d729829 POST /api/v1/auth/login status=200 cost=315.7ms
-2026-10-09 15:46:03,034 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:03,045 | INFO     | app.middleware.request_id | request_id=cbda4df2-bb7d-48e5-bf58-7c56e84cd53d POST /api/v1/knowledge status=200 cost=10.7ms
-2026-10-09 15:46:03,046 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:03,058 | INFO     | app.middleware.request_id | request_id=3b78cbe6-2ce3-4b26-ba58-40b381753508 POST /api/v1/knowledge status=200 cost=10.5ms
-2026-10-09 15:46:03,059 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:03,071 | INFO     | app.middleware.request_id | request_id=12d056c8-7db4-413c-bce4-b244dd47319d GET /api/v1/knowledge status=200 cost=10.4ms
-2026-10-09 15:46:03,072 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-.2026-10-09 15:46:03,642 | INFO     | app.middleware.request_id | request_id=b12d5b4b-f217-473d-a909-a7eb8b50c9a6 POST /api/v1/auth/login status=200 cost=278.2ms
-2026-10-09 15:46:03,643 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:03,654 | INFO     | app.middleware.request_id | request_id=0f75420e-4a15-4e48-b6fd-d76586473378 POST /api/v1/knowledge status=200 cost=9.7ms
-2026-10-09 15:46:03,654 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:03,664 | INFO     | app.middleware.request_id | request_id=0c24bf61-73d6-4d9f-82ed-3ff35186e6a1 POST /api/v1/knowledge status=200 cost=8.6ms
-2026-10-09 15:46:03,665 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:03,675 | INFO     | app.middleware.request_id | request_id=1f3b5f0f-052c-47c3-9e44-4b330110e6f9 GET /api/v1/knowledge status=200 cost=8.9ms
-2026-10-09 15:46:03,676 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge?keyword=%E8%A3%85%E9%A5%B0%E5%99%A8 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:04,229 | INFO     | app.middleware.request_id | request_id=0e12dad5-f366-446b-bd54-a21e920fdd48 POST /api/v1/auth/login status=200 cost=277.4ms
-2026-10-09 15:46:04,230 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:04,242 | INFO     | app.middleware.request_id | request_id=d72aac71-c199-480a-ad7b-c3d33630c9d8 POST /api/v1/knowledge status=200 cost=10.3ms
-2026-10-09 15:46:04,243 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:04,255 | INFO     | app.middleware.request_id | request_id=f76889e7-dfb7-4e2a-be0e-f352bdedfbf4 POST /api/v1/knowledge status=200 cost=10.5ms
-2026-10-09 15:46:04,255 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:04,266 | INFO     | app.middleware.request_id | request_id=b5b7905e-90d9-4f15-acbe-0b6bad19743b GET /api/v1/knowledge status=200 cost=9.4ms
-2026-10-09 15:46:04,267 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge?difficulty=2 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:04,849 | INFO     | app.middleware.request_id | request_id=5544a0b1-312a-457e-9f51-819ece2e3547 POST /api/v1/auth/login status=200 cost=278.6ms
-2026-10-09 15:46:04,849 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:04,861 | INFO     | app.middleware.request_id | request_id=596bc91d-164e-47ae-84ac-f0fd33ee1cfc POST /api/v1/knowledge status=200 cost=10.7ms
-2026-10-09 15:46:04,862 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:04,873 | INFO     | app.middleware.request_id | request_id=ee6cade0-2a32-4730-b205-ea4dc8b8d005 POST /api/v1/knowledge status=200 cost=9.6ms
-2026-10-09 15:46:04,873 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:04,881 | INFO     | app.middleware.request_id | request_id=e6112d4d-0528-49eb-aa5e-c07e361e57a9 GET /api/v1/knowledge status=200 cost=6.2ms
-2026-10-09 15:46:04,882 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge?page=1&page_size=1 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:04,904 | INFO     | app.middleware.request_id | request_id=4a5a3fad-e0d1-4a29-9c32-c02432e93faf POST /api/v1/knowledge status=401 cost=3.1ms
-2026-10-09 15:46:04,904 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 401 Unauthorized"
-.2026-10-09 15:46:05,477 | INFO     | app.middleware.request_id | request_id=1f1d993d-f6e0-473a-8c6b-77fcb20e60ec POST /api/v1/auth/login status=200 cost=276.0ms
-2026-10-09 15:46:05,478 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:05,488 | INFO     | app.middleware.request_id | request_id=336140df-cc7b-4249-b76c-404a42981436 POST /api/v1/knowledge status=200 cost=9.3ms
-2026-10-09 15:46:05,489 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:05,500 | INFO     | app.middleware.request_id | request_id=eefa6dde-8fbf-4f39-9506-afb1ace9be7f POST /api/v1/knowledge status=200 cost=9.8ms
-2026-10-09 15:46:05,501 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:05,516 | INFO     | app.middleware.request_id | request_id=8c2dba3b-ca58-446e-a145-787447a7c84e POST /api/v1/knowledge/15/relations status=200 cost=14.1ms
-2026-10-09 15:46:05,517 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/15/relations "HTTP/1.1 200 OK"
-.2026-10-09 15:46:06,096 | INFO     | app.middleware.request_id | request_id=9e6f5fda-24e9-4083-8b63-dcd830e5ab83 POST /api/v1/auth/login status=200 cost=284.6ms
-2026-10-09 15:46:06,097 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:06,109 | INFO     | app.middleware.request_id | request_id=365b8d01-ee23-4c38-a8ed-e96ec7b83d64 POST /api/v1/knowledge status=200 cost=11.2ms
-2026-10-09 15:46:06,110 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:06,119 | INFO     | app.middleware.request_id | request_id=2b11fbe8-a9b1-4de2-8e9d-bf6f83a1bfab POST /api/v1/knowledge/17/relations status=400 cost=6.6ms
-2026-10-09 15:46:06,119 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/17/relations "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:46:06,672 | INFO     | app.middleware.request_id | request_id=f4cc3141-833d-4bbe-8762-ba6389d4952d POST /api/v1/auth/login status=200 cost=266.7ms
-2026-10-09 15:46:06,673 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:06,684 | INFO     | app.middleware.request_id | request_id=8ce68e4c-8cfb-425d-afd0-f6890273e375 POST /api/v1/knowledge status=200 cost=9.9ms
-2026-10-09 15:46:06,685 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:06,696 | INFO     | app.middleware.request_id | request_id=eefe107f-2693-42ce-94c3-951d6dcf2854 POST /api/v1/knowledge status=200 cost=10.2ms
-2026-10-09 15:46:06,697 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:06,711 | INFO     | app.middleware.request_id | request_id=ede0b56e-9c04-40ad-9f11-716456e4d203 POST /api/v1/knowledge/18/relations status=200 cost=12.6ms
-2026-10-09 15:46:06,712 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/18/relations "HTTP/1.1 200 OK"
-2026-10-09 15:46:06,720 | INFO     | app.middleware.request_id | request_id=b5c9a2c4-5ada-4d22-8a31-2cf2ba92031d POST /api/v1/knowledge/18/relations status=400 cost=6.6ms
-2026-10-09 15:46:06,720 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/18/relations "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:46:07,292 | INFO     | app.middleware.request_id | request_id=309b4442-ff08-49e6-aa25-4b4c0f3decca POST /api/v1/auth/login status=200 cost=281.5ms
-2026-10-09 15:46:07,292 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:07,304 | INFO     | app.middleware.request_id | request_id=06fe4370-1b21-4c72-a616-4c4b4a16913b POST /api/v1/knowledge status=200 cost=10.7ms
-2026-10-09 15:46:07,305 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:07,316 | INFO     | app.middleware.request_id | request_id=d4a299f5-2348-4cd6-b313-5d155cbfb05b POST /api/v1/knowledge status=200 cost=9.6ms
-2026-10-09 15:46:07,317 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:07,325 | INFO     | app.middleware.request_id | request_id=988c7c81-4500-4eff-8e0e-af185ad972c8 POST /api/v1/knowledge/20/relations status=400 cost=6.0ms
-2026-10-09 15:46:07,325 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/20/relations "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:46:08,857 | INFO     | app.middleware.request_id | request_id=eebbed8a-0a74-4eb1-8ed2-195432c7ebbd POST /api/v1/auth/login status=200 cost=1185.2ms
-2026-10-09 15:46:08,859 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:08,905 | INFO     | app.middleware.request_id | request_id=acaf357f-5fdb-40a7-baf3-7a973646d554 POST /api/v1/knowledge status=200 cost=43.2ms
-2026-10-09 15:46:08,908 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:08,929 | INFO     | app.middleware.request_id | request_id=80201d3d-2037-44ab-a1d2-ff17c7856722 POST /api/v1/knowledge/22/relations status=400 cost=15.0ms
-2026-10-09 15:46:08,934 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/22/relations "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:46:09,929 | INFO     | app.middleware.request_id | request_id=3b90edee-8e41-4e1b-8b53-38fbcafda0c8 POST /api/v1/auth/login status=200 cost=345.9ms
-2026-10-09 15:46:09,930 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:09,945 | INFO     | app.middleware.request_id | request_id=6cb54a03-61b5-465e-b086-f5c3ae390583 POST /api/v1/knowledge status=200 cost=13.4ms
-2026-10-09 15:46:09,946 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:09,959 | INFO     | app.middleware.request_id | request_id=4c05028b-202e-4e34-a41a-537e74f6629b POST /api/v1/knowledge status=200 cost=10.8ms
-2026-10-09 15:46:09,959 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:09,975 | INFO     | app.middleware.request_id | request_id=390d8e17-cf32-4ad4-8534-49a2d4f3128b POST /api/v1/knowledge/23/relations status=200 cost=13.3ms
-2026-10-09 15:46:09,976 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/23/relations "HTTP/1.1 200 OK"
-2026-10-09 15:46:09,988 | INFO     | app.middleware.request_id | request_id=0c2d03b0-88ca-40a2-a7df-0371621b7299 GET /api/v1/knowledge/23/relations status=200 cost=11.2ms
-2026-10-09 15:46:09,989 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge/23/relations "HTTP/1.1 200 OK"
-.2026-10-09 15:46:10,617 | INFO     | app.middleware.request_id | request_id=aa2edc6d-9057-43a9-bc2c-001ded730373 POST /api/v1/auth/login status=200 cost=291.7ms
-2026-10-09 15:46:10,617 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:10,629 | INFO     | app.middleware.request_id | request_id=fb6359cb-35ea-49af-a662-c1d9eab00acc POST /api/v1/knowledge status=200 cost=10.2ms
-2026-10-09 15:46:10,629 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:10,641 | INFO     | app.middleware.request_id | request_id=8950e4c4-274a-46fe-b0ef-f62a2ac775a1 POST /api/v1/knowledge status=200 cost=10.0ms
-2026-10-09 15:46:10,642 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:10,656 | INFO     | app.middleware.request_id | request_id=6e813891-be6a-4919-aadf-24712d180eab POST /api/v1/knowledge/25/relations status=200 cost=12.4ms
-2026-10-09 15:46:10,657 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/25/relations "HTTP/1.1 200 OK"
-2026-10-09 15:46:10,667 | INFO     | app.middleware.request_id | request_id=50b39104-470f-473a-8e41-ebc98ab31071 DELETE /api/v1/knowledge/25/relations/4 status=200 cost=9.5ms
-2026-10-09 15:46:10,668 | INFO     | httpx2 | HTTP Request: DELETE http://testserver/api/v1/knowledge/25/relations/4 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:11,256 | INFO     | app.middleware.request_id | request_id=4b2c18c0-9bf3-4508-b998-3528bcd7dc9d POST /api/v1/auth/login status=200 cost=291.1ms
-2026-10-09 15:46:11,257 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:11,268 | INFO     | app.middleware.request_id | request_id=50a2c759-81f7-41ce-9ca0-c462cb60a0b2 POST /api/v1/knowledge status=200 cost=9.9ms
-2026-10-09 15:46:11,269 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
-2026-10-09 15:46:11,291 | INFO     | app.middleware.request_id | request_id=be26cb0a-2b1c-4127-b764-c5adcf64eceb POST /api/v1/questions status=200 cost=19.7ms
-2026-10-09 15:46:11,291 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-.2026-10-09 15:46:11,872 | INFO     | app.middleware.request_id | request_id=9394e797-a633-4d12-8a79-79d39126a0de POST /api/v1/auth/login status=200 cost=294.3ms
-2026-10-09 15:46:11,873 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:11,888 | INFO     | app.middleware.request_id | request_id=b36cd666-8105-4465-908f-d4e5ec9819e4 POST /api/v1/questions status=200 cost=13.4ms
-2026-10-09 15:46:11,889 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-.2026-10-09 15:46:12,471 | INFO     | app.middleware.request_id | request_id=a952a1e9-8a43-49a0-a9f1-4ee41306be6b POST /api/v1/auth/login status=200 cost=282.9ms
-2026-10-09 15:46:12,472 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:12,484 | INFO     | app.middleware.request_id | request_id=85605689-b222-415f-b509-13e6df8107b7 POST /api/v1/questions status=200 cost=10.5ms
-2026-10-09 15:46:12,485 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-.2026-10-09 15:46:13,065 | INFO     | app.middleware.request_id | request_id=8fb26043-8cbb-48db-85f1-8f44bdcca990 POST /api/v1/auth/login status=200 cost=281.6ms
-2026-10-09 15:46:13,065 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:13,078 | INFO     | app.middleware.request_id | request_id=c0f4b4ed-4ddf-4cfd-b38b-0b5b7d00530f POST /api/v1/questions status=200 cost=11.0ms
-2026-10-09 15:46:13,079 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-.2026-10-09 15:46:13,667 | INFO     | app.middleware.request_id | request_id=e45709e9-6a1c-4e9f-bff6-0d3266cdc57e POST /api/v1/auth/login status=200 cost=286.3ms
-2026-10-09 15:46:13,668 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:13,681 | INFO     | app.middleware.request_id | request_id=7ae4cdd6-ca15-4462-b07c-af8e134ce395 POST /api/v1/questions status=200 cost=11.5ms
-2026-10-09 15:46:13,682 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:46:13,689 | INFO     | app.middleware.request_id | request_id=2eb4fa40-5c9a-48d3-adf7-a2956b637ebf GET /api/v1/questions/7 status=200 cost=5.6ms
-2026-10-09 15:46:13,690 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/questions/7 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:14,269 | INFO     | app.middleware.request_id | request_id=92b1d803-2443-49ee-9cef-ee8f7e0ad1d7 POST /api/v1/auth/login status=200 cost=283.0ms
-2026-10-09 15:46:14,270 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:14,276 | INFO     | app.middleware.request_id | request_id=52e56723-3d94-4cfe-8cd8-f53a810998cb GET /api/v1/questions/99999 status=400 cost=4.7ms
-2026-10-09 15:46:14,277 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/questions/99999 "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:46:14,854 | INFO     | app.middleware.request_id | request_id=4effa58a-827b-4cf3-8e98-0baaa9fce375 POST /api/v1/auth/login status=200 cost=279.9ms
-2026-10-09 15:46:14,855 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:14,868 | INFO     | app.middleware.request_id | request_id=41a4b783-632d-4f1c-bb94-868f281166cd POST /api/v1/questions status=200 cost=11.4ms
-2026-10-09 15:46:14,869 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:46:14,883 | INFO     | app.middleware.request_id | request_id=b27b098c-3a26-4fb2-ad62-a6eef00bfbdc PUT /api/v1/questions/8 status=200 cost=13.2ms
-2026-10-09 15:46:14,884 | INFO     | httpx2 | HTTP Request: PUT http://testserver/api/v1/questions/8 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:15,469 | INFO     | app.middleware.request_id | request_id=5f257f50-868a-4b0a-b3f5-0bc42d457952 POST /api/v1/auth/login status=200 cost=282.9ms
-2026-10-09 15:46:15,470 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:15,483 | INFO     | app.middleware.request_id | request_id=9673730c-0e1a-4f70-a2d4-c805d2f23785 POST /api/v1/questions status=200 cost=11.5ms
-2026-10-09 15:46:15,484 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:46:15,499 | INFO     | app.middleware.request_id | request_id=0335480e-ddd7-4e89-847b-f6e4a46169ab DELETE /api/v1/questions/9 status=200 cost=13.6ms
-2026-10-09 15:46:15,499 | INFO     | httpx2 | HTTP Request: DELETE http://testserver/api/v1/questions/9 "HTTP/1.1 200 OK"
-.2026-10-09 15:46:16,080 | INFO     | app.middleware.request_id | request_id=dc8f0f97-3589-4e8b-b41c-22fd694d4b22 POST /api/v1/auth/login status=200 cost=282.7ms
-2026-10-09 15:46:16,081 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:16,093 | INFO     | app.middleware.request_id | request_id=4d1ad45a-3bbd-4bde-b37d-cd23debd29b0 POST /api/v1/questions status=200 cost=11.1ms
-2026-10-09 15:46:16,094 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:46:16,106 | INFO     | app.middleware.request_id | request_id=8a8d51b8-ae3a-40dd-82c8-2fb41cb66025 POST /api/v1/questions status=200 cost=10.7ms
-2026-10-09 15:46:16,107 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:46:16,118 | INFO     | app.middleware.request_id | request_id=15ec421c-ba58-43bf-a877-62c15bdaf4d7 POST /api/v1/questions status=200 cost=10.7ms
-2026-10-09 15:46:16,119 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:46:16,136 | INFO     | app.middleware.request_id | request_id=435ce167-5796-4c65-aa78-d077fe338fac GET /api/v1/questions status=200 cost=15.9ms
-2026-10-09 15:46:16,137 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-.2026-10-09 15:46:16,736 | INFO     | app.middleware.request_id | request_id=1941364f-e65f-4b4c-bd8d-ec086fcde7c5 POST /api/v1/auth/login status=200 cost=280.4ms
-2026-10-09 15:46:16,737 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:16,748 | INFO     | app.middleware.request_id | request_id=2e3af60b-3edd-4d4b-9f7b-bf3c55512b90 POST /api/v1/questions status=200 cost=10.2ms
-2026-10-09 15:46:16,749 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:46:16,760 | INFO     | app.middleware.request_id | request_id=7b896dc9-6c25-432f-b550-34ad8efb7df2 POST /api/v1/questions status=200 cost=9.9ms
-2026-10-09 15:46:16,761 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
-2026-10-09 15:46:16,771 | INFO     | app.middleware.request_id | request_id=5a5aa7ec-b907-4f88-84c8-7eefd6d7f593 GET /api/v1/questions status=200 cost=9.4ms
-2026-10-09 15:46:16,772 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/questions?question_type=TRUE_FALSE "HTTP/1.1 200 OK"
-.2026-10-09 15:46:17,355 | INFO     | app.middleware.request_id | request_id=bcaa7d1c-983d-4c3a-ad86-7cb2840d9acb POST /api/v1/auth/login status=200 cost=296.6ms
-2026-10-09 15:46:17,355 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:17,361 | INFO     | app.middleware.request_id | request_id=5b9d2c0e-680b-462b-b67c-7248bd8c1cb0 POST /api/v1/questions status=422 cost=3.5ms
-2026-10-09 15:46:17,361 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
-.2026-10-09 15:46:17,933 | INFO     | app.middleware.request_id | request_id=51650ffd-fd68-482f-8a59-2aaa921f731c POST /api/v1/auth/login status=200 cost=280.7ms
-2026-10-09 15:46:17,933 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:17,939 | INFO     | app.middleware.request_id | request_id=6d6e56f7-9b38-4af1-9155-2135d5bf232d POST /api/v1/questions status=422 cost=3.8ms
-2026-10-09 15:46:17,939 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
-.2026-10-09 15:46:18,513 | INFO     | app.middleware.request_id | request_id=66cbd1f3-219e-46b4-addb-6c6c7061d649 POST /api/v1/auth/login status=200 cost=281.5ms
-2026-10-09 15:46:18,513 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:18,521 | INFO     | app.middleware.request_id | request_id=a1853376-8cb8-4bbb-ba88-2c29a016016d POST /api/v1/questions status=422 cost=5.9ms
-2026-10-09 15:46:18,522 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
-.2026-10-09 15:46:19,091 | INFO     | app.middleware.request_id | request_id=b6e20091-8da1-4015-93f3-41f49e3776a7 POST /api/v1/auth/login status=200 cost=276.8ms
-2026-10-09 15:46:19,092 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:19,097 | INFO     | app.middleware.request_id | request_id=54844782-0cfd-4eea-95dd-757606d884fc POST /api/v1/questions status=422 cost=3.5ms
-2026-10-09 15:46:19,097 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
-.2026-10-09 15:46:19,654 | INFO     | app.middleware.request_id | request_id=49522750-c872-4c69-b9b7-e08bfb87df96 POST /api/v1/auth/login status=200 cost=271.7ms
-2026-10-09 15:46:19,655 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:19,660 | INFO     | app.middleware.request_id | request_id=e039ddf6-5f66-4feb-bf4f-4af5dee7d7f3 POST /api/v1/questions status=422 cost=3.4ms
-2026-10-09 15:46:19,660 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
-.2026-10-09 15:46:20,235 | INFO     | app.middleware.request_id | request_id=ad2d7416-f42c-4714-8b42-58086cf5d487 POST /api/v1/auth/login status=200 cost=279.3ms
-2026-10-09 15:46:20,235 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:20,241 | INFO     | app.middleware.request_id | request_id=f0e4eb6c-efa0-4a18-9b0e-900b9d05588a POST /api/v1/questions status=422 cost=3.4ms
-2026-10-09 15:46:20,241 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
-.2026-10-09 15:46:20,812 | INFO     | app.middleware.request_id | request_id=240b3402-6ebb-46b7-9bd5-153672c1b768 POST /api/v1/auth/login status=200 cost=276.2ms
-2026-10-09 15:46:20,812 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:20,818 | INFO     | app.middleware.request_id | request_id=d05b1828-ae9c-4026-814c-a5b191838e40 POST /api/v1/questions status=400 cost=3.7ms
-2026-10-09 15:46:20,818 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:46:21,400 | INFO     | app.middleware.request_id | request_id=f051eb28-feb8-487d-9188-1463ca65ba5e POST /api/v1/auth/login status=200 cost=285.9ms
-2026-10-09 15:46:21,401 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:21,407 | INFO     | app.middleware.request_id | request_id=6ddfb750-c0ce-4ee5-bc63-62247653fb66 POST /api/v1/questions status=400 cost=4.6ms
-2026-10-09 15:46:21,407 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 400 Bad Request"
-.2026-10-09 15:46:21,435 | INFO     | agent.knowledge_extract.chunker | �ĵ��ֿ���ɣ��� 1 �� Chunk
-.2026-10-09 15:46:21,447 | INFO     | agent.knowledge_extract.chunker | �ĵ��ֿ���ɣ��� 5 �� Chunk
-.2026-10-09 15:46:21,460 | INFO     | agent.knowledge_extract.chunker | �ĵ��ֿ���ɣ��� 0 �� Chunk
-.2026-10-09 15:46:21,472 | INFO     | agent.knowledge_extract.chunker | �ĵ��ֿ���ɣ��� 5 �� Chunk
-.2026-10-09 15:46:21,482 | INFO     | agent.knowledge_extract.chunker | �ĵ��ֿ���ɣ��� 5 �� Chunk
-.2026-10-09 15:46:21,494 | INFO     | agent.knowledge_extract.chunker | �ĵ��ֿ���ɣ��� 10 �� Chunk
-.............2026-10-09 15:46:21,670 | INFO     | app.middleware.request_id | request_id=0879ddae-5b19-4655-8269-710c5038f652 POST /api/v1/agent/knowledge-relation/test status=401 cost=11.3ms
-2026-10-09 15:46:21,671 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 401 Unauthorized"
-.2026-10-09 15:46:22,221 | INFO     | app.middleware.request_id | request_id=44486b21-f0dc-4254-98ed-2c5797f95f4b POST /api/v1/auth/login status=200 cost=267.2ms
-2026-10-09 15:46:22,221 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:22,252 | INFO     | agent.knowledge_relation.nodes | ʹ���˹���ѡ: 0 ��
-2026-10-09 15:46:26,334 | INFO     | agent.knowledge_relation.nodes | �޺�ѡ������ LLM �ж�
-2026-10-09 15:46:26,334 | INFO     | agent.knowledge_relation.nodes | У�����: ��Ч 0, ���� 0
-2026-10-09 15:46:26,335 | INFO     | app.middleware.request_id | request_id=1224e0fb-709b-47c8-aeb0-c635b8e9856d POST /api/v1/agent/knowledge-relation/test status=200 cost=4112.5ms
-2026-10-09 15:46:26,336 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 200 OK"
-.2026-10-09 15:46:26,914 | INFO     | app.middleware.request_id | request_id=fc558262-13f8-4e8b-acbb-c9491d2f392d POST /api/v1/auth/login status=200 cost=277.4ms
-2026-10-09 15:46:26,914 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:26,923 | INFO     | agent.knowledge_relation.nodes | ʹ���˹���ѡ: 1 ��
-2026-10-09 15:46:26,923 | INFO     | agent.common.llm | ��ʼ�� LLM ʵ��: provider=openai, model=mimo-v2.6-pro, base_url=https://api.xiaomimimo.com/v1
-2026-10-09 15:46:26,924 | INFO     | langchain_openai.chat_models._client_utils | langchain-openai detected system proxy configuration and no explicit `http_socket_options` / `http_client` / `http_async_client` / `openai_proxy`; skipping the custom `httpx` transport so httpx's env-proxy auto-detection applies. Pass `http_socket_options=[...]` to opt back into kernel-level TCP keepalive tuning on top of the env proxy.
-2026-10-09 15:46:33,958 | INFO     | httpx2 | HTTP Request: POST https://api.xiaomimimo.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-10-09 15:46:33,973 | INFO     | agent.knowledge_relation.nodes | LLM �ж����: 1 �����, ��ʱ 5.40s
-2026-10-09 15:46:33,973 | INFO     | agent.knowledge_relation.nodes | У�����: ��Ч 1, ���� 0
-2026-10-09 15:46:33,974 | INFO     | app.middleware.request_id | request_id=b0e1d44d-f956-4492-8b80-be3e093aa3cb POST /api/v1/agent/knowledge-relation/test status=200 cost=7055.7ms
-2026-10-09 15:46:33,975 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 200 OK"
-.2026-10-09 15:46:34,822 | INFO     | app.middleware.request_id | request_id=4cd31e50-3ed1-4f55-95b7-fb3924eee5fe POST /api/v1/auth/login status=200 cost=581.0ms
-2026-10-09 15:46:34,823 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:34,827 | INFO     | app.middleware.request_id | request_id=abe0653f-4d2c-4167-856d-c350801b6e62 POST /api/v1/agent/knowledge-relation/test status=200 cost=3.3ms
-2026-10-09 15:46:34,828 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 200 OK"
-.2026-10-09 15:46:35,321 | INFO     | app.middleware.request_id | request_id=d35ce7bc-25d0-4a76-9055-f53cfe960a91 POST /api/v1/auth/login status=200 cost=248.4ms
-2026-10-09 15:46:35,322 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
-2026-10-09 15:46:35,327 | INFO     | app.middleware.request_id | request_id=33da8345-fd27-4ea2-964e-a7eb7652793d POST /api/v1/agent/knowledge-relation/test status=200 cost=3.2ms
-2026-10-09 15:46:35,327 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 200 OK"
-.................
+2026-10-10 17:16:08,425 | INFO     | app.middleware.request_id | request_id=683329fc-4598-4231-adc6-ace525df0bb8 POST /api/v1/auth/login status=200 cost=309.1ms
+2026-10-10 17:16:08,425 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+.2026-10-10 17:16:09,042 | INFO     | app.middleware.request_id | request_id=fc74e79b-6b92-47b1-a8cf-b0824c16fa2f POST /api/v1/auth/login status=400 cost=301.9ms
+2026-10-10 17:16:09,042 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:09,073 | INFO     | app.middleware.request_id | request_id=e42614a1-dab3-4164-8ab0-aea0ce4adfff POST /api/v1/auth/login status=400 cost=6.1ms
+2026-10-10 17:16:09,073 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:09,433 | INFO     | app.middleware.request_id | request_id=7e647792-942b-4677-b970-083a3aab808a POST /api/v1/auth/login status=400 cost=5.1ms
+2026-10-10 17:16:09,433 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:09,458 | INFO     | app.middleware.request_id | request_id=33eb1e97-8acc-4009-bfb6-1460c814dd80 POST /api/v1/auth/login status=422 cost=2.5ms
+2026-10-10 17:16:09,459 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 422 Unprocessable Content"
+.2026-10-10 17:16:09,484 | INFO     | app.middleware.request_id | request_id=31d5aaef-733f-4cbe-a277-0b5dbe5d3701 POST /api/v1/auth/login status=422 cost=3.0ms
+2026-10-10 17:16:09,485 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 422 Unprocessable Content"
+.2026-10-10 17:16:10,238 | INFO     | app.middleware.request_id | request_id=eba58095-59de-44b7-b748-b4fea430ebe6 POST /api/v1/auth/login status=200 cost=349.5ms
+2026-10-10 17:16:10,239 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:10,246 | INFO     | app.middleware.request_id | request_id=bbbcc2fd-c1f9-4f58-b501-456f673b4c23 GET /api/v1/auth/me status=200 cost=5.2ms
+2026-10-10 17:16:10,247 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/auth/me "HTTP/1.1 200 OK"
+.2026-10-10 17:16:10,268 | INFO     | app.middleware.request_id | request_id=aa2528fa-5f0d-42ec-948e-aa2c421c731f GET /api/v1/auth/me status=401 cost=0.8ms
+2026-10-10 17:16:10,268 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/auth/me "HTTP/1.1 401 Unauthorized"
+.2026-10-10 17:16:10,294 | INFO     | app.middleware.request_id | request_id=0a56dc8c-962d-45f1-838c-0d376ae18a26 GET /api/v1/auth/me status=400 cost=3.4ms
+2026-10-10 17:16:10,294 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/auth/me "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:10,923 | INFO     | app.middleware.request_id | request_id=5fe3a232-1e39-44f5-8750-fef95fbc2d52 POST /api/v1/auth/login status=200 cost=301.7ms
+2026-10-10 17:16:10,924 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:10,990 | INFO     | app.middleware.request_id | request_id=e099d5dd-9cbc-4766-a48a-5fc10fd82f05 GET /api/v1/dashboard/overview status=200 cost=64.9ms
+2026-10-10 17:16:10,991 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/dashboard/overview "HTTP/1.1 200 OK"
+.2026-10-10 17:16:11,606 | INFO     | app.middleware.request_id | request_id=a2c6b0c6-42ee-4e16-88d4-1398fb112fd9 POST /api/v1/auth/login status=200 cost=296.5ms
+2026-10-10 17:16:11,607 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:11,624 | INFO     | app.middleware.request_id | request_id=7dd1af99-d4f4-44d3-b842-db78042030a3 POST /api/v1/knowledge status=200 cost=16.1ms
+2026-10-10 17:16:11,625 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:11,659 | INFO     | app.middleware.request_id | request_id=f0b046fa-472f-4acd-8b76-8c16ce35c6ec POST /api/v1/questions status=200 cost=32.9ms
+2026-10-10 17:16:11,660 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:11,675 | INFO     | app.middleware.request_id | request_id=c26a92b4-f769-479e-b021-8d61b5ed7c72 POST /api/v1/questions status=200 cost=13.4ms
+2026-10-10 17:16:11,675 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:11,683 | INFO     | app.middleware.request_id | request_id=e074d3d7-e094-4a94-ab90-a4e6491c88af GET /api/v1/dashboard/overview status=200 cost=6.4ms
+2026-10-10 17:16:11,684 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/dashboard/overview "HTTP/1.1 200 OK"
+.2026-10-10 17:16:11,708 | INFO     | app.middleware.request_id | request_id=1a458332-d49d-49bc-9a4b-fc81a195ea7a GET /api/v1/dashboard/overview status=401 cost=2.3ms
+2026-10-10 17:16:11,709 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/dashboard/overview "HTTP/1.1 401 Unauthorized"
+.2026-10-10 17:16:12,307 | INFO     | app.middleware.request_id | request_id=37236348-b677-4ae7-b680-de2822975991 POST /api/v1/auth/login status=200 cost=295.4ms
+2026-10-10 17:16:12,307 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:12,327 | INFO     | app.api.v1.import_task | �������񴴽�: id=1, file=test.txt
+2026-10-10 17:16:12,327 | INFO     | app.middleware.request_id | request_id=62af12cf-da36-4e48-b9e4-58d16c7c35a2 POST /api/v1/import-tasks status=200 cost=18.2ms
+2026-10-10 17:16:12,328 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
+.2026-10-10 17:16:12,946 | INFO     | app.middleware.request_id | request_id=6bfe151c-da30-4ce7-9507-3dff91538465 POST /api/v1/auth/login status=200 cost=305.2ms
+2026-10-10 17:16:12,946 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:12,961 | INFO     | app.api.v1.import_task | �������񴴽�: id=2, file=test.md
+2026-10-10 17:16:12,961 | INFO     | app.middleware.request_id | request_id=5ac1051e-be16-417d-9f46-dbc83615417d POST /api/v1/import-tasks status=200 cost=13.4ms
+2026-10-10 17:16:12,962 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
+.2026-10-10 17:16:13,590 | INFO     | app.middleware.request_id | request_id=f23d1345-6c92-487f-bf67-00e1fd9ef4e2 POST /api/v1/auth/login status=200 cost=304.9ms
+2026-10-10 17:16:13,591 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:13,600 | INFO     | app.middleware.request_id | request_id=a3555a1d-2fcf-4640-8b3a-a58b40a24763 POST /api/v1/import-tasks status=400 cost=6.0ms
+2026-10-10 17:16:13,600 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:14,279 | INFO     | app.middleware.request_id | request_id=41b59b59-fe12-42d1-b9a2-95583e622e05 POST /api/v1/auth/login status=200 cost=301.3ms
+2026-10-10 17:16:14,280 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:14,294 | INFO     | app.api.v1.import_task | �������񴴽�: id=3, file=test.txt
+2026-10-10 17:16:14,295 | INFO     | app.middleware.request_id | request_id=91b7455b-236c-4cd9-987b-6071d8243c9c POST /api/v1/import-tasks status=200 cost=13.4ms
+2026-10-10 17:16:14,296 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
+2026-10-10 17:16:14,304 | INFO     | app.middleware.request_id | request_id=6647025d-31e1-4771-9046-08a7775baa96 GET /api/v1/import-tasks/3 status=200 cost=7.4ms
+2026-10-10 17:16:14,305 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/import-tasks/3 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:14,905 | INFO     | app.middleware.request_id | request_id=e5e2ed59-db83-42c8-8581-66063fdef173 POST /api/v1/auth/login status=200 cost=300.1ms
+2026-10-10 17:16:14,906 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:14,912 | INFO     | app.middleware.request_id | request_id=33151c4a-a5b7-4098-8e75-b53a3e52e9df GET /api/v1/import-tasks/99999 status=400 cost=4.7ms
+2026-10-10 17:16:14,912 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/import-tasks/99999 "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:15,528 | INFO     | app.middleware.request_id | request_id=14a448d5-f3cd-4616-b36e-8a285e7af272 POST /api/v1/auth/login status=200 cost=296.7ms
+2026-10-10 17:16:15,529 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:15,542 | INFO     | app.api.v1.import_task | �������񴴽�: id=4, file=test0.txt
+2026-10-10 17:16:15,543 | INFO     | app.middleware.request_id | request_id=f30aa4ee-bba3-44ef-8d61-78fa93ec6350 POST /api/v1/import-tasks status=200 cost=12.5ms
+2026-10-10 17:16:15,543 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
+2026-10-10 17:16:15,557 | INFO     | app.api.v1.import_task | �������񴴽�: id=5, file=test1.txt
+2026-10-10 17:16:15,557 | INFO     | app.middleware.request_id | request_id=ac07d721-2d69-4237-b2d4-9dadb7a5aacd POST /api/v1/import-tasks status=200 cost=12.7ms
+2026-10-10 17:16:15,558 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
+2026-10-10 17:16:15,572 | INFO     | app.api.v1.import_task | �������񴴽�: id=6, file=test2.txt
+2026-10-10 17:16:15,572 | INFO     | app.middleware.request_id | request_id=f2201098-3ea0-4f0c-a817-92883b6a757c POST /api/v1/import-tasks status=200 cost=13.1ms
+2026-10-10 17:16:15,573 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
+2026-10-10 17:16:15,590 | INFO     | app.middleware.request_id | request_id=1fb181d9-3b33-44c9-9a17-8fee33f030e9 GET /api/v1/import-tasks status=200 cost=15.6ms
+2026-10-10 17:16:15,591 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
+.2026-10-10 17:16:16,204 | INFO     | app.middleware.request_id | request_id=40d50b28-f215-4a2d-9853-b1ce710a92ec POST /api/v1/auth/login status=200 cost=296.1ms
+2026-10-10 17:16:16,205 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:16,219 | INFO     | app.api.v1.import_task | �������񴴽�: id=7, file=test.txt
+2026-10-10 17:16:16,220 | INFO     | app.middleware.request_id | request_id=2e975fda-b331-481f-8149-cd49b1ce2f22 POST /api/v1/import-tasks status=200 cost=12.5ms
+2026-10-10 17:16:16,221 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 200 OK"
+2026-10-10 17:16:16,233 | INFO     | app.middleware.request_id | request_id=be558e2a-2313-4575-b32c-f248cbbfe0c0 POST /api/v1/import-tasks/7/simulate status=200 cost=11.1ms
+2026-10-10 17:16:16,234 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks/7/simulate "HTTP/1.1 200 OK"
+.2026-10-10 17:16:16,258 | INFO     | app.middleware.request_id | request_id=54c824b4-06f3-4ab3-91e2-58431a2da091 POST /api/v1/import-tasks status=401 cost=2.9ms
+2026-10-10 17:16:16,258 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/import-tasks "HTTP/1.1 401 Unauthorized"
+.2026-10-10 17:16:16,868 | INFO     | app.middleware.request_id | request_id=62843a35-be33-455c-9cac-342808aec7b5 POST /api/v1/auth/login status=200 cost=295.4ms
+2026-10-10 17:16:16,868 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:16,882 | INFO     | app.middleware.request_id | request_id=422f50de-856b-4735-bf2d-a31361905f48 POST /api/v1/knowledge status=200 cost=11.6ms
+2026-10-10 17:16:16,883 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+.2026-10-10 17:16:17,480 | INFO     | app.middleware.request_id | request_id=0a19fa97-3bbc-403a-a794-38eb8fb968a7 POST /api/v1/auth/login status=200 cost=293.5ms
+2026-10-10 17:16:17,481 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:17,495 | INFO     | app.middleware.request_id | request_id=effc9f00-e655-49b8-830c-12d86b0f0157 POST /api/v1/knowledge status=200 cost=11.7ms
+2026-10-10 17:16:17,495 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+.2026-10-10 17:16:18,110 | INFO     | app.middleware.request_id | request_id=5c5bbcf7-daae-49e8-8a7d-24a1c7b77ede POST /api/v1/auth/login status=200 cost=300.4ms
+2026-10-10 17:16:18,111 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:18,123 | INFO     | app.middleware.request_id | request_id=ebf76359-d97f-44ee-a362-c0b5d07f86bc POST /api/v1/knowledge status=200 cost=11.0ms
+2026-10-10 17:16:18,124 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:18,134 | INFO     | app.middleware.request_id | request_id=813eb4ec-655c-45b6-bffd-724f5f8e4868 GET /api/v1/knowledge/4 status=200 cost=7.9ms
+2026-10-10 17:16:18,134 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge/4 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:18,744 | INFO     | app.middleware.request_id | request_id=acd654e9-e586-4106-90d3-3700aad02a38 POST /api/v1/auth/login status=200 cost=295.2ms
+2026-10-10 17:16:18,744 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:18,750 | INFO     | app.middleware.request_id | request_id=6684fc0a-2fea-480d-9cc0-4aabf4ed0326 GET /api/v1/knowledge/99999 status=400 cost=4.3ms
+2026-10-10 17:16:18,750 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge/99999 "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:19,577 | INFO     | app.middleware.request_id | request_id=8e8bf197-0e3a-4b69-855f-68f619d7593c POST /api/v1/auth/login status=200 cost=282.8ms
+2026-10-10 17:16:19,577 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:19,590 | INFO     | app.middleware.request_id | request_id=e3920c2b-480f-41d5-b329-577333c0f481 POST /api/v1/knowledge status=200 cost=11.1ms
+2026-10-10 17:16:19,590 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:19,603 | INFO     | app.middleware.request_id | request_id=6fc86f1b-2e01-4207-85b0-564505116172 PUT /api/v1/knowledge/5 status=200 cost=11.5ms
+2026-10-10 17:16:19,605 | INFO     | httpx2 | HTTP Request: PUT http://testserver/api/v1/knowledge/5 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:20,209 | INFO     | app.middleware.request_id | request_id=2fcb2a16-538f-483c-a6cd-11e32da9cce7 POST /api/v1/auth/login status=200 cost=293.1ms
+2026-10-10 17:16:20,210 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:20,222 | INFO     | app.middleware.request_id | request_id=7b599084-41b7-4dbe-9f4c-e55af7f4f45d POST /api/v1/knowledge status=200 cost=10.7ms
+2026-10-10 17:16:20,223 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:20,234 | INFO     | app.middleware.request_id | request_id=8b3b5851-0b51-4f81-8e07-e76002f29916 DELETE /api/v1/knowledge/6 status=200 cost=9.4ms
+2026-10-10 17:16:20,235 | INFO     | httpx2 | HTTP Request: DELETE http://testserver/api/v1/knowledge/6 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:20,841 | INFO     | app.middleware.request_id | request_id=3736ad02-b6eb-48fa-8790-8a2eec18df25 POST /api/v1/auth/login status=200 cost=291.5ms
+2026-10-10 17:16:20,842 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:20,857 | INFO     | app.middleware.request_id | request_id=7c1c5ac7-3016-4e72-b76d-5f8e2f79843d POST /api/v1/knowledge status=200 cost=13.9ms
+2026-10-10 17:16:20,858 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:20,872 | INFO     | app.middleware.request_id | request_id=1ba3a12b-5178-4095-8a01-67e59f05eefe POST /api/v1/knowledge status=200 cost=12.0ms
+2026-10-10 17:16:20,872 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:20,886 | INFO     | app.middleware.request_id | request_id=81c61a90-3dba-4ca0-aeab-d7295a2e0353 GET /api/v1/knowledge status=200 cost=11.7ms
+2026-10-10 17:16:20,888 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+.2026-10-10 17:16:21,521 | INFO     | app.middleware.request_id | request_id=3256b0ca-fbc1-4f92-b101-84ba71246aae POST /api/v1/auth/login status=200 cost=304.6ms
+2026-10-10 17:16:21,522 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:21,533 | INFO     | app.middleware.request_id | request_id=292454e1-6f56-4c1e-a8f1-2165bb23a71b POST /api/v1/knowledge status=200 cost=10.1ms
+2026-10-10 17:16:21,534 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:21,546 | INFO     | app.middleware.request_id | request_id=57a6a48c-0d5f-4b2a-be7f-8856ec13a055 POST /api/v1/knowledge status=200 cost=10.7ms
+2026-10-10 17:16:21,547 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:21,559 | INFO     | app.middleware.request_id | request_id=7c0d11b8-446b-44ab-b218-ae8dafbbec27 GET /api/v1/knowledge status=200 cost=10.3ms
+2026-10-10 17:16:21,560 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge?keyword=%E8%A3%85%E9%A5%B0%E5%99%A8 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:22,178 | INFO     | app.middleware.request_id | request_id=1b99e3dc-42b2-4787-8921-a6a390d21e8c POST /api/v1/auth/login status=200 cost=295.1ms
+2026-10-10 17:16:22,178 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:22,189 | INFO     | app.middleware.request_id | request_id=1ac2dbb0-2073-4232-a933-beed9205fb26 POST /api/v1/knowledge status=200 cost=9.8ms
+2026-10-10 17:16:22,190 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:22,200 | INFO     | app.middleware.request_id | request_id=8391ee18-52f0-49ec-88a4-94e05da52830 POST /api/v1/knowledge status=200 cost=9.3ms
+2026-10-10 17:16:22,201 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:22,213 | INFO     | app.middleware.request_id | request_id=864827e3-901b-4160-8ef2-579138f5b754 GET /api/v1/knowledge status=200 cost=9.2ms
+2026-10-10 17:16:22,213 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge?difficulty=2 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:22,816 | INFO     | app.middleware.request_id | request_id=758eb438-1cd5-44e7-981a-eeb0e9a08078 POST /api/v1/auth/login status=200 cost=298.2ms
+2026-10-10 17:16:22,816 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:22,830 | INFO     | app.middleware.request_id | request_id=55a31690-598c-4a85-b614-2ed1f3a9c50b POST /api/v1/knowledge status=200 cost=12.6ms
+2026-10-10 17:16:22,831 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:22,845 | INFO     | app.middleware.request_id | request_id=c8da3bda-54ab-44bc-9127-ac76826ad3be POST /api/v1/knowledge status=200 cost=12.9ms
+2026-10-10 17:16:22,846 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:22,858 | INFO     | app.middleware.request_id | request_id=0eaf11a1-c9a2-4e0f-9a22-d4000414e546 GET /api/v1/knowledge status=200 cost=9.5ms
+2026-10-10 17:16:22,858 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge?page=1&page_size=1 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:22,884 | INFO     | app.middleware.request_id | request_id=704a9824-e325-4caa-ad3b-ef2637ac873d POST /api/v1/knowledge status=401 cost=2.5ms
+2026-10-10 17:16:22,885 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 401 Unauthorized"
+.2026-10-10 17:16:24,472 | INFO     | app.middleware.request_id | request_id=d8882053-f0b0-4d96-8701-bca358ee399b POST /api/v1/auth/login status=200 cost=1205.1ms
+2026-10-10 17:16:24,473 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:24,491 | INFO     | app.middleware.request_id | request_id=002cb5af-d75a-47bd-8ad1-0355c7ac041b POST /api/v1/knowledge status=200 cost=15.4ms
+2026-10-10 17:16:24,492 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:24,508 | INFO     | app.middleware.request_id | request_id=4e3b9e0b-b191-4355-8a9c-be9cd492f144 POST /api/v1/knowledge status=200 cost=14.3ms
+2026-10-10 17:16:24,509 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:24,533 | INFO     | app.middleware.request_id | request_id=eb97eb11-5054-49f5-bd91-c1d9185722c6 POST /api/v1/knowledge/15/relations status=200 cost=20.2ms
+2026-10-10 17:16:24,533 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/15/relations "HTTP/1.1 200 OK"
+.2026-10-10 17:16:25,288 | INFO     | app.middleware.request_id | request_id=eca5c1b7-5c54-48c5-a76b-10cf006c363c POST /api/v1/auth/login status=200 cost=337.0ms
+2026-10-10 17:16:25,289 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:25,300 | INFO     | app.middleware.request_id | request_id=2425deb8-eb27-4d83-8c45-ebe418ebd8ec POST /api/v1/knowledge status=200 cost=9.3ms
+2026-10-10 17:16:25,300 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:25,309 | INFO     | app.middleware.request_id | request_id=7430c3fa-1e33-42e5-8b9c-801d7c3cdf32 POST /api/v1/knowledge/17/relations status=400 cost=6.5ms
+2026-10-10 17:16:25,309 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/17/relations "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:25,931 | INFO     | app.middleware.request_id | request_id=2cb4c7a7-f8f4-4e48-911c-835bca052411 POST /api/v1/auth/login status=200 cost=298.6ms
+2026-10-10 17:16:25,931 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:25,945 | INFO     | app.middleware.request_id | request_id=a9d79683-d023-49c9-bd61-8ba7c6649f50 POST /api/v1/knowledge status=200 cost=11.9ms
+2026-10-10 17:16:25,945 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:25,957 | INFO     | app.middleware.request_id | request_id=cd762686-9e10-4a3f-be33-7ec00bdc3981 POST /api/v1/knowledge status=200 cost=10.6ms
+2026-10-10 17:16:25,958 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:25,974 | INFO     | app.middleware.request_id | request_id=7b754071-9d17-4357-a5c2-abb6cf4abb17 POST /api/v1/knowledge/18/relations status=200 cost=14.1ms
+2026-10-10 17:16:25,975 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/18/relations "HTTP/1.1 200 OK"
+2026-10-10 17:16:25,983 | INFO     | app.middleware.request_id | request_id=3d474755-b906-4746-8433-3e459abe6348 POST /api/v1/knowledge/18/relations status=400 cost=7.0ms
+2026-10-10 17:16:25,983 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/18/relations "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:26,624 | INFO     | app.middleware.request_id | request_id=ab180b6c-108a-4400-8b32-99324aaabf92 POST /api/v1/auth/login status=200 cost=296.9ms
+2026-10-10 17:16:26,625 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:26,636 | INFO     | app.middleware.request_id | request_id=6644f50a-5cd1-46fe-863e-6a988ad2276f POST /api/v1/knowledge status=200 cost=9.9ms
+2026-10-10 17:16:26,637 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:26,649 | INFO     | app.middleware.request_id | request_id=8b5df506-1da3-4a15-bd3b-b7c4e3634636 POST /api/v1/knowledge status=200 cost=10.4ms
+2026-10-10 17:16:26,650 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:26,659 | INFO     | app.middleware.request_id | request_id=db5fd1b7-f0a6-4218-adde-d23effc01546 POST /api/v1/knowledge/20/relations status=400 cost=6.7ms
+2026-10-10 17:16:26,659 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/20/relations "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:27,272 | INFO     | app.middleware.request_id | request_id=a18c39ff-3ebc-4a06-a01f-b51b1c997b5a POST /api/v1/auth/login status=200 cost=298.3ms
+2026-10-10 17:16:27,272 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:27,285 | INFO     | app.middleware.request_id | request_id=59adab04-0f86-400d-b8e8-ba4c222f595b POST /api/v1/knowledge status=200 cost=11.1ms
+2026-10-10 17:16:27,286 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:27,295 | INFO     | app.middleware.request_id | request_id=8e501736-da37-40d6-8302-0e061ccddcac POST /api/v1/knowledge/22/relations status=400 cost=5.7ms
+2026-10-10 17:16:27,295 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/22/relations "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:27,890 | INFO     | app.middleware.request_id | request_id=e7485b38-a6e5-45d9-a724-892dd662ed9b POST /api/v1/auth/login status=200 cost=296.5ms
+2026-10-10 17:16:27,891 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:27,903 | INFO     | app.middleware.request_id | request_id=3cda81ef-d31f-42c8-b379-341117088a43 POST /api/v1/knowledge status=200 cost=11.0ms
+2026-10-10 17:16:27,904 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:27,916 | INFO     | app.middleware.request_id | request_id=092cf307-dfc0-42b6-96e8-2390f55a8f15 POST /api/v1/knowledge status=200 cost=10.6ms
+2026-10-10 17:16:27,917 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:27,932 | INFO     | app.middleware.request_id | request_id=3119cd23-a7a1-4ade-8689-21bcb6ba222b POST /api/v1/knowledge/23/relations status=200 cost=13.6ms
+2026-10-10 17:16:27,933 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/23/relations "HTTP/1.1 200 OK"
+2026-10-10 17:16:27,943 | INFO     | app.middleware.request_id | request_id=376aea81-6c50-404b-832d-1a65d9dfc2f3 GET /api/v1/knowledge/23/relations status=200 cost=8.9ms
+2026-10-10 17:16:27,944 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/knowledge/23/relations "HTTP/1.1 200 OK"
+.2026-10-10 17:16:28,550 | INFO     | app.middleware.request_id | request_id=0ec076ea-9c40-4f86-b86f-6c1b384f6fcb POST /api/v1/auth/login status=200 cost=294.5ms
+2026-10-10 17:16:28,551 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:28,563 | INFO     | app.middleware.request_id | request_id=6a1a722c-8052-4ccb-93e2-00025cbf887c POST /api/v1/knowledge status=200 cost=10.7ms
+2026-10-10 17:16:28,563 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:28,575 | INFO     | app.middleware.request_id | request_id=61e19b4b-7033-415d-9c27-1cd67762a762 POST /api/v1/knowledge status=200 cost=10.1ms
+2026-10-10 17:16:28,575 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:28,591 | INFO     | app.middleware.request_id | request_id=4e4549bc-7c53-4a3c-9d2b-6056bfe68737 POST /api/v1/knowledge/25/relations status=200 cost=13.3ms
+2026-10-10 17:16:28,591 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge/25/relations "HTTP/1.1 200 OK"
+2026-10-10 17:16:28,602 | INFO     | app.middleware.request_id | request_id=e20709c2-e6ad-4f05-9549-69bbcb82a305 DELETE /api/v1/knowledge/25/relations/4 status=200 cost=9.9ms
+2026-10-10 17:16:28,604 | INFO     | httpx2 | HTTP Request: DELETE http://testserver/api/v1/knowledge/25/relations/4 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:29,328 | INFO     | app.middleware.request_id | request_id=4c6867ea-732d-40eb-8e6c-32b5a92cf0fd POST /api/v1/auth/login status=200 cost=308.7ms
+2026-10-10 17:16:29,329 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:29,342 | INFO     | app.middleware.request_id | request_id=02bd9f12-2c59-4eba-9bc0-06c2f2e12e36 POST /api/v1/knowledge status=200 cost=11.6ms
+2026-10-10 17:16:29,343 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/knowledge "HTTP/1.1 200 OK"
+2026-10-10 17:16:29,368 | INFO     | app.middleware.request_id | request_id=ab36900e-9298-4d3d-952c-71f7c32dc430 POST /api/v1/questions status=200 cost=23.6ms
+2026-10-10 17:16:29,369 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+.2026-10-10 17:16:29,986 | INFO     | app.middleware.request_id | request_id=c8a9d92e-1028-4e0d-b99c-a50a28ca8d99 POST /api/v1/auth/login status=200 cost=298.0ms
+2026-10-10 17:16:29,987 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:30,005 | INFO     | app.middleware.request_id | request_id=244ba320-36fb-47c0-a2c4-e0efe06e089f POST /api/v1/questions status=200 cost=15.9ms
+2026-10-10 17:16:30,006 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+.2026-10-10 17:16:30,623 | INFO     | app.middleware.request_id | request_id=649288cf-6f04-4774-bebb-0be4cc666523 POST /api/v1/auth/login status=200 cost=313.7ms
+2026-10-10 17:16:30,624 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:30,641 | INFO     | app.middleware.request_id | request_id=5f68cbde-3c77-4c6f-a139-48f286640d31 POST /api/v1/questions status=200 cost=14.4ms
+2026-10-10 17:16:30,642 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+.2026-10-10 17:16:31,258 | INFO     | app.middleware.request_id | request_id=cd37337c-2a79-4027-bfec-ce293f81a7d5 POST /api/v1/auth/login status=200 cost=299.0ms
+2026-10-10 17:16:31,259 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:31,279 | INFO     | app.middleware.request_id | request_id=4418a70a-2949-4ec2-aef0-d35971e527a9 POST /api/v1/questions status=200 cost=18.1ms
+2026-10-10 17:16:31,280 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+.2026-10-10 17:16:31,886 | INFO     | app.middleware.request_id | request_id=9977d8ca-6417-45c8-83cd-4ad9c62e26c4 POST /api/v1/auth/login status=200 cost=293.0ms
+2026-10-10 17:16:31,887 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:31,903 | INFO     | app.middleware.request_id | request_id=3d2bcff4-7a45-4e87-96ff-1ee44e8fb9ea POST /api/v1/questions status=200 cost=13.9ms
+2026-10-10 17:16:31,905 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:31,912 | INFO     | app.middleware.request_id | request_id=8805f012-ae74-40dc-984a-0de85bd2e33f GET /api/v1/questions/7 status=200 cost=6.2ms
+2026-10-10 17:16:31,913 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/questions/7 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:32,528 | INFO     | app.middleware.request_id | request_id=ef06c060-ef37-4bd6-a957-edc8edced7c6 POST /api/v1/auth/login status=200 cost=301.3ms
+2026-10-10 17:16:32,529 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:32,535 | INFO     | app.middleware.request_id | request_id=0ecb3860-64cc-4021-b197-de2a573585fc GET /api/v1/questions/99999 status=400 cost=4.9ms
+2026-10-10 17:16:32,535 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/questions/99999 "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:33,141 | INFO     | app.middleware.request_id | request_id=2732f65f-249e-4177-96af-ed5ca97e35ab POST /api/v1/auth/login status=200 cost=307.8ms
+2026-10-10 17:16:33,142 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:33,157 | INFO     | app.middleware.request_id | request_id=eccd1a84-ddf4-4e0e-b654-1b1eeceecf30 POST /api/v1/questions status=200 cost=13.1ms
+2026-10-10 17:16:33,158 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:33,175 | INFO     | app.middleware.request_id | request_id=3bd935d7-9a67-40c2-bfae-79d3936cec05 PUT /api/v1/questions/8 status=200 cost=16.4ms
+2026-10-10 17:16:33,177 | INFO     | httpx2 | HTTP Request: PUT http://testserver/api/v1/questions/8 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:33,807 | INFO     | app.middleware.request_id | request_id=486058b5-5622-429f-950e-d99e4791f7c6 POST /api/v1/auth/login status=200 cost=302.0ms
+2026-10-10 17:16:33,808 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:33,824 | INFO     | app.middleware.request_id | request_id=b8440c06-319d-4328-8797-c1114561d093 POST /api/v1/questions status=200 cost=14.4ms
+2026-10-10 17:16:33,825 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:33,842 | INFO     | app.middleware.request_id | request_id=0056e54b-0e4b-4d0a-b8af-9a24c263c9c1 DELETE /api/v1/questions/9 status=200 cost=16.1ms
+2026-10-10 17:16:33,843 | INFO     | httpx2 | HTTP Request: DELETE http://testserver/api/v1/questions/9 "HTTP/1.1 200 OK"
+.2026-10-10 17:16:34,451 | INFO     | app.middleware.request_id | request_id=a552f225-d1c0-45e9-8965-acb374e19bab POST /api/v1/auth/login status=200 cost=295.7ms
+2026-10-10 17:16:34,452 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:34,466 | INFO     | app.middleware.request_id | request_id=2dc142de-07cd-42a6-bc75-a729c229f3c7 POST /api/v1/questions status=200 cost=12.3ms
+2026-10-10 17:16:34,467 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:34,481 | INFO     | app.middleware.request_id | request_id=4bac5768-3d6b-4216-9095-d5e3f7b93efc POST /api/v1/questions status=200 cost=12.5ms
+2026-10-10 17:16:34,481 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:34,495 | INFO     | app.middleware.request_id | request_id=5c92f1b9-f55f-4bc9-a0b8-36a5fbf39168 POST /api/v1/questions status=200 cost=13.0ms
+2026-10-10 17:16:34,496 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:34,516 | INFO     | app.middleware.request_id | request_id=376a42c8-332a-489b-a56c-6000f5e38fa2 GET /api/v1/questions status=200 cost=18.9ms
+2026-10-10 17:16:34,517 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+.2026-10-10 17:16:35,132 | INFO     | app.middleware.request_id | request_id=03376943-51c8-45ae-b447-65f143a9eeae POST /api/v1/auth/login status=200 cost=306.4ms
+2026-10-10 17:16:35,133 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:35,148 | INFO     | app.middleware.request_id | request_id=214dee98-cb2a-41bc-8850-b71664bcd076 POST /api/v1/questions status=200 cost=13.4ms
+2026-10-10 17:16:35,149 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:35,164 | INFO     | app.middleware.request_id | request_id=a4fad442-375e-425c-9cd2-f5701eace204 POST /api/v1/questions status=200 cost=14.1ms
+2026-10-10 17:16:35,165 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 200 OK"
+2026-10-10 17:16:35,177 | INFO     | app.middleware.request_id | request_id=f3dd1864-0af0-4650-b139-621281dd80a1 GET /api/v1/questions status=200 cost=11.5ms
+2026-10-10 17:16:35,178 | INFO     | httpx2 | HTTP Request: GET http://testserver/api/v1/questions?question_type=TRUE_FALSE "HTTP/1.1 200 OK"
+.2026-10-10 17:16:35,781 | INFO     | app.middleware.request_id | request_id=fddbf3c9-cb55-42e4-bc9f-c76d0658a5a2 POST /api/v1/auth/login status=200 cost=295.0ms
+2026-10-10 17:16:35,781 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:35,787 | INFO     | app.middleware.request_id | request_id=ede52c8e-5012-4ca8-9089-ce372f8ba7f0 POST /api/v1/questions status=422 cost=3.9ms
+2026-10-10 17:16:35,788 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
+.2026-10-10 17:16:36,403 | INFO     | app.middleware.request_id | request_id=230c31db-087f-410e-abba-f529be3de761 POST /api/v1/auth/login status=200 cost=293.8ms
+2026-10-10 17:16:36,404 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:36,410 | INFO     | app.middleware.request_id | request_id=0b1e6674-c464-48d4-885c-81478f3c9877 POST /api/v1/questions status=422 cost=3.8ms
+2026-10-10 17:16:36,411 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
+.2026-10-10 17:16:37,028 | INFO     | app.middleware.request_id | request_id=538160a2-eebd-46f0-ae3e-e4e9b8082642 POST /api/v1/auth/login status=200 cost=304.1ms
+2026-10-10 17:16:37,029 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:37,034 | INFO     | app.middleware.request_id | request_id=8353fe7a-dacf-4007-a03c-da1bc1180c16 POST /api/v1/questions status=422 cost=3.8ms
+2026-10-10 17:16:37,035 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
+.2026-10-10 17:16:37,649 | INFO     | app.middleware.request_id | request_id=a3c93df7-a9a2-4f0f-b210-0d4362a5caae POST /api/v1/auth/login status=200 cost=297.5ms
+2026-10-10 17:16:37,649 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:37,657 | INFO     | app.middleware.request_id | request_id=66e5d8d2-b795-430b-8852-c465955bc2ec POST /api/v1/questions status=422 cost=5.7ms
+2026-10-10 17:16:37,657 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
+.2026-10-10 17:16:38,251 | INFO     | app.middleware.request_id | request_id=c391f2a7-1870-426c-bcce-c3628a9ef38a POST /api/v1/auth/login status=200 cost=294.4ms
+2026-10-10 17:16:38,252 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:38,258 | INFO     | app.middleware.request_id | request_id=4f7e195d-6306-4c0b-be74-69bb6710aa3f POST /api/v1/questions status=422 cost=3.7ms
+2026-10-10 17:16:38,258 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
+.2026-10-10 17:16:38,963 | INFO     | app.middleware.request_id | request_id=f21af1fb-d97d-4b33-82da-21e170ecd806 POST /api/v1/auth/login status=200 cost=381.5ms
+2026-10-10 17:16:38,963 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:38,969 | INFO     | app.middleware.request_id | request_id=bacb67b0-d36a-43d5-bd18-a38bcbbe3af2 POST /api/v1/questions status=422 cost=3.7ms
+2026-10-10 17:16:38,970 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 422 Unprocessable Content"
+.2026-10-10 17:16:39,712 | INFO     | app.middleware.request_id | request_id=6fe671b7-f574-4cbb-8970-c7bb6add0831 POST /api/v1/auth/login status=200 cost=364.0ms
+2026-10-10 17:16:39,713 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:39,721 | INFO     | app.middleware.request_id | request_id=45687157-36df-45dd-875f-96757837ad7e POST /api/v1/questions status=400 cost=6.8ms
+2026-10-10 17:16:39,722 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:40,378 | INFO     | app.middleware.request_id | request_id=bd400c23-3b6f-46a5-9678-f738f8d4daf8 POST /api/v1/auth/login status=200 cost=332.4ms
+2026-10-10 17:16:40,379 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:40,386 | INFO     | app.middleware.request_id | request_id=923155a1-91b7-4e4e-97e0-7acb5322aaa6 POST /api/v1/questions status=400 cost=5.6ms
+2026-10-10 17:16:40,387 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/questions "HTTP/1.1 400 Bad Request"
+.2026-10-10 17:16:40,421 | INFO     | agent.knowledge_extract.chunker | ʶ�� 1 ���ĵ���Ԫ
+2026-10-10 17:16:40,421 | INFO     | agent.knowledge_extract.chunker | ����������: 1 ����Ԫ
+2026-10-10 17:16:40,421 | INFO     | agent.knowledge_extract.chunker | �ۺ�Ϊ 1 �� Chunk
+2026-10-10 17:16:40,421 | INFO     | agent.knowledge_extract.chunker | �ֿ����: 1 �� Chunk
+.2026-10-10 17:16:40,437 | INFO     | agent.knowledge_extract.chunker | ʶ�� 5 ���ĵ���Ԫ
+2026-10-10 17:16:40,438 | INFO     | agent.knowledge_extract.chunker | ����������: 5 ����Ԫ
+2026-10-10 17:16:40,438 | INFO     | agent.knowledge_extract.chunker | �ۺ�Ϊ 5 �� Chunk
+2026-10-10 17:16:40,438 | INFO     | agent.knowledge_extract.chunker | �ֿ����: 5 �� Chunk
+.2026-10-10 17:16:40,453 | INFO     | agent.knowledge_extract.chunker | ʶ�� 0 ���ĵ���Ԫ
+2026-10-10 17:16:40,453 | INFO     | agent.knowledge_extract.chunker | ����������: 0 ����Ԫ
+2026-10-10 17:16:40,454 | INFO     | agent.knowledge_extract.chunker | �ۺ�Ϊ 0 �� Chunk
+2026-10-10 17:16:40,454 | INFO     | agent.knowledge_extract.chunker | �ֿ����: 0 �� Chunk
+.2026-10-10 17:16:40,494 | INFO     | agent.knowledge_extract.chunker | ʶ�� 5 ���ĵ���Ԫ
+2026-10-10 17:16:40,494 | INFO     | agent.knowledge_extract.chunker | ����������: 5 ����Ԫ
+2026-10-10 17:16:40,495 | INFO     | agent.knowledge_extract.chunker | �ۺ�Ϊ 5 �� Chunk
+2026-10-10 17:16:40,495 | INFO     | agent.knowledge_extract.chunker | �ֿ����: 5 �� Chunk
+.2026-10-10 17:16:40,508 | INFO     | agent.knowledge_extract.chunker | ʶ�� 5 ���ĵ���Ԫ
+2026-10-10 17:16:40,508 | INFO     | agent.knowledge_extract.chunker | ����������: 5 ����Ԫ
+2026-10-10 17:16:40,508 | INFO     | agent.knowledge_extract.chunker | �ۺ�Ϊ 5 �� Chunk
+2026-10-10 17:16:40,509 | INFO     | agent.knowledge_extract.chunker | �ֿ����: 5 �� Chunk
+.2026-10-10 17:16:40,522 | INFO     | agent.knowledge_extract.chunker | ʶ�� 10 ���ĵ���Ԫ
+2026-10-10 17:16:40,522 | INFO     | agent.knowledge_extract.chunker | ����������: 10 ����Ԫ
+2026-10-10 17:16:40,522 | INFO     | agent.knowledge_extract.chunker | �ۺ�Ϊ 10 �� Chunk
+2026-10-10 17:16:40,522 | INFO     | agent.knowledge_extract.chunker | �ֿ����: 10 �� Chunk
+.............2026-10-10 17:16:40,725 | INFO     | app.middleware.request_id | request_id=1b9b70fc-7c52-431c-bfd8-bb6d7578f7cb POST /api/v1/agent/knowledge-relation/test status=401 cost=11.5ms
+2026-10-10 17:16:40,725 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 401 Unauthorized"
+.2026-10-10 17:16:41,476 | INFO     | app.middleware.request_id | request_id=24ae7f88-52b5-450a-b178-d3220ac7df58 POST /api/v1/auth/login status=200 cost=390.8ms
+2026-10-10 17:16:41,477 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:41,535 | INFO     | agent.knowledge_relation.nodes | ʹ���˹���ѡ: 0 ��
+2026-10-10 17:16:46,298 | INFO     | agent.knowledge_relation.nodes | �޺�ѡ������ LLM �ж�
+2026-10-10 17:16:46,299 | INFO     | agent.knowledge_relation.nodes | У�����: ��Ч 0, ���� 0
+2026-10-10 17:16:46,300 | INFO     | app.middleware.request_id | request_id=2eeb5288-a927-418d-83af-203cd10682cd POST /api/v1/agent/knowledge-relation/test status=200 cost=4820.2ms
+2026-10-10 17:16:46,301 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 200 OK"
+.2026-10-10 17:16:46,912 | INFO     | app.middleware.request_id | request_id=26ee370c-ec32-487a-90f6-b6aae0163208 POST /api/v1/auth/login status=200 cost=296.2ms
+2026-10-10 17:16:46,913 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:46,923 | INFO     | agent.knowledge_relation.nodes | ʹ���˹���ѡ: 1 ��
+2026-10-10 17:16:46,924 | INFO     | langchain_openai.chat_models._client_utils | langchain-openai detected system proxy configuration and no explicit `http_socket_options` / `http_client` / `http_async_client` / `openai_proxy`; skipping the custom `httpx` transport so httpx's env-proxy auto-detection applies. Pass `http_socket_options=[...]` to opt back into kernel-level TCP keepalive tuning on top of the env proxy.
+2026-10-10 17:16:48,751 | INFO     | agent.common.llm | LLM ʵ������: thinking=disabled, model=mimo-v2.6-pro
+2026-10-10 17:16:52,277 | INFO     | httpx2 | HTTP Request: POST https://api.xiaomimimo.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-10-10 17:16:52,293 | INFO     | agent.knowledge_relation.nodes | LLM �ж����: 1 �����, ��ʱ 3.54s
+2026-10-10 17:16:52,294 | INFO     | agent.knowledge_relation.nodes | У�����: ��Ч 1, ���� 0
+2026-10-10 17:16:52,295 | INFO     | app.middleware.request_id | request_id=7a371182-0a6b-49a0-982f-d2d7cdbc2af2 POST /api/v1/agent/knowledge-relation/test status=200 cost=5377.7ms
+2026-10-10 17:16:52,295 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 200 OK"
+.2026-10-10 17:16:52,901 | INFO     | app.middleware.request_id | request_id=79ba5adb-1970-4a91-bb22-d797d82c6aa9 POST /api/v1/auth/login status=200 cost=308.9ms
+2026-10-10 17:16:52,902 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:52,909 | INFO     | app.middleware.request_id | request_id=bf04bdb3-0ea7-4516-a731-84a6662f2df3 POST /api/v1/agent/knowledge-relation/test status=200 cost=4.7ms
+2026-10-10 17:16:52,910 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 200 OK"
+.2026-10-10 17:16:53,530 | INFO     | app.middleware.request_id | request_id=138ff4e8-69a8-4868-a828-d28589f93bcd POST /api/v1/auth/login status=200 cost=291.6ms
+2026-10-10 17:16:53,530 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2026-10-10 17:16:53,537 | INFO     | app.middleware.request_id | request_id=e32bc28c-c95e-409e-842d-b176797744ba POST /api/v1/agent/knowledge-relation/test status=200 cost=4.6ms
+2026-10-10 17:16:53,539 | INFO     | httpx2 | HTTP Request: POST http://testserver/api/v1/agent/knowledge-relation/test "HTTP/1.1 200 OK"
+..2026-10-10 17:16:53,571 | INFO     | agent.common.llm | LLM ʵ������������
+2026-10-10 17:16:53,572 | INFO     | agent.common.llm | LLM ʵ������: thinking=disabled, model=mimo-v2.6-pro
+.2026-10-10 17:16:53,586 | INFO     | agent.common.llm | LLM ʵ������������
+2026-10-10 17:16:53,588 | INFO     | agent.common.llm | LLM ʵ������: thinking=disabled, model=mimo-v2.6-pro
+2026-10-10 17:16:53,589 | INFO     | agent.common.llm | LLM ʵ������: thinking=enabled, model=mimo-v2.6-pro
+.2026-10-10 17:16:53,603 | INFO     | agent.common.llm | LLM ʵ������������
+.2026-10-10 17:16:53,619 | INFO     | agent.common.llm | LLM ʵ������������
+2026-10-10 17:16:53,624 | INFO     | agent.common.llm | LLM ʵ������: thinking=disabled, model=mimo-v2.6-pro
+.2026-10-10 17:16:53,640 | INFO     | agent.common.llm | LLM ʵ������������
+2026-10-10 17:16:53,643 | INFO     | agent.common.llm | LLM ʵ������: thinking=enabled, model=mimo-v2.6-pro
+2026-10-10 17:16:53,644 | INFO     | agent.common.llm | LLM ʵ������: thinking=disabled, model=mimo-v2.6-pro
+.2026-10-10 17:16:53,658 | INFO     | agent.common.llm | LLM ʵ������������
+2026-10-10 17:16:53,660 | INFO     | agent.common.llm | LLM ʵ������: thinking=disabled, model=mimo-v2.6-pro
+2026-10-10 17:16:53,660 | INFO     | agent.common.llm | LLM ʵ������: thinking=enabled, model=mimo-v2.6-pro
+.2026-10-10 17:16:53,675 | INFO     | agent.common.llm | LLM ʵ������������
+2026-10-10 17:16:53,676 | INFO     | agent.common.llm | LLM ʵ������: thinking=enabled, model=mimo-v2.6-pro
+.2026-10-10 17:16:53,691 | INFO     | agent.common.llm | LLM ʵ������������
+2026-10-10 17:16:53,692 | INFO     | agent.common.llm | LLM ʵ������: thinking=disabled, model=mimo-v2.6-pro
+................
 ============================== warnings summary ===============================
 ..\.venv\Lib\site-packages\starlette\testclient.py:53
   D:\pythonproject\knowledgeforge\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
@@ -385,13 +421,17 @@ app\schemas\question.py:51
   D:\pythonproject\knowledgeforge\backend\app\schemas\question.py:51: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
     class OptionResponse(BaseModel):
 
-app\schemas\question.py:152
-  D:\pythonproject\knowledgeforge\backend\app\schemas\question.py:152: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+app\schemas\question.py:159
+  D:\pythonproject\knowledgeforge\backend\app\schemas\question.py:159: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
     class QuestionResponse(BaseModel):
+
+app\schemas\question_bank.py:39
+  D:\pythonproject\knowledgeforge\backend\app\schemas\question_bank.py:39: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class QuestionBankResponse(BaseModel):
 
 ..\.venv\Lib\site-packages\_pytest\cacheprovider.py:469
   D:\pythonproject\knowledgeforge\.venv\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: could not create cache path D:\pythonproject\knowledgeforge\.pytest_cache\v\cache\nodeids: [WinError 183] ���ļ��Ѵ���ʱ���޷��������ļ���: 'D:\\pythonproject\\knowledgeforge\\.pytest_cache\\v\\cache'
     config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-95 passed, 9 warnings in 70.82s (0:01:10)
+103 passed, 10 warnings in 75.80s (0:01:15)

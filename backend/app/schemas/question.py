@@ -66,6 +66,10 @@ class OptionResponse(BaseModel):
 class QuestionCreate(BaseModel):
     """Schema for creating a question."""
 
+    question_bank_id: Optional[int] = Field(
+        default=None,
+        description="所属题库 ID。不传时默认使用未分类题库",
+    )
     question_type: str = Field(
         ..., description="题型: SINGLE_CHOICE/MULTIPLE_CHOICE/TRUE_FALSE/SHORT_ANSWER"
     )
@@ -127,6 +131,9 @@ class QuestionCreate(BaseModel):
 class QuestionUpdate(BaseModel):
     """Schema for updating a question."""
 
+    question_bank_id: Optional[int] = Field(
+        default=None, description="所属题库 ID"
+    )
     question_type: Optional[str] = Field(default=None, description="题型")
     content: Optional[str] = Field(
         default=None, min_length=1, description="题目内容"
@@ -153,6 +160,7 @@ class QuestionResponse(BaseModel):
     """Question response schema."""
 
     id: int = Field(description="题目ID")
+    question_bank_id: int = Field(description="所属题库 ID")
     question_type: str = Field(description="题型")
     content: str = Field(description="题目内容")
     answer: str = Field(description="标准答案")

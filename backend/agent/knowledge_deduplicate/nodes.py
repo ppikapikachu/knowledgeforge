@@ -348,8 +348,8 @@ def llm_decision_node(state: Dict[str, Any]) -> Dict[str, Any]:
         existing_knowledge_text=existing_text,
     )
 
-    # 调用 LLM
-    llm = get_llm()
+    # 调用 LLM（语义去重/冲突判断：开启思考模式）
+    llm = get_llm(thinking="enabled")
     structured_llm = llm.with_structured_output(DeduplicateDecision)
 
     start_time = time.time()

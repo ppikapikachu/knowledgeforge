@@ -60,7 +60,7 @@ class AgentSettings(BaseSettings):
     # 1.0 = 高随机性，适合创意生成
     # 知识点提取建议 0.0~0.2
 
-    LLM_MAX_TOKENS: int = 4096
+    LLM_MAX_TOKENS: int = 16384
     # 单次 LLM 调用的最大输出 Token 数
     # 设置过大会增加成本，设置过小可能截断输出
 

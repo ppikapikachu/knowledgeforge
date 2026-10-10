@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getImportTaskList, createImportTask } from '@/api/importTask'
+import { getImportTaskList, createImportTask, runImportTask } from '@/api/importTask'
+import { getKnowledgeBaseList } from '@/api/knowledgeBase'
 import type { ImportTask, ImportTaskQueryParams } from '@/types/importTask'
+import type { KnowledgeBase } from '@/types/knowledgeBase'
+import { getStatusLabel, getStatusClass } from '@/constants/importTask'
 import { ElMessage, ElUpload } from 'element-plus'
 import {
   Search,
@@ -19,6 +22,9 @@ const tableData = ref<ImportTask[]>([])
 const total = ref(0)
 const uploading = ref(false)
 
+const kbOptions = ref<KnowledgeBase[]>([])
+const selectedKbId = ref<number | undefined>(undefined)
+
 const queryParams = ref<ImportTaskQueryParams>({
   page: 1,
   page_size: 20,
@@ -33,6 +39,15 @@ const statusOptions = [
   { label: '失败', value: 'FAILED' },
   { label: '已取消', value: 'CANCELLED' },
 ]
+
+async function fetchKbOptions() {
+  try {
+    const res = await getKnowledgeBaseList({ page: 1, page_size: 100, status: 1 })
+    kbOptions.value = res.data.items
+  } catch {
+    // Silent
+  }
+}
 
 async function fetchData() {
   loading.value = true
@@ -76,6 +91,12 @@ async function handleUpload(options: UploadRequestOptions) {
   const file = options.file
   if (!file) return
 
+  // Validate knowledge base
+  if (!selectedKbId.value) {
+    ElMessage.warning('请先选择目标知识库')
+    return
+  }
+
   // Validate file type
   const allowedTypes = ['.pdf', '.docx', '.txt', '.md']
   const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'))
@@ -92,39 +113,35 @@ async function handleUpload(options: UploadRequestOptions) {
 
   uploading.value = true
   try {
-    await createImportTask(file)
-    ElMessage.success('上传成功，任务已创建')
-    // 上传成功后刷新列表，因为后端可能不返回任务对象
+    const createRes = await createImportTask(file, selectedKbId.value)
+    const taskId = createRes.data?.task_id
+
+    if (!taskId || typeof taskId !== 'number') {
+      ElMessage.error('创建任务失败：未返回有效任务 ID')
+      return
+    }
+
+    // 调用正式执行接口
+    try {
+      await runImportTask(taskId)
+      ElMessage.success('任务已提交，正在后台处理中...')
+    } catch {
+      ElMessage.error(`任务创建成功（ID: ${taskId}）但启动执行失败，请在任务详情中重试`)
+    }
+
     await fetchData()
+    // 跳转到任务详情查看进度；携带 started 标记避免重复显示执行按钮
+    router.push({ path: `/import-tasks/${taskId}`, query: { started: '1' } })
   } catch {
-    // Error handled by interceptor
+    // createImportTask 失败，不调用 /run
   } finally {
     uploading.value = false
   }
 }
 
-function getStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    PENDING: '待处理',
-    RUNNING: '运行中',
-    SUCCESS: '成功',
-    PARTIAL_SUCCESS: '部分成功',
-    FAILED: '失败',
-    CANCELLED: '已取消',
-  }
-  return map[status] || status
-}
-
-function getStatusClass(status: string) {
-  const map: Record<string, string> = {
-    PENDING: 'muted',
-    RUNNING: 'info',
-    SUCCESS: 'success',
-    PARTIAL_SUCCESS: 'warning',
-    FAILED: 'error',
-    CANCELLED: 'muted',
-  }
-  return map[status] || 'muted'
+function getKbName(kbId: number): string {
+  const kb = kbOptions.value.find((k) => k.id === kbId)
+  return kb ? kb.name : `#${kbId}`
 }
 
 function formatFileSize(bytes: number) {
@@ -137,7 +154,10 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleString('zh-CN')
 }
 
-onMounted(fetchData)
+onMounted(async () => {
+  await fetchKbOptions()
+  fetchData()
+})
 </script>
 
 <template>
@@ -152,11 +172,30 @@ onMounted(fetchData)
     <!-- Upload area -->
     <div class="upload-area card">
       <div class="card-body">
+        <!-- 知识库选择器 -->
+        <div class="upload-kb-select">
+          <label class="upload-kb-label">目标知识库 <span class="required-star">*</span></label>
+          <el-select
+            v-model="selectedKbId"
+            placeholder="请选择目标知识库"
+            style="width: 280px;"
+          >
+            <el-option
+              v-for="kb in kbOptions"
+              :key="kb.id"
+              :label="kb.name"
+              :value="kb.id"
+              :disabled="kb.status === 0"
+            />
+          </el-select>
+          <div v-if="!selectedKbId" class="upload-kb-hint">未选择知识库将无法上传文件</div>
+        </div>
+
         <el-upload
           :http-request="handleUpload"
           :show-file-list="false"
           accept=".pdf,.docx,.txt,.md"
-          :disabled="uploading"
+          :disabled="uploading || !selectedKbId"
           drag
         >
           <div class="upload-content">
@@ -217,39 +256,42 @@ onMounted(fetchData)
     <!-- Table -->
     <div v-else class="card">
       <el-table :data="tableData" style="width: 100%;">
-        <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="file_type" label="文件类型" width="100" align="center" />
-        <el-table-column prop="file_size" label="文件大小" width="100" align="center">
+        <el-table-column prop="file_name" label="文件名" min-width="180" show-overflow-tooltip />
+        <el-table-column label="知识库" width="120" align="center">
+          <template #default="{ row }">
+            <span class="kb-tag">{{ getKbName(row.knowledge_base_id) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="file_type" label="类型" width="80" align="center" />
+        <el-table-column prop="file_size" label="大小" width="90" align="center">
           <template #default="{ row }">
             {{ formatFileSize(row.file_size) }}
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="120" align="center">
+        <el-table-column prop="status" label="状态" width="110" align="center">
           <template #default="{ row }">
             <span :class="['status-badge', `status-badge--${getStatusClass(row.status)}`]">
               {{ getStatusLabel(row.status) }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="progress" label="进度" width="120" align="center">
+        <el-table-column prop="progress" label="进度" width="110" align="center">
           <template #default="{ row }">
             <el-progress
               :percentage="row.progress"
               :stroke-width="6"
               :show-text="false"
-              style="width: 80px;"
+              style="width: 70px;"
             />
             <span style="font-size: 12px; color: var(--color-muted-foreground);">{{ row.progress }}%</span>
           </template>
         </el-table-column>
-        <el-table-column prop="current_step" label="当前步骤" width="150" show-overflow-tooltip />
-        <el-table-column prop="created_by" label="创建人ID" width="100" align="center" />
-        <el-table-column prop="created_at" label="创建时间" width="160" align="center">
+        <el-table-column prop="created_at" label="创建时间" width="150" align="center">
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right" align="center">
+        <el-table-column label="操作" width="100" fixed="right" align="center">
           <template #default="{ row }">
             <el-button text type="primary" size="small" @click="router.push(`/import-tasks/${row.id}`)">
               <Eye :size="14" style="margin-right: 4px;" />
@@ -280,6 +322,30 @@ onMounted(fetchData)
   margin-bottom: 0;
 }
 
+.upload-kb-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border, #E5E7EB);
+}
+
+.upload-kb-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-foreground);
+}
+
+.required-star {
+  color: var(--color-error, #DC2626);
+}
+
+.upload-kb-hint {
+  font-size: 12px;
+  color: var(--color-muted-foreground, #9CA3AF);
+}
+
 .upload-content {
   display: flex;
   flex-direction: column;
@@ -308,5 +374,14 @@ onMounted(fetchData)
 .upload-hint {
   font-size: 12px;
   color: var(--color-muted-foreground);
+}
+
+.kb-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--color-muted, #F3F4F6);
+  color: var(--color-foreground);
+  font-size: 12px;
 }
 </style>

@@ -37,6 +37,7 @@ class QuestionService:
         difficulty: Optional[int] = None,
         status: Optional[str] = None,
         knowledge_id: Optional[int] = None,
+        question_bank_id: Optional[int] = None,
         source_type: Optional[str] = None,
         keyword: Optional[str] = None,
     ) -> Tuple[List[Question], int]:
@@ -48,6 +49,7 @@ class QuestionService:
             difficulty=difficulty,
             status=status,
             knowledge_id=knowledge_id,
+            question_bank_id=question_bank_id,
             source_type=source_type,
             keyword=keyword,
         )
@@ -62,6 +64,7 @@ class QuestionService:
         status: str = "DRAFT",
         source_type: str = "MANUAL",
         quality_score: Optional[float] = None,
+        question_bank_id: Optional[int] = None,
         options: Optional[List[dict]] = None,
         knowledge_ids: Optional[List[int]] = None,
     ) -> Question:
@@ -100,6 +103,7 @@ class QuestionService:
             status=status,
             source_type=source_type,
             quality_score=quality_score,
+            question_bank_id=question_bank_id or 0,
         )
 
         # Create options

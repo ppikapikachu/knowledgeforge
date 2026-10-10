@@ -9,6 +9,7 @@ export interface ImportTask {
   current_step: string | null
   error_message: string | null
   created_by: number
+  knowledge_base_id: number
   started_at: string | null
   finished_at: string | null
   created_at: string

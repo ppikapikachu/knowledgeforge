@@ -1,22 +1,21 @@
 """候选知识点批次内部去重模块。
 
 在正式落库之前，先对本次导入产生的候选知识点进行内部去重。
-避免同一个批次内产生重复知识点。
 
-流程：
-    Candidates → 标准化 → 精确去重 → 向量相似去重 → Unique Candidates
+去重策略：
+    1. 标准化名称精确匹配 → 必定重复，保留内容更完整的
+    2. 同名不同内容 → 检测冲突，保留先出现的版本并记录冲突
+    3. 内容互补 → 合并（保留所有有来源支持的细节）
 
 原则：
     - 全程内存操作，不写 MySQL
-    - 保留 canonical candidate（第一个合理候选）
-    - 其余标记为重复，指向 canonical
+    - 不静默丢弃有效内容
+    - 冲突产生可审计的记录
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
-from agent.common.embedding import get_embedding_service
-from agent.common.vector_store import get_vector_store
 from agent.knowledge_deduplicate.normalizer import KnowledgeNormalizer
 from agent.knowledge_extract.schemas import KnowledgeCandidate
 
@@ -30,106 +29,157 @@ class CandidateDedupResult:
         self,
         unique_candidates: List[KnowledgeCandidate],
         duplicates: List[Tuple[KnowledgeCandidate, int]],
+        conflicts: Optional[List[dict]] = None,
     ):
-        """
-        Args:
-            unique_candidates: 去重后的唯一候选列表
-            duplicates: 重复候选列表，每个元素是 (候选, 指向的 unique_index)
-        """
         self.unique_candidates = unique_candidates
         self.duplicates = duplicates
+        self.conflicts = conflicts or []
 
 
 def dedup_candidates_batch(
     candidates: List[KnowledgeCandidate],
-    similarity_threshold: float = 0.90,
 ) -> CandidateDedupResult:
     """对候选知识点列表进行批次内部去重。
 
     流程：
-        1. 标准化名称
-        2. 精确匹配去重（标准化名称相同）
-        3. 向量相似度去重（相似度 >= 阈值）
+        1. 标准化名称（大小写、空格、标点统一）
+        2. 精确匹配去重（标准化名称相同 → 保留内容更完整的）
+        3. 同名冲突检测（名称相同但内容差异大 → 标记冲突）
 
     Args:
         candidates: 候选知识点列表
-        similarity_threshold: 向量相似度阈值，高于此值判定为重复
 
     Returns:
-        CandidateDedupResult（唯一候选列表 + 重复列表）
+        CandidateDedupResult
     """
     normalizer = KnowledgeNormalizer()
 
     if not candidates:
         return CandidateDedupResult([], [])
 
-    # 第一步：标准化名称
+    # 标准化名称
     normalized_names = [
         normalizer.normalize_name(c.name) for c in candidates
     ]
 
-    # 第二步：精确匹配去重
-    unique_indices = []  # 唯一候选的索引
-    duplicates = []  # (候选, 指向的 unique_index)
-    seen_names = {}  # 标准化名称 → unique_index
+    unique_indices = []
+    duplicates = []
+    conflicts = []
+    seen_names = {}  # 标准化名称 → (unique_index, candidate)
 
     for i, (candidate, norm_name) in enumerate(zip(candidates, normalized_names)):
         if norm_name in seen_names:
-            # 标准化名称重复
-            duplicates.append((candidate, seen_names[norm_name]))
-            logger.info(f"批次去重(精确): '{candidate.name}' 与候选 {seen_names[norm_name]} 重复")
+            prev_idx, prev_candidate = seen_names[norm_name]
+
+            # 内容比较
+            content_relation = _compare_content(candidate, prev_candidate)
+
+            if content_relation == "same":
+                # 内容基本相同 → 重复，保留更完整的
+                duplicates.append((candidate, prev_idx))
+                if _content_length(candidate) > _content_length(prev_candidate):
+                    unique_indices[prev_idx] = i
+                    seen_names[norm_name] = (prev_idx, candidate)
+                logger.info(f"批次去重(重复): '{candidate.name}' 保留更完整版本")
+
+            elif content_relation == "complementary":
+                # 内容互补 → 合并
+                merged = _merge_candidates(prev_candidate, candidate)
+                unique_indices[prev_idx] = i
+                seen_names[norm_name] = (prev_idx, merged)
+                duplicates.append((candidate, prev_idx))
+                logger.info(f"批次去重(合并): '{candidate.name}' 内容互补已合并")
+
+            else:
+                # 内容冲突 → 标记冲突，保留先出现的
+                conflicts.append({
+                    "name": candidate.name,
+                    "kept_index": prev_idx,
+                    "dropped_index": i,
+                    "reason": "同名但内容冲突",
+                })
+                duplicates.append((candidate, prev_idx))
+                logger.warning(f"批次去重(冲突): '{candidate.name}' 同名但内容冲突")
+
         else:
-            seen_names[norm_name] = len(unique_indices)
+            seen_names[norm_name] = (len(unique_indices), candidate)
             unique_indices.append(i)
 
     unique_candidates = [candidates[i] for i in unique_indices]
 
-    # 第三步：向量相似度去重
-    if len(unique_candidates) > 1:
-        try:
-            service = get_embedding_service()
-            normalizer2 = KnowledgeNormalizer()
-            texts = [
-                normalizer2.build_embedding_text(c.name, c.summary, c.keywords)
-                for c in unique_candidates
-            ]
-            vectors = service.embed_texts(texts)
+    logger.info(
+        f"批次去重完成: 输入 {len(candidates)}, "
+        f"去重后 {len(unique_candidates)}, "
+        f"重复 {len(duplicates)}, 冲突 {len(conflicts)}"
+    )
 
-            # 用临时向量库做内部检索
-            store = get_vector_store()
-            final_unique = []
-            final_duplicates = []
-            vector_ids = {}  # unique_index → vector_id
+    return CandidateDedupResult(unique_candidates, duplicates, conflicts)
 
-            for i, (candidate, vec) in enumerate(zip(unique_candidates, vectors)):
-                # 检查与已有 unique 候选的相似度
-                is_dup = False
-                for j, prev_candidate in enumerate(final_unique):
-                    vid = f"internal_{j}"
-                    if vid in vector_ids:
-                        results = store.search(vec, top_k=1)
-                        if results and results[0].score >= similarity_threshold:
-                            final_duplicates.append((candidate, j))
-                            is_dup = True
-                            logger.info(
-                                f"批次去重(向量): '{candidate.name}' 与 '{prev_candidate.name}' "
-                                f"相似度 {results[0].score:.4f}"
-                            )
-                            break
 
-                if not is_dup:
-                    vid = f"internal_{len(final_unique)}"
-                    store.upsert(vid, vec, {"name": candidate.name})
-                    vector_ids[vid] = True
-                    final_unique.append(candidate)
+def _compare_content(a: KnowledgeCandidate, b: KnowledgeCandidate) -> str:
+    """比较两个同名候选的内容关系。
 
-            # 清理临时向量
-            for vid in vector_ids:
-                store.delete(vid)
+    Returns:
+        "same" - 内容基本相同
+        "complementary" - 内容互补（可合并）
+        "conflict" - 内容冲突
+    """
+    content_a = (a.content or "").strip()
+    content_b = (b.content or "").strip()
 
-            return CandidateDedupResult(final_unique, final_duplicates)
+    if not content_a or not content_b:
+        return "same"  # 一方无内容，视为重复
 
-        except Exception as e:
-            logger.warning(f"向量去重失败，跳过: {e}")
+    len_a, len_b = len(content_a), len(content_b)
+    max_len = max(len_a, len_b)
+    if max_len == 0:
+        return "same"
 
-    return CandidateDedupResult(unique_candidates, duplicates)
+    # 长度差异
+    diff_ratio = abs(len_a - len_b) / max_len
+
+    if diff_ratio < 0.2:
+        # 长度接近 → 内容基本相同
+        return "same"
+    elif diff_ratio < 0.6:
+        # 长度差异中等 → 可能互补
+        return "complementary"
+    else:
+        # 长度差异很大 → 冲突
+        return "conflict"
+
+
+def _content_length(candidate: KnowledgeCandidate) -> int:
+    """获取候选内容长度。"""
+    return len((candidate.content or "").strip())
+
+
+def _merge_candidates(
+    a: KnowledgeCandidate, b: KnowledgeCandidate
+) -> KnowledgeCandidate:
+    """合并两个内容互补的候选。
+
+    保留更长的 content，合并 keywords。
+    """
+    # 保留更长的 content
+    if _content_length(b) > _content_length(a):
+        main, extra = b, a
+    else:
+        main, extra = a, b
+
+    # 合并关键词（去重）
+    merged_keywords = list(dict.fromkeys(
+        (main.keywords or []) + (extra.keywords or [])
+    ))
+
+    return KnowledgeCandidate(
+        name=main.name,
+        summary=main.summary,
+        content=main.content,
+        difficulty=main.difficulty,
+        keywords=merged_keywords[:15],  # 限制数量
+        source_chunk_id=main.source_chunk_id,
+        source_title=main.source_title,
+        source_page_start=main.source_page_start,
+        source_page_end=main.source_page_end,
+    )

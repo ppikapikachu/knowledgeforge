@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getImportTaskDetail, simulateImportTask } from '@/api/importTask'
+import { getImportTaskDetail, runImportTask } from '@/api/importTask'
+import { getKnowledgeBaseDetail } from '@/api/knowledgeBase'
 import type { ImportTask } from '@/types/importTask'
+import {
+  STEP_ORDER,
+  STEP_LABELS,
+  getStepLabel,
+  isTerminalStatus,
+  getStatusLabel,
+  getStatusClass,
+} from '@/constants/importTask'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   ArrowLeft,
@@ -12,37 +21,60 @@ import {
   Clock,
   Loader,
   AlertTriangle,
+  RotateCcw,
 } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
 const task = ref<ImportTask | null>(null)
-const simulating = ref(false)
+const running = ref(false)   // /run 调用中
+const kbName = ref('')
 
 const taskId = computed(() => Number(route.params.id))
-let pollTimer: ReturnType<typeof setInterval> | null = null
 
-const steps = [
-  { key: 'UPLOADING', label: '文件上传' },
-  { key: 'PARSING', label: '文件解析' },
-  { key: 'EXTRACTING_KNOWLEDGE', label: '知识点提取' },
-  { key: 'DEDUPLICATING', label: '去重处理' },
-  { key: 'MERGING_KNOWLEDGE', label: '知识点合并' },
-  { key: 'BUILDING_RELATIONS', label: '构建关系' },
-  { key: 'GENERATING_QUESTIONS', label: '生成题目' },
-  { key: 'EVALUATING_QUESTIONS', label: '评估题目' },
-  { key: 'SAVING', label: '保存数据' },
-  { key: 'FINISHED', label: '完成' },
-]
+// 上传流程跳转时携带 started=1，表示 /run 已调用，不显示执行按钮
+const autoStarted = ref(route.query.started === '1')
+
+/**
+ * 是否显示"执行/重新执行"按钮
+ * - 仅 PENDING 且从未启动过（无 started_at、非自动启动）时显示"执行导入"
+ * - FAILED / PARTIAL_SUCCESS 显示"重新执行"
+ * - RUNNING / SUCCESS / CANCELLED 不显示
+ */
+const showRunButton = computed(() => {
+  if (!task.value) return false
+  const s = task.value.status
+  if (s === 'FAILED' || s === 'PARTIAL_SUCCESS') return true
+  if (s === 'PENDING' && !autoStarted.value && !task.value.started_at) return true
+  return false
+})
+
+let pollTimer: ReturnType<typeof setInterval> | null = null
+let isPolling = false  // 防止轮询请求重叠
+
+// 处理阶段列表（顺序与后端 STAGE_* 一致）
+const steps = STEP_ORDER.map((key) => ({ key, label: STEP_LABELS[key] || key }))
 
 async function fetchData() {
+  if (isPolling) return
+  isPolling = true
   try {
     const res = await getImportTaskDetail(taskId.value)
     task.value = res.data
 
-    // Stop polling if task is completed
-    if (['SUCCESS', 'PARTIAL_SUCCESS', 'FAILED', 'CANCELLED'].includes(task.value.status)) {
+    // 加载知识库名称（仅一次）
+    if (task.value?.knowledge_base_id && !kbName.value) {
+      try {
+        const kbRes = await getKnowledgeBaseDetail(task.value.knowledge_base_id)
+        kbName.value = kbRes.data.name
+      } catch {
+        kbName.value = ''
+      }
+    }
+
+    // 终态停止轮询
+    if (isTerminalStatus(task.value.status)) {
       stopPolling()
     }
   } catch {
@@ -50,6 +82,7 @@ async function fetchData() {
     stopPolling()
   } finally {
     loading.value = false
+    isPolling = false
   }
 }
 
@@ -65,50 +98,45 @@ function stopPolling() {
   }
 }
 
-async function handleSimulate() {
+/**
+ * 调用正式执行接口 /run
+ * 同一任务不得重复触发：调用期间禁用按钮
+ */
+async function handleRun() {
+  if (running.value) return
+  if (!task.value) return
+
   try {
     await ElMessageBox.confirm(
-      '模拟执行将模拟任务的处理过程，是否继续？',
-      '模拟执行',
+      '确认执行该导入任务？任务将在后台运行，可通过刷新页面查看进度。',
+      '执行确认',
       {
-        confirmButtonText: '开始模拟',
+        confirmButtonText: '开始执行',
         cancelButtonText: '取消',
         type: 'info',
       },
     )
-    simulating.value = true
-    await simulateImportTask(taskId.value)
-    ElMessage.success('模拟已启动')
-    startPolling()
   } catch {
-    // Cancelled
+    return
+  }
+
+  running.value = true
+  try {
+    const res = await runImportTask(taskId.value)
+    // /run 返回 ACCEPTED，表示任务已提交后台
+    autoStarted.value = true  // 防止按钮再次出现
+    ElMessage.success(res.data?.message || '任务已提交，正在后台处理...')
+    // 开始轮询
+    await fetchData()
+    if (task.value && !isTerminalStatus(task.value.status)) {
+      startPolling()
+    }
+  } catch {
+    // /run 失败，不假装任务已开始
+    // 错误已由 axios 拦截器展示，此处提供重试入口（按钮仍在）
   } finally {
-    simulating.value = false
+    running.value = false
   }
-}
-
-function getStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    PENDING: '待处理',
-    RUNNING: '运行中',
-    SUCCESS: '成功',
-    PARTIAL_SUCCESS: '部分成功',
-    FAILED: '失败',
-    CANCELLED: '已取消',
-  }
-  return map[status] || status
-}
-
-function getStatusClass(status: string) {
-  const map: Record<string, string> = {
-    PENDING: 'muted',
-    RUNNING: 'info',
-    SUCCESS: 'success',
-    PARTIAL_SUCCESS: 'warning',
-    FAILED: 'error',
-    CANCELLED: 'muted',
-  }
-  return map[status] || 'muted'
 }
 
 function getStatusIcon(status: string) {
@@ -123,20 +151,33 @@ function getStatusIcon(status: string) {
   return map[status] || Clock
 }
 
-function getStepStatus(stepKey: string) {
+function getStepStatus(stepKey: string): 'completed' | 'active' | 'failed' | 'pending' {
   if (!task.value) return 'pending'
-  const currentStep = task.value.current_step || ''
-  const stepIndex = steps.findIndex((s) => s.key === stepKey)
-  const currentIndex = steps.findIndex((s) => s.key === currentStep)
+  const { status, current_step } = task.value
+  const stepIdx = STEP_ORDER.indexOf(stepKey)
+  const curIdx = current_step ? STEP_ORDER.indexOf(current_step) : -1
 
-  if (task.value.status === 'SUCCESS') return 'completed'
-  if (task.value.status === 'FAILED') {
-    if (stepIndex < currentIndex) return 'completed'
-    if (stepIndex === currentIndex) return 'failed'
+  // SUCCESS：全部完成
+  if (status === 'SUCCESS') return 'completed'
+
+  // FAILED
+  if (status === 'FAILED') {
+    if (curIdx === -1) {
+      // 无法确定失败阶段，最后一步标记 failed
+      return stepIdx === STEP_ORDER.length - 1 ? 'failed' : 'pending'
+    }
+    if (stepIdx < curIdx) return 'completed'
+    if (stepIdx === curIdx) return 'failed'
     return 'pending'
   }
-  if (stepIndex < currentIndex) return 'completed'
-  if (stepIndex === currentIndex) return 'active'
+
+  // PARTIAL_SUCCESS 视为完成（结果有失败但流程结束）
+  if (status === 'PARTIAL_SUCCESS') return 'completed'
+
+  // PENDING / RUNNING
+  if (curIdx === -1) return 'pending'
+  if (stepIdx < curIdx) return 'completed'
+  if (stepIdx === curIdx) return 'active'
   return 'pending'
 }
 
@@ -151,13 +192,14 @@ function formatDate(dateStr: string | null) {
   return new Date(dateStr).toLocaleString('zh-CN')
 }
 
-onMounted(() => {
-  fetchData().then(() => {
-    // Start polling if task is running
-    if (task.value && task.value.status === 'RUNNING') {
+onMounted(async () => {
+  await fetchData()
+  // RUNNING 或自动启动的任务，恢复轮询（不重复调用 /run）
+  if (task.value && (task.value.status === 'RUNNING' || autoStarted.value)) {
+    if (!isTerminalStatus(task.value.status)) {
       startPolling()
     }
-  })
+  }
 })
 
 onUnmounted(() => {
@@ -177,14 +219,16 @@ onUnmounted(() => {
           <ArrowLeft :size="16" style="margin-right: 4px;" />
           返回
         </el-button>
+        <!-- 待执行 / 失败后重试 -->
         <el-button
-          v-if="task && ['PENDING', 'FAILED'].includes(task.status)"
+          v-if="showRunButton"
           type="primary"
-          :loading="simulating"
-          @click="handleSimulate"
+          :loading="running"
+          @click="handleRun"
         >
-          <Play :size="16" style="margin-right: 4px;" />
-          模拟执行
+          <RotateCcw v-if="task && task.status !== 'PENDING'" :size="16" style="margin-right: 4px;" />
+          <Play v-else :size="16" style="margin-right: 4px;" />
+          {{ task && task.status === 'PENDING' ? '执行导入' : '重新执行' }}
         </el-button>
       </div>
     </div>
@@ -203,6 +247,9 @@ onUnmounted(() => {
           <el-descriptions :column="2" border>
             <el-descriptions-item label="文件名">
               {{ task.file_name }}
+            </el-descriptions-item>
+            <el-descriptions-item label="目标知识库">
+              {{ kbName || '#' + task.knowledge_base_id }}
             </el-descriptions-item>
             <el-descriptions-item label="文件类型">
               {{ task.file_type }}
@@ -240,8 +287,19 @@ onUnmounted(() => {
                   {{ getStatusLabel(task.status) }}
                 </span>
               </div>
-              <div v-if="task.current_step" class="current-step">
-                当前步骤：{{ task.current_step }}
+              <div class="current-step">
+                <template v-if="task.current_step">
+                  当前阶段：{{ getStepLabel(task.current_step) }}
+                  <span class="step-raw" v-if="getStepLabel(task.current_step) !== task.current_step">
+                    ({{ task.current_step }})
+                  </span>
+                </template>
+                <template v-else-if="task.status === 'PENDING'">
+                  等待执行
+                </template>
+                <template v-else>
+                  —
+                </template>
               </div>
             </div>
           </div>
@@ -255,7 +313,7 @@ onUnmounted(() => {
             <el-progress
               :percentage="task.progress"
               :stroke-width="12"
-              :status="task.status === 'FAILED' ? 'exception' : undefined"
+              :status="task.status === 'FAILED' ? 'exception' : (task.status === 'SUCCESS' ? 'success' : undefined)"
             />
           </div>
         </div>
@@ -353,6 +411,13 @@ onUnmounted(() => {
 .current-step {
   font-size: 14px;
   color: var(--color-muted-foreground);
+}
+
+.step-raw {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  opacity: 0.7;
+  margin-left: 4px;
 }
 
 .progress-header {

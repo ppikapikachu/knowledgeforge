@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { getKnowledgeList, deleteKnowledge } from '@/api/knowledge'
+import { getKnowledgeBaseList } from '@/api/knowledgeBase'
 import type { Knowledge, KnowledgeQueryParams } from '@/types/knowledge'
+import type { KnowledgeBase } from '@/types/knowledgeBase'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
@@ -16,9 +18,12 @@ import {
 } from 'lucide-vue-next'
 
 const router = useRouter()
+const route = useRoute()
 const loading = ref(true)
 const tableData = ref<Knowledge[]>([])
 const total = ref(0)
+
+const kbOptions = ref<KnowledgeBase[]>([])
 
 const queryParams = ref<KnowledgeQueryParams>({
   page: 1,
@@ -26,6 +31,7 @@ const queryParams = ref<KnowledgeQueryParams>({
   keyword: '',
   difficulty: undefined,
   status: undefined,
+  knowledge_base_id: undefined,
 })
 
 const difficultyOptions = [
@@ -39,6 +45,17 @@ const statusOptions = [
   { label: '禁用', value: 0 },
 ]
 
+// 当前选中的知识库名称
+const currentKbName = ref<string>('')
+
+async function fetchKbOptions() {
+  try {
+    const res = await getKnowledgeBaseList({ page: 1, page_size: 100 })
+    kbOptions.value = res.data.items
+  } catch {
+    // Silent
+  }
+}
 
 async function fetchData() {
   loading.value = true
@@ -58,6 +75,27 @@ function handleSearch() {
   fetchData()
 }
 
+function handleKbChange(val: number | undefined) {
+  queryParams.value.knowledge_base_id = val
+  queryParams.value.page = 1
+  updateKbName(val)
+  // 更新 URL query
+  const query: Record<string, string> = {}
+  if (val) query.kb = String(val)
+  if (queryParams.value.keyword) query.keyword = queryParams.value.keyword
+  router.replace({ path: '/knowledge', query })
+  fetchData()
+}
+
+function updateKbName(id?: number) {
+  if (!id) {
+    currentKbName.value = ''
+    return
+  }
+  const kb = kbOptions.value.find((k) => k.id === id)
+  currentKbName.value = kb ? kb.name : ''
+}
+
 function handleReset() {
   queryParams.value = {
     page: 1,
@@ -65,7 +103,10 @@ function handleReset() {
     keyword: '',
     difficulty: undefined,
     status: undefined,
+    knowledge_base_id: undefined,
   }
+  currentKbName.value = ''
+  router.replace({ path: '/knowledge' })
   fetchData()
 }
 
@@ -122,6 +163,11 @@ function getSourceLabel(source: string) {
   return map[source] || source
 }
 
+function getKbName(kbId: number): string {
+  const kb = kbOptions.value.find((k) => k.id === kbId)
+  return kb ? kb.name : `#${kbId}`
+}
+
 function truncateText(text: string | null, maxLen: number) {
   if (!text) return '-'
   return text.length > maxLen ? text.slice(0, maxLen) + '...' : text
@@ -131,15 +177,32 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('zh-CN')
 }
 
-onMounted(fetchData)
+onMounted(async () => {
+  await fetchKbOptions()
+  // 读取 URL 中的 ?kb=xxx
+  const kbParam = route.query.kb
+  if (kbParam) {
+    const kbId = Number(kbParam)
+    if (!isNaN(kbId)) {
+      queryParams.value.knowledge_base_id = kbId
+      updateKbName(kbId)
+    }
+  }
+  fetchData()
+})
 </script>
 
 <template>
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h2>知识点管理</h2>
-        <p class="description">管理知识库中的所有知识点</p>
+        <h2>
+          知识点管理
+          <span v-if="currentKbName" class="kb-breadcrumb">/ {{ currentKbName }}</span>
+        </h2>
+        <p class="description">
+          {{ currentKbName ? `当前知识库：${currentKbName}` : '管理所有知识点' }}
+        </p>
       </div>
       <el-button type="primary" @click="router.push('/knowledge/create')">
         <Plus :size="16" style="margin-right: 4px;" />
@@ -149,6 +212,21 @@ onMounted(fetchData)
 
     <!-- Filter toolbar -->
     <div class="filter-toolbar">
+      <el-select
+        v-model="queryParams.knowledge_base_id"
+        placeholder="知识库"
+        clearable
+        style="width: 180px;"
+        @change="handleKbChange"
+      >
+        <el-option
+          v-for="kb in kbOptions"
+          :key="kb.id"
+          :label="kb.name"
+          :value="kb.id"
+        />
+      </el-select>
+
       <el-input
         v-model="queryParams.keyword"
         placeholder="搜索知识点名称"
@@ -212,7 +290,9 @@ onMounted(fetchData)
       <div class="empty-state">
         <BookOpen :size="48" />
         <p class="title">暂无知识点</p>
-        <p class="description">还没有创建知识点，先创建第一个知识点吧</p>
+        <p class="description">
+          {{ currentKbName ? `知识库"${currentKbName}"还没有知识点` : '还没有创建知识点' }}
+        </p>
         <el-button type="primary" @click="router.push('/knowledge/create')">
           <Plus :size="16" style="margin-right: 4px;" />
           创建知识点
@@ -224,6 +304,11 @@ onMounted(fetchData)
     <div v-else class="card">
       <el-table :data="tableData" style="width: 100%;">
         <el-table-column prop="name" label="名称" min-width="180" show-overflow-tooltip />
+        <el-table-column label="所属知识库" width="130" align="center">
+          <template #default="{ row }">
+            <span class="kb-tag">{{ getKbName(row.knowledge_base_id) }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="summary" label="摘要" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
             {{ truncateText(row.summary, 50) }}
@@ -304,3 +389,21 @@ onMounted(fetchData)
     </div>
   </div>
 </template>
+
+<style scoped>
+.kb-breadcrumb {
+  font-weight: 400;
+  color: var(--color-muted-foreground);
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.kb-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--color-muted, #F3F4F6);
+  color: var(--color-foreground);
+  font-size: 12px;
+}
+</style>

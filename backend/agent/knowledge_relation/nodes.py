@@ -107,7 +107,7 @@ def llm_judge_node(state: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     # 调用 LLM
-    llm = get_llm()
+    llm = get_llm(thinking="disabled")
     structured_llm = llm.with_structured_output(RelationExtractOutput)
 
     start_time = time.time()
