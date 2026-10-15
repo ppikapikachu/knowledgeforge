@@ -150,10 +150,32 @@ def update_question(
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:
-    """Update a question."""
+    """Update a question. Core content is protected when answer records exist."""
     service = QuestionService(db)
 
     update_data = request.model_dump(exclude_unset=True)
+
+    # 历史答题保护：已有答题记录的题目不能修改核心内容
+    from app.models.question_answer_record import QuestionAnswerRecord
+    answer_count = db.query(QuestionAnswerRecord).filter(
+        QuestionAnswerRecord.question_id == question_id
+    ).count()
+
+    if answer_count > 0:
+        # 有答题记录，只允许修改解析等非核心字段
+        core_fields = {"content", "answer", "options", "question_type"}
+        modified_core = core_fields & set(update_data.keys())
+        if modified_core:
+            from app.core.exceptions import ValidationException
+            raise ValidationException(
+                f"题目已有 {answer_count} 条答题记录，"
+                f"不能修改核心内容: {', '.join(modified_core)}。"
+                f"如需修改核心内容，请下架旧题并创建新题。"
+            )
+
+    # 手动编辑解析时标记来源
+    if "analysis" in update_data or "explanation" in update_data:
+        update_data["explanation_source"] = "manual"
 
     # Convert options to dicts if provided
     if "options" in update_data and update_data["options"]:

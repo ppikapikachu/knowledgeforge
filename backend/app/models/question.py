@@ -61,8 +61,38 @@ class Question(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(
         String(30),
         nullable=False,
-        default="DRAFT",
-        comment="状态: DRAFT/PUBLISHED/DISABLED",
+        default="pending_review",
+        comment="状态: pending_review/published/disabled/rejected",
+    )
+    explanation: Mapped[Optional[str]] = mapped_column(
+        LONGTEXT,
+        nullable=True,
+        default=None,
+        comment="解析文本",
+    )
+    explanation_status: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        default="not_requested",
+        comment="解析状态: not_requested/pending/processing/success/failed",
+    )
+    explanation_source: Mapped[Optional[str]] = mapped_column(
+        String(30),
+        nullable=True,
+        default=None,
+        comment="解析来源: ai/manual",
+    )
+    content_hash: Mapped[Optional[str]] = mapped_column(
+        String(64),
+        nullable=True,
+        default=None,
+        comment="内容指纹（用于去重）",
+    )
+    generation_task_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger().with_variant(BigInteger, "mysql"),
+        nullable=True,
+        default=None,
+        comment="来源生成任务 ID",
     )
     source_type: Mapped[str] = mapped_column(
         String(30),

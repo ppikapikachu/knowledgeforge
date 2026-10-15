@@ -9,6 +9,9 @@ from app.models.question import Question
 from app.models.question_bank import QuestionBank
 from app.models.question_option import QuestionOption
 from app.models.question_knowledge import QuestionKnowledge
+from app.models.question_generation_task import QuestionGenerationTask
+from app.models.question_answer_record import QuestionAnswerRecord
+from app.models.question_comment import QuestionComment
 from app.models.import_task import KnowledgeImportTask
 
 __all__ = [
@@ -21,5 +24,8 @@ __all__ = [
     "QuestionBank",
     "QuestionOption",
     "QuestionKnowledge",
+    "QuestionGenerationTask",
+    "QuestionAnswerRecord",
+    "QuestionComment",
     "KnowledgeImportTask",
 ]
