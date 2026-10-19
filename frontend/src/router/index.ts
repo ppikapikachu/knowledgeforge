@@ -58,6 +58,42 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '知识关系' },
       },
       {
+        path: 'question-management/generate',
+        name: 'QuestionGenerate',
+        component: () => import('@/views/question-management/GenerateQuestionView.vue'),
+        meta: { title: 'AI 生成题目' },
+      },
+      {
+        path: 'question-management/tasks',
+        name: 'GenerationTaskList',
+        component: () => import('@/views/question-management/GenerationTaskListView.vue'),
+        meta: { title: '生成任务' },
+      },
+      {
+        path: 'question-management/tasks/:taskId',
+        name: 'GenerationTaskDetail',
+        component: () => import('@/views/question-management/GenerationTaskDetailView.vue'),
+        meta: { title: '任务详情' },
+      },
+      {
+        path: 'question-management/review',
+        name: 'QuestionReview',
+        component: () => import('@/views/question-management/QuestionReviewView.vue'),
+        meta: { title: '题目审核' },
+      },
+      {
+        path: 'question-management/questions',
+        name: 'QuestionManageList',
+        component: () => import('@/views/question-management/QuestionListView.vue'),
+        meta: { title: '题目列表' },
+      },
+      {
+        path: 'question-management/questions/:questionId',
+        name: 'QuestionManageDetail',
+        component: () => import('@/views/question-management/QuestionDetailView.vue'),
+        meta: { title: '题目详情' },
+      },
+      {
         path: 'questions',
         name: 'QuestionList',
         component: () => import('@/views/question/QuestionList.vue'),

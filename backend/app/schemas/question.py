@@ -20,9 +20,9 @@ class QuestionType(str, Enum):
 class QuestionStatus(str, Enum):
     """Question status."""
 
-    DRAFT = "DRAFT"
-    PUBLISHED = "PUBLISHED"
-    DISABLED = "DISABLED"
+    DRAFT = "pending_review"
+    PUBLISHED = "published"
+    DISABLED = "disabled"
 
 
 class QuestionSourceType(str, Enum):
@@ -80,7 +80,7 @@ class QuestionCreate(BaseModel):
         default=1, ge=1, le=3, description="难度: 1=简单, 2=中等, 3=困难"
     )
     status: str = Field(
-        default="DRAFT", description="状态: DRAFT/PUBLISHED/DISABLED"
+        default="pending_review", description="状态: pending_review/published/rejected/disabled"
     )
     source_type: str = Field(
         default="MANUAL", description="来源: MANUAL/IMPORT/AI"

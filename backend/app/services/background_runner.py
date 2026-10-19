@@ -69,7 +69,6 @@ def run_generation_in_background(task_id: int, request_config: dict) -> None:
                         status="pending_review",
                         source_type="AI",
                         question_bank_id=question_bank_id,
-                        knowledge_base_id=1,
                         generation_task_id=task_id,
                         content_hash=agent.generate_content_hash(q),
                     )

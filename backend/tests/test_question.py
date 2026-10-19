@@ -154,7 +154,7 @@ class TestQuestionCRUD:
 
         response = client.delete(f"/api/v1/questions/{qid}", headers=auth_headers)
         assert response.status_code == 200
-        assert response.json()["data"]["status"] == "DISABLED"
+        assert response.json()["data"]["status"] == "disabled"
 
     def test_list_questions(self, client, auth_headers):
         """Test listing questions."""

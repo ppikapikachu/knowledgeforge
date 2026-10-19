@@ -94,7 +94,7 @@ class QuestionRepository:
 
     def disable(self, question: Question) -> Question:
         """Disable a question (soft delete)."""
-        question.status = "DISABLED"
+        question.status = "disabled"
         self.db.flush()
         return question
 

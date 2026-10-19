@@ -61,7 +61,7 @@ class QuestionService:
         answer: str,
         analysis: Optional[str] = None,
         difficulty: int = 1,
-        status: str = "DRAFT",
+        status: str = "pending_review",
         source_type: str = "MANUAL",
         quality_score: Optional[float] = None,
         question_bank_id: Optional[int] = None,

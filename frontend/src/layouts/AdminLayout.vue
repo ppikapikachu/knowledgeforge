@@ -14,6 +14,7 @@ import {
   PanelLeft,
   User,
   Database,
+  ClipboardList,
 } from 'lucide-vue-next'
 import { ElDropdown, ElDropdownMenu, ElDropdownItem, ElMessageBox } from 'element-plus'
 
@@ -42,6 +43,16 @@ const menuItems = [
     ],
   },
   {
+    label: '题库管理',
+    icon: ClipboardList,
+    children: [
+      { label: 'AI 生成题目', path: '/question-management/generate' },
+      { label: '生成任务', path: '/question-management/tasks' },
+      { label: '题目审核', path: '/question-management/review' },
+      { label: '题目列表', path: '/question-management/questions' },
+    ],
+  },
+  {
     label: '题库',
     icon: FileQuestion,
     children: [{ label: '题目', path: '/questions' }],
@@ -58,7 +69,7 @@ const menuItems = [
   },
 ]
 
-const expandedMenus = ref<string[]>(['知识点', '题库', '系统'])
+const expandedMenus = ref<string[]>(['知识点', '题库管理', '题库', '系统'])
 
 const breadcrumbs = computed(() => {
   const matched = route.matched.filter((item) => item.meta?.title)

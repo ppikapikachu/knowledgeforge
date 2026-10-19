@@ -10,6 +10,7 @@ export interface QuestionOption {
 
 export interface Question {
   id: number
+  question_bank_id: number
   question_type: string
   content: string
   answer: string
@@ -61,4 +62,5 @@ export interface QuestionQueryParams {
   status?: string | null
   source_type?: string | null
   knowledge_id?: number | null
+  question_bank_id?: number | null
 }
