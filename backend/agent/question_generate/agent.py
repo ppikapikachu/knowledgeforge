@@ -11,7 +11,7 @@
     - 自动发布题目（需管理员审核）
 """
 
-import hashlib
+import hashlib  # noqa: F401 —— 兼容旧引用（指纹统一走 question_normalizer）
 import logging
 import time
 from typing import Dict, List, Optional
@@ -154,7 +154,14 @@ class QuestionGenerateAgent:
                 raise ValueError("简答题不应有选项")
 
     def generate_content_hash(self, q: GeneratedQuestion) -> str:
-        """生成内容指纹用于去重。"""
-        content = q.content.strip().lower()
-        content = "".join(content.split())  # 去除空白
-        return hashlib.sha256(content.encode()).hexdigest()[:16]
+        """生成内容指纹用于去重（v1：题型 + 规范化题干 + 选项签名 + 答案，执行文档 §3）。
+
+        兼容保留本方法；实现统一走 app.services.question_normalizer，保证
+        生成侧与去重侧的指纹算法完全一致。
+        """
+        from app.services.question_normalizer import question_normalizer
+
+        options = [(opt.option_content, 1 if opt.is_correct else 0) for opt in q.options]
+        return question_normalizer.compute_content_hash(
+            q.question_type, q.content, q.answer or "", options
+        )

@@ -110,6 +110,48 @@ class AgentSettings(BaseSettings):
     DEDUP_TOP_K: int = 3
     # 向量检索返回的最大相似知识点数量
 
+    # ==================== 题目去重配置 ====================
+    # 多层去重（精确指纹 / 关键词+向量召回 / 范围阈值 / LLM 复核）
+    # 初始值为建议默认值，需用 scripts/calibrate_question_dedup_thresholds.py 标定后调整
+
+    QUESTION_DEDUP_ENABLED: bool = True
+    # 总开关；关闭后退回"仅生成不去重"旧行为
+
+    QUESTION_DEDUP_SAME_SCOPE_CANDIDATE_THRESHOLD: float = 0.65
+    # 同范围（同题库且知识点相交）候选进入 LLM 复核的算法分数下限（宽召回）
+    # 2026-10-20 真实 Embedding 标定（scripts/calibrate_question_dedup_thresholds.py）：0.65 处漏判 0、误判最少
+
+    QUESTION_DEDUP_CROSS_SCOPE_HIGH_THRESHOLD: float = 0.75
+    # 跨范围候选进入 LLM 复核的高阈值；必须严于同范围阈值（跨库只在极高相似才复核）
+    # 2026-10-20 真实 Embedding 标定：0.75 起误判 0、漏判 0（跨库完全相同题干 fused=1.000）
+
+    QUESTION_DEDUP_FINAL_BLOCK_THRESHOLD: float = 0.85
+    # 入库前二次校验（并发竞争兜底）直接拦截的严格语义阈值（不走 LLM，防误杀取严格值）
+
+    QUESTION_DEDUP_VECTOR_TOP_K: int = 15
+    # 向量通道召回候选数（建议 10~20）
+
+    QUESTION_DEDUP_KEYWORD_TOP_K: int = 15
+    # 关键词通道召回候选数
+
+    QUESTION_DEDUP_LLM_MAX_CANDIDATES: int = 5
+    # 每道新题最多送入 LLM 复核的候选对数
+
+    QUESTION_DEDUP_LLM_BATCH_SIZE: int = 5
+    # 每次 LLM 调用批量判定的配对数
+
+    QUESTION_DEDUP_MAX_REGENERATION_ATTEMPTS: int = 2
+    # 单知识点因去重/生成失败补题的最大轮次
+
+    QUESTION_DEDUP_MAX_GENERATION_MULTIPLIER: float = 1.5
+    # 单知识点实际生成候选量相对计划量的放大倍数上限（防无限生成）
+
+    QUESTION_DEDUP_LLM_TIMEOUT_SECONDS: int = 60
+    # 单次 LLM 复核调用超时（秒）；超时按 uncertain 处理，保留新题并标记人工复核
+
+    EMBEDDING_VERSION: str = "bge-small-zh-v1.5"
+    # Embedding 版本标签，写入向量索引 metadata，用于一致性检查/重算
+
 
 # 全局配置单例
 # 在模块加载时自动读取 .env 文件，后续通过 agent_settings 直接访问

@@ -220,6 +220,16 @@ class FaissVectorStore:
         """返回当前存储的向量总数。"""
         return len(self._id_to_index)
 
+    def list_ids(self) -> List[str]:
+        """返回当前存储的全部向量 ID（用于增量重建/一致性检查）。"""
+        with self._lock:
+            return list(self._id_to_index.keys())
+
+    def get_metadata(self, id: str) -> Dict[str, Any]:
+        """返回指定 ID 的元数据；不存在返回空 dict。"""
+        with self._lock:
+            return dict(self._metadata.get(id, {}))
+
 
 # 全局单例
 _vector_store: Optional[FaissVectorStore] = None
@@ -237,3 +247,21 @@ def reset_vector_store() -> None:
     """重置向量存储单例（用于测试）。"""
     global _vector_store
     _vector_store = None
+
+
+# 题目向量库单例（与知识点向量库隔离，独立 collection/命名空间）
+_question_vector_store: Optional[FaissVectorStore] = None
+
+
+def get_question_vector_store(dimension: int = 512) -> FaissVectorStore:
+    """获取题目向量存储单例（独立于知识点向量库）。"""
+    global _question_vector_store
+    if _question_vector_store is None:
+        _question_vector_store = FaissVectorStore(dimension=dimension)
+    return _question_vector_store
+
+
+def reset_question_vector_store() -> None:
+    """重置题目向量存储单例（用于测试）。"""
+    global _question_vector_store
+    _question_vector_store = None

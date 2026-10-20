@@ -44,6 +44,18 @@ async def create_generation_task(
     from app.models.question_bank import QuestionBank
     from app.models.knowledge import Knowledge
 
+    # §2.4：题目去重服务未就绪时新任务不得进入正式生成流程（安全失败，明确报错）
+    from app.core.config import settings as app_settings
+    from agent.common.config import agent_settings
+    from app.services.question_dedup_service import get_dedup_readiness
+    if agent_settings.QUESTION_DEDUP_ENABLED:
+        readiness = get_dedup_readiness()
+        if readiness.get("status") in ("initializing", "degraded"):
+            raise ValidationException(
+                f"题目去重服务未就绪（status={readiness.get('status')}），"
+                f"当前不允许创建生成任务；请等待索引恢复后重试"
+            )
+
     allocation_mode = request.get("allocation_mode")
     knowledge_id = request.get("knowledge_id")
     question_bank_id = request.get("question_bank_id")
@@ -244,6 +256,11 @@ def get_generation_tasks(
             "total_count": t.total_count,
             "success_count": t.success_count,
             "duplicate_count": t.duplicate_count,
+            "generated_count": t.generated_count,
+            "exact_duplicate_count": t.exact_duplicate_count,
+            "semantic_duplicate_count": t.semantic_duplicate_count,
+            "uncertain_count": t.uncertain_count,
+            "unfulfilled_count": t.unfulfilled_count,
             "failed_count": t.failed_count,
             "request_config": t.request_config,
             "error_summary": t.error_summary,
@@ -298,9 +315,23 @@ def get_generation_task_detail(
             "option_count": len(options),
         })
 
-    # 进度
+    # 进度（去重/重试会产生额外处理量，进度封顶 100）
     processed = task.success_count + task.failed_count + task.duplicate_count
     progress = int(processed / task.total_count * 100) if task.total_count > 0 else 0
+    progress = min(100, progress)
+
+    # 去重复核状态（uncertain 可追踪，§6）：需要人工裁决的记录数
+    from app.models.question_dedup_record import QuestionDedupRecord as QDR
+    manual_review_rows = (
+        db.query(QDR.id)
+        .filter(QDR.task_id == task.id, QDR.needs_manual_review == 1)
+        .count()
+    )
+    dedup_review_status = (
+        "manual_review_required" if manual_review_rows > 0
+        else "deduplicated" if task.duplicate_count > 0
+        else "clean"
+    )
 
     return ApiResponse(data={
         "task_id": task.id,
@@ -315,7 +346,14 @@ def get_generation_task_detail(
         "total_count": task.total_count,
         "success_count": task.success_count,
         "duplicate_count": task.duplicate_count,
+        "generated_count": task.generated_count,
+        "exact_duplicate_count": task.exact_duplicate_count,
+        "semantic_duplicate_count": task.semantic_duplicate_count,
+        "uncertain_count": task.uncertain_count,
+        "unfulfilled_count": task.unfulfilled_count,
         "failed_count": task.failed_count,
+        "dedup_review_status": dedup_review_status,
+        "dedup_manual_review_count": manual_review_rows,
         "progress": progress,
         "error_summary": task.error_summary,
         "started_at": task.started_at.isoformat() if task.started_at else None,
@@ -355,6 +393,10 @@ async def review_question(
         question.analysis = reason or question.analysis
     else:
         return ApiResponse(code=40001, message="action 必须是 publish 或 reject", data=None)
+
+    # 状态流转同步去重状态：发布=登记 dedup_key+向量索引；驳回=解除（§3.3/§8）
+    from app.services.question_dedup_service import sync_question_dedup_state
+    sync_question_dedup_state(db, question)
 
     db.commit()
 

@@ -92,7 +92,28 @@ def get_question(
     """Get question by ID."""
     service = QuestionService(db)
     question = service.get_question(question_id)
-    return ApiResponse(data=_build_question_response(question))
+    data = _build_question_response(question)
+
+    # 去重复核状态（uncertain 可追踪，§6）：查最近一条去重判定审计记录
+    from app.models.question_dedup_record import QuestionDedupRecord as QDR
+    record = (
+        db.query(QDR)
+        .filter(
+            (QDR.matched_question_id == question.id)
+            | (QDR.new_content_hash == (question.content_hash or ""))
+        )
+        .order_by(QDR.id.desc())
+        .first()
+    )
+    if record is not None:
+        data["dedup_review_status"] = (
+            "uncertain" if record.decision == "uncertain"
+            else "duplicate" if record.decision == "duplicate"
+            else "distinct"
+        )
+    else:
+        data["dedup_review_status"] = "none"
+    return ApiResponse(data=data)
 
 
 @router.post(

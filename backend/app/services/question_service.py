@@ -188,6 +188,11 @@ class QuestionService:
                 )
 
         self.db.commit()
+        # 编辑后指纹/去重状态需同步（内容、选项、类型、状态变化都影响指纹）
+        from app.services.question_dedup_service import refresh_question_hash
+        refreshed = self.question_repo.get_by_id(question_id)
+        refresh_question_hash(self.db, refreshed)
+        self.db.commit()
         return self.question_repo.get_by_id(question_id)
 
     def delete_question(self, question_id: int) -> Question:
@@ -197,6 +202,9 @@ class QuestionService:
             raise ResourceNotFoundException("题目", question_id)
 
         disabled = self.question_repo.disable(question)
+        # 下架（软删除）不阻塞新题：解除 dedup_key 并移除向量索引（§4.3/§8）
+        from app.services.question_dedup_service import sync_question_dedup_state
+        sync_question_dedup_state(self.db, disabled)
         self.db.commit()
         return disabled
 

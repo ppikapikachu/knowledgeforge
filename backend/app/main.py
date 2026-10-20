@@ -1,7 +1,9 @@
 """FastAPI application entry point."""
 
 import logging
+import os
 import sys
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +28,60 @@ logging.getLogger("uvicorn.access").setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def _detect_worker_count() -> int:
+    """检测部署 worker 数（uvicorn --workers / WEB_CONCURRENCY / UVICORN_WORKERS）。"""
+    for source in (os.environ.get("WEB_CONCURRENCY"), os.environ.get("UVICORN_WORKERS")):
+        try:
+            if source and int(source) > 1:
+                return int(source)
+        except (TypeError, ValueError):
+            pass
+    for i, arg in enumerate(sys.argv):
+        if arg in ("--workers", "-w") and i + 1 < len(sys.argv):
+            try:
+                return max(1, int(sys.argv[i + 1]))
+            except ValueError:
+                pass
+        if arg.startswith("--workers="):
+            try:
+                return max(1, int(arg.split("=", 1)[1]))
+            except ValueError:
+                pass
+    return 1
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """启动/关闭钩子（题目向量索引生命周期，§2.2/§2.6）。
+
+    - 强制单 worker/单进程：题目向量索引为进程内存态且写入锁为进程级，
+      多进程部署无法保证语义去重一致性——启动配置阻止多 worker；
+    - 启动期同步构建题目向量索引（幂等），就绪状态机记录
+      initializing/ready/degraded；构建完成前不对外提供服务；
+    - 索引构建失败 → degraded：生成任务会被安全拒绝，绝不静默跳过语义去重。
+    """
+    worker_count = _detect_worker_count()
+    if worker_count > 1:
+        raise RuntimeError(
+            f"检测到多 worker 配置（workers={worker_count}）：题目去重向量索引为进程内存态，"
+            f"多进程无法保证语义去重一致性。请以单 worker/单进程启动（uvicorn --workers 1），"
+            f"或引入共享向量存储后另行改造。"
+        )
+
+    from app.core.database import SessionLocal
+    from app.services.question_dedup_service import initialize_question_index
+
+    db = SessionLocal()
+    try:
+        readiness = initialize_question_index(db)
+        logger.info("题目向量索引初始化完成: %s", readiness)
+    finally:
+        db.close()
+
+    yield
+    # 关闭：向量索引为内存态，无持久化需要清理
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
@@ -34,6 +90,7 @@ def create_app() -> FastAPI:
         version="1.0.0",
         docs_url="/docs",
         redoc_url="/redoc",
+        lifespan=lifespan,
     )
 
     # CORS middleware

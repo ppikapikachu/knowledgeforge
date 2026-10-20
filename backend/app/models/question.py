@@ -88,6 +88,18 @@ class Question(Base, TimestampMixin):
         default=None,
         comment="内容指纹（用于去重）",
     )
+    hash_version: Mapped[Optional[str]] = mapped_column(
+        String(8),
+        nullable=True,
+        default="0",
+        comment="指纹算法版本: 0=历史content-only指纹, 1=v1结构化指纹",
+    )
+    dedup_key: Mapped[Optional[str]] = mapped_column(
+        String(64),
+        nullable=True,
+        default=None,
+        comment="去重唯一键: 仅阻断状态(pending_review/published)题目=content_hash，其余为 NULL",
+    )
     generation_task_id: Mapped[Optional[int]] = mapped_column(
         BigInteger().with_variant(BigInteger, "mysql"),
         nullable=True,
@@ -136,6 +148,10 @@ class Question(Base, TimestampMixin):
         Index("idx_question_status", "status"),
         Index("idx_question_source_type", "source_type"),
         Index("idx_question_created_at", "created_at"),
+        # 去重精确层：全局唯一键（同指纹只允许一个阻断状态题目）
+        Index("uq_question_dedup_key", "dedup_key", unique=True),
+        # 去重精确层查询加速（非唯一：历史行/非阻断行可共享指纹）
+        Index("idx_question_content_hash", "content_hash"),
         {"mysql_charset": "utf8mb4", "mysql_collate": "utf8mb4_0900_ai_ci"},
     )
 

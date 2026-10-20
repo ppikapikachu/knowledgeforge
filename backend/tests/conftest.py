@@ -45,6 +45,13 @@ def setup_database():
     """Create all tables before tests and drop after."""
     Base.metadata.create_all(bind=engine)
     yield
+    # 收尾前等待后台生成/导入线程结束：后台线程的数据库事务
+    # 会与 drop_all 的元数据锁互相等待（REPEATABLE READ + MDL）
+    try:
+        from app.services.background_runner import join_background_tasks
+        join_background_tasks(timeout=30.0)
+    except Exception:  # noqa: BLE001
+        pass
     Base.metadata.drop_all(bind=engine)
 
 

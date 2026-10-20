@@ -58,6 +58,31 @@ class QuestionGenerationTask(Base, TimestampMixin):
         default=0,
         comment="失败数量",
     )
+    generated_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="实际生成的候选题目数量（含被去重跳过的候选）",
+    )
+    exact_duplicate_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="精确重复（指纹命中）跳过数量",
+    )
+    semantic_duplicate_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="算法/语义重复跳过数量（含批次内重复）",
+    )
+    uncertain_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="去重判定不确定、保留并标记人工复核的数量",
+    )
+    unfulfilled_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="重试用尽后仍未补足的数量",
+    )
     explanation_requested: Mapped[int] = mapped_column(
         nullable=False,
         default=0,

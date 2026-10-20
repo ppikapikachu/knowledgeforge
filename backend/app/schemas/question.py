@@ -177,6 +177,10 @@ class QuestionResponse(BaseModel):
     knowledge_ids: List[int] = Field(
         default_factory=list, description="关联知识点ID"
     )
+    dedup_review_status: Optional[str] = Field(
+        default=None,
+        description="去重复核状态（uncertain/duplicate/distinct/none，详情接口返回）",
+    )
     created_at: datetime = Field(description="创建时间")
     updated_at: datetime = Field(description="更新时间")
 
