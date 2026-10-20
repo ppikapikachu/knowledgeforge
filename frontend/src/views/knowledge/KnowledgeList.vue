@@ -3,8 +3,10 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getKnowledgeList, deleteKnowledge } from '@/api/knowledge'
 import { getKnowledgeBaseList } from '@/api/knowledgeBase'
+import { updateKnowledgeImportance } from '@/api/questionDemand'
 import type { Knowledge, KnowledgeQueryParams } from '@/types/knowledge'
 import type { KnowledgeBase } from '@/types/knowledgeBase'
+import { IMPORTANCE_LEVELS, IMPORTANCE_LABELS, IMPORTANCE_CLASSES, IMPORTANCE_SOURCE_LABELS } from '@/constants/questionDemand'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
@@ -15,6 +17,7 @@ import {
   Link,
   Ban,
   BookOpen,
+  Star,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -47,6 +50,35 @@ const statusOptions = [
 
 // 当前选中的知识库名称
 const currentKbName = ref<string>('')
+
+// 重要程度编辑
+const importanceDialogVisible = ref(false)
+const editingKnowledge = ref<Knowledge | null>(null)
+const editingImportanceLevel = ref<string>('normal')
+const savingImportance = ref(false)
+
+function openImportanceDialog(row: Knowledge) {
+  editingKnowledge.value = row
+  editingImportanceLevel.value = row.importance_level || 'normal'
+  importanceDialogVisible.value = true
+}
+
+async function handleSaveImportance() {
+  if (!editingKnowledge.value) return
+  savingImportance.value = true
+  try {
+    await updateKnowledgeImportance(editingKnowledge.value.id, {
+      importance_level: editingImportanceLevel.value,
+    })
+    ElMessage.success('重要程度已更新，来源：管理员调整')
+    importanceDialogVisible.value = false
+    await fetchData()
+  } catch (e) {
+    ElMessage.error(e instanceof Error ? e.message : '更新失败')
+  } finally {
+    savingImportance.value = false
+  }
+}
 
 async function fetchKbOptions() {
   try {
@@ -321,12 +353,26 @@ onMounted(async () => {
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="source_type" label="来源" width="100" align="center">
+        <el-table-column prop="source_type" label="来源" width="80" align="center">
           <template #default="{ row }">
             {{ getSourceLabel(row.source_type) }}
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100" align="center">
+        <el-table-column label="重要程度" width="110" align="center">
+          <template #default="{ row }">
+            <span :class="['status-badge', `status-badge--${IMPORTANCE_CLASSES[row.importance_level] || 'muted'}`]">
+              {{ IMPORTANCE_LABELS[row.importance_level] || row.importance_level }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="程度来源" width="100" align="center">
+          <template #default="{ row }">
+            <span class="importance-source-tag">
+              {{ IMPORTANCE_SOURCE_LABELS[row.importance_source] || row.importance_source }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="{ row }">
             <span :class="['status-badge', `status-badge--${getStatusClass(row.status)}`]">
               {{ getStatusLabel(row.status) }}
@@ -359,6 +405,10 @@ onMounted(async () => {
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
+                  <el-dropdown-item @click="openImportanceDialog(row)">
+                    <Star :size="14" style="margin-right: 8px;" />
+                    修改重要程度
+                  </el-dropdown-item>
                   <el-dropdown-item @click="router.push(`/knowledge/${row.id}?tab=relations`)">
                     <Link :size="14" style="margin-right: 8px;" />
                     关系
@@ -387,6 +437,62 @@ onMounted(async () => {
         />
       </div>
     </div>
+    <!-- 重要程度编辑对话框 -->
+    <el-dialog
+      v-model="importanceDialogVisible"
+      title="修改重要程度"
+      width="480px"
+      :close-on-click-modal="false"
+    >
+      <div v-if="editingKnowledge">
+        <div class="importance-dialog-header">
+          <span class="label">知识点：</span>
+          <strong>{{ editingKnowledge.name }}</strong>
+        </div>
+        <div class="importance-dialog-header">
+          <span class="label">当前重要程度：</span>
+          <span :class="['status-badge', `status-badge--${IMPORTANCE_CLASSES[editingKnowledge.importance_level] || 'muted'}`]">
+            {{ IMPORTANCE_LABELS[editingKnowledge.importance_level] || editingKnowledge.importance_level }}
+          </span>
+          <span class="importance-source-tag" style="margin-left: 8px;">
+            {{ IMPORTANCE_SOURCE_LABELS[editingKnowledge.importance_source] || editingKnowledge.importance_source }}
+          </span>
+        </div>
+
+        <el-divider />
+
+        <div class="importance-dialog-header">
+          <span class="label">目标重要程度：</span>
+        </div>
+        <el-radio-group v-model="editingImportanceLevel" class="importance-radio-group">
+          <el-radio
+            v-for="level in IMPORTANCE_LEVELS"
+            :key="level.value"
+            :value="level.value"
+            class="importance-radio"
+          >
+            <div class="importance-radio-content">
+              <div class="importance-radio-title">
+                <span :class="['status-badge', `status-badge--${IMPORTANCE_CLASSES[level.value]}`]">
+                  {{ level.label }}
+                </span>
+              </div>
+              <div class="importance-radio-desc">{{ level.description }}</div>
+            </div>
+          </el-radio>
+        </el-radio-group>
+
+        <div class="importance-dialog-hint">
+          手动设置后，知识导入 Agent 不会覆盖此重要程度（来源将标记为"管理员调整"）。
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="importanceDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="savingImportance" @click="handleSaveImportance">
+          保存修改
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -405,5 +511,72 @@ onMounted(async () => {
   background: var(--color-muted, #F3F4F6);
   color: var(--color-foreground);
   font-size: 12px;
+}
+
+.importance-source-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  background: var(--color-muted);
+  color: var(--color-muted-foreground);
+}
+
+.importance-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.importance-dialog-header .label {
+  color: var(--color-muted-foreground);
+}
+
+.importance-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.importance-radio {
+  width: 100%;
+  height: auto;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin: 0 !important;
+}
+
+.importance-radio.is-checked {
+  border-color: var(--color-primary, #1E40AF);
+  background: #F0F7FF;
+}
+
+.importance-radio-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.importance-radio-title {
+  font-weight: 600;
+}
+
+.importance-radio-desc {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  line-height: 1.4;
+}
+
+.importance-dialog-hint {
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: #FFFBEB;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: #92400E;
 }
 </style>

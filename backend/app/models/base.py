@@ -18,12 +18,14 @@ class TimestampMixin:
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime().with_variant(MySQL_DATETIME(fsp=3), "mysql"),
+        default=func.now(),
         server_default=func.now(),
         nullable=False,
         comment="创建时间",
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime().with_variant(MySQL_DATETIME(fsp=3), "mysql"),
+        default=func.now(),
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False,

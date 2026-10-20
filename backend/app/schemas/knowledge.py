@@ -69,6 +69,9 @@ class KnowledgeCreate(BaseModel):
     keywords: Optional[List[str]] = Field(
         default=None, description="关键词列表"
     )
+    importance_level: Optional[str] = Field(
+        default=None, description="重要程度: core/important/normal/supplementary"
+    )
 
 
 class KnowledgeUpdate(BaseModel):
@@ -97,6 +100,9 @@ class KnowledgeUpdate(BaseModel):
     keywords: Optional[List[str]] = Field(
         default=None, description="关键词列表"
     )
+    importance_level: Optional[str] = Field(
+        default=None, description="重要程度: core/important/normal/supplementary"
+    )
 
 
 class KnowledgeResponse(BaseModel):
@@ -112,6 +118,8 @@ class KnowledgeResponse(BaseModel):
     source_type: str = Field(description="来源")
     source_document: Optional[str] = Field(description="来源文档")
     keywords: Optional[list] = Field(description="关键词")
+    importance_level: str = Field(default="normal", description="重要程度: core/important/normal/supplementary")
+    importance_source: str = Field(default="default", description="重要程度来源: default/agent/manual")
     question_count: int = Field(default=0, description="关联题目数量")
     created_at: datetime = Field(description="创建时间")
     updated_at: datetime = Field(description="更新时间")

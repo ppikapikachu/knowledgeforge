@@ -78,6 +78,37 @@ class QuestionGenerationTask(Base, TimestampMixin):
         nullable=True,
         comment="完成时间",
     )
+    allocation_mode: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="manual",
+        comment="分配模式: manual/auto",
+    )
+    allocation_plan: Mapped[Optional[dict]] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="分配计划快照",
+    )
+    policy_snapshot: Mapped[Optional[dict]] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="策略快照（auto模式）",
+    )
+    requested_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="请求题量",
+    )
+    allocated_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="实际分配题量",
+    )
+    unallocated_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="未分配题量",
+    )
 
     __table_args__ = (
         Index("idx_qgt_status", "status"),

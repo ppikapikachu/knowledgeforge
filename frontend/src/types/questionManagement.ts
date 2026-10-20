@@ -56,6 +56,10 @@ export interface GenerationTaskCreateResponse {
 export interface GenerationTask {
   id: number
   status: TaskStatus
+  allocation_mode: string | null
+  requested_count: number | null
+  allocated_count: number | null
+  unallocated_count: number | null
   total_count: number
   success_count: number
   duplicate_count: number
@@ -83,6 +87,26 @@ export interface GenerationTaskDetail {
   task_id: number
   created_by: number
   status: TaskStatus
+  allocation_mode: string | null
+  allocation_plan: {
+    allocation_mode: string
+    requested_count: number
+    allocated_count: number
+    unallocated_count: number
+    policy_version: number | null
+    items: Array<{
+      knowledge_id: number
+      knowledge_name: string
+      knowledge_base_id: number
+      knowledge_base_name: string
+      importance_level: string
+      importance_label: string
+      planned_count: number
+    }>
+  } | null
+  requested_count: number | null
+  allocated_count: number | null
+  unallocated_count: number | null
   request_config: Record<string, unknown> | null
   total_count: number
   success_count: number

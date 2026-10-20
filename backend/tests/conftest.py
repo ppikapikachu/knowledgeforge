@@ -16,6 +16,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 os.environ["MYSQL_DATABASE"] = "interview_agent_test"
 os.environ["DEBUG"] = "false"
 
+# Use temp directory for uploads to avoid sandbox permission issues
+import tempfile
+_upload_tmp = os.path.join(tempfile.gettempdir(), "test_uploads")
+os.makedirs(_upload_tmp, exist_ok=True)
+os.environ["UPLOAD_DIR"] = _upload_tmp
+
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import hash_password

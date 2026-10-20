@@ -9,6 +9,8 @@ export interface Knowledge {
   source_type: string
   source_document: string | null
   keywords: unknown[] | null
+  importance_level: string
+  importance_source: string
   question_count: number
   created_at: string
   updated_at: string

@@ -149,6 +149,10 @@ class KnowledgeCandidate(BaseModel):
         max_length=15,
         description="3~8 个关键词，每个词简短，如['Activity','生命周期','onCreate']"
     )
+    importance_level: str = Field(
+        default="normal",
+        description="重要程度: core=核心必考, important=重点掌握, normal=常见考点, supplementary=扩展了解。证据不足时返回 normal"
+    )
     source_chunk_id: str = Field(
         description="来源 Chunk 的 ID，用于追溯知识点来自哪个 Chunk"
     )

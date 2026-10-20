@@ -72,6 +72,18 @@ class Knowledge(Base, TimestampMixin):
         default=None,
         comment="关键词JSON数组",
     )
+    importance_level: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="normal",
+        comment="重要程度: core/important/normal/supplementary",
+    )
+    importance_source: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="default",
+        comment="重要程度来源: default/agent/manual",
+    )
 
     __table_args__ = (
         Index("idx_knowledge_name", "name"),

@@ -94,6 +94,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '题目详情' },
       },
       {
+        path: 'question-management/policies',
+        name: 'PolicyManagement',
+        component: () => import('@/views/question-management/PolicyView.vue'),
+        meta: { title: '出题策略' },
+      },
+      {
+        path: 'question-management/knowledge-scope',
+        name: 'KnowledgeScope',
+        component: () => import('@/views/question-management/KnowledgeScopeView.vue'),
+        meta: { title: '题库知识范围' },
+      },
+      {
         path: 'questions',
         name: 'QuestionList',
         component: () => import('@/views/question/QuestionList.vue'),

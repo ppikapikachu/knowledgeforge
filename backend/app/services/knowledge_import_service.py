@@ -515,16 +515,24 @@ class KnowledgeImportService:
             return []
 
     def _create_knowledge(self, candidate: KnowledgeCandidate, knowledge_base_id: int = 0) -> Knowledge:
+        # 非法 importance_level 安全回退 normal
+        valid_levels = {"core", "important", "normal", "supplementary"}
+        imp_level = getattr(candidate, "importance_level", "normal") or "normal"
+        if imp_level not in valid_levels:
+            logger.warning(f"非法 importance_level '{imp_level}'，回退为 normal")
+            imp_level = "normal"
+
         knowledge = Knowledge(
             knowledge_base_id=knowledge_base_id, name=candidate.name,
             summary=candidate.summary, content=candidate.content,
             difficulty=candidate.difficulty, status=1,
             source_type="IMPORT", keywords=candidate.keywords,
+            importance_level=imp_level, importance_source="agent",
         )
         self.db.add(knowledge)
         self.db.commit()
         self.db.refresh(knowledge)
-        logger.info(f"新知识点创建: id={knowledge.id}, name={knowledge.name}")
+        logger.info(f"新知识点创建: id={knowledge.id}, name={knowledge.name}, importance={imp_level}")
         return knowledge
 
     def _merge_knowledge(self, target_id: int, merged: MergedKnowledge) -> Knowledge:
@@ -536,6 +544,18 @@ class KnowledgeImportService:
         knowledge.content = merged.content
         knowledge.difficulty = merged.difficulty
         knowledge.keywords = merged.keywords
+
+        # importance_level 覆盖规则：
+        # - importance_source=manual 的不覆盖
+        # - importance_source=agent/default 的允许更新，但仅当新值合法时
+        if knowledge.importance_source != "manual":
+            valid_levels = {"core", "important", "normal", "supplementary"}
+            new_level = getattr(merged, "importance_level", None)
+            if new_level and new_level in valid_levels:
+                knowledge.importance_level = new_level
+                knowledge.importance_source = "agent"
+            # 新值缺失或非法时保留已有等级
+
         self.db.commit()
         self.db.refresh(knowledge)
         logger.info(f"知识点合并更新: id={knowledge.id}")

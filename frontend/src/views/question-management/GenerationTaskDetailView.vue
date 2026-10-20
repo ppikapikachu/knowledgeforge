@@ -22,6 +22,11 @@ import {
   isTaskTerminal,
   formatDateTime,
 } from '@/constants/questionManagement'
+import {
+  ALLOCATION_MODE_LABELS,
+  IMPORTANCE_LABELS,
+  IMPORTANCE_CLASSES,
+} from '@/constants/questionDemand'
 import TaskStatusTag from '@/components/question-management/TaskStatusTag.vue'
 import QuestionStatusTag from '@/components/question-management/QuestionStatusTag.vue'
 import { ElMessage } from 'element-plus'
@@ -221,7 +226,63 @@ onUnmounted(() => {
             <el-descriptions-item label="开始时间">{{ formatDateTime(task.started_at) }}</el-descriptions-item>
             <el-descriptions-item label="完成时间">{{ formatDateTime(task.completed_at) }}</el-descriptions-item>
             <el-descriptions-item label="发起管理员ID">{{ task.created_by }}</el-descriptions-item>
+            <el-descriptions-item label="分配模式">
+              <span v-if="task.allocation_mode" class="mode-tag">
+                {{ ALLOCATION_MODE_LABELS[task.allocation_mode] || task.allocation_mode }}
+              </span>
+              <span v-else>-</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="分配数量(请求/可分配/未分配)">
+              <template v-if="task.requested_count !== null">
+                {{ task.requested_count }} / {{ task.allocated_count }} / {{ task.unallocated_count }}
+              </template>
+              <span v-else>-</span>
+            </el-descriptions-item>
           </el-descriptions>
+        </div>
+      </div>
+
+      <!-- 分配计划 -->
+      <div v-if="task.allocation_plan && task.allocation_plan.items.length > 0" class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          分配计划快照
+          <el-tag v-if="task.allocation_plan.policy_version" size="small" type="info" style="margin-left: 8px;">
+            策略 v{{ task.allocation_plan.policy_version }}
+          </el-tag>
+        </div>
+        <div class="card-body">
+          <div class="plan-summary">
+            <div class="plan-item">
+              <div class="plan-value">{{ task.allocation_plan.requested_count }}</div>
+              <div class="plan-label">请求</div>
+            </div>
+            <div class="plan-item">
+              <div class="plan-value ok">{{ task.allocation_plan.allocated_count }}</div>
+              <div class="plan-label">已分配</div>
+            </div>
+            <div class="plan-item">
+              <div class="plan-value" :class="task.allocation_plan.unallocated_count > 0 ? 'warn' : ''">
+                {{ task.allocation_plan.unallocated_count }}
+              </div>
+              <div class="plan-label">未分配</div>
+            </div>
+          </div>
+          <el-table :data="task.allocation_plan.items" style="width: 100%;" size="small">
+            <el-table-column prop="knowledge_name" label="知识点" min-width="180" show-overflow-tooltip />
+            <el-table-column prop="knowledge_base_name" label="知识库" width="120" show-overflow-tooltip />
+            <el-table-column label="重要程度" width="110" align="center">
+              <template #default="{ row }">
+                <span :class="['status-badge', `status-badge--${IMPORTANCE_CLASSES[row.importance_level] || 'muted'}`]">
+                  {{ IMPORTANCE_LABELS[row.importance_level] || row.importance_level }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="planned_count" label="计划出题" width="90" align="center">
+              <template #default="{ row }">
+                <strong style="color: var(--color-primary, #1E40AF);">{{ row.planned_count }}</strong>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
       </div>
 
@@ -361,5 +422,40 @@ onUnmounted(() => {
   font-size: 13px;
   color: var(--color-muted-foreground);
   padding: 16px 0;
+}
+.mode-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #EFF6FF;
+  color: var(--color-primary, #1E40AF);
+}
+
+.plan-summary {
+  display: flex;
+  gap: 24px;
+  padding: 12px 16px;
+  background: var(--color-muted);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+
+.plan-item {
+  text-align: center;
+}
+
+.plan-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+
+.plan-value.ok { color: var(--color-success, #059669); }
+.plan-value.warn { color: var(--color-warning, #D97706); }
+
+.plan-label {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
 }
 </style>

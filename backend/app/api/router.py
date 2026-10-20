@@ -26,6 +26,8 @@ from app.api.v1.question import router as question_router
 from app.api.v1.question_bank import router as question_bank_router
 from app.api.v1.question_plan import router as question_plan_router
 from app.api.v1.question_generation import router as question_generation_router
+from app.api.v1.question_demand import router as question_demand_router
+from app.api.v1.knowledge_base_mapping import router as knowledge_base_mapping_router
 from app.api.v1.answer import router as answer_router
 from app.api.v1.comment import router as comment_router
 
@@ -40,6 +42,8 @@ api_v1_router.include_router(question_router)     # 题目管理：CRUD、选项
 api_v1_router.include_router(question_bank_router)  # 题库管理
 api_v1_router.include_router(question_plan_router)  # 出题计划
 api_v1_router.include_router(question_generation_router)  # 题目生成
+api_v1_router.include_router(question_demand_router)  # 出题策略与智能分配
+api_v1_router.include_router(knowledge_base_mapping_router)  # 知识库与题库映射
 api_v1_router.include_router(answer_router)        # 答题记录
 api_v1_router.include_router(comment_router)       # 题目评论
 api_v1_router.include_router(import_task_router)  # 导入任务：文件上传、任务查询

@@ -46,6 +46,10 @@ class MergedKnowledge(BaseModel):
     content: str = Field(description="合并后的完整内容")
     difficulty: int = Field(description="合并后的难度")
     keywords: List[str] = Field(description="合并后的关键词列表")
+    importance_level: Optional[str] = Field(
+        default=None,
+        description="合并后的重要程度: core/important/normal/supplementary。缺失时保留已有值"
+    )
 
 
 class DeduplicateDecision(BaseModel):

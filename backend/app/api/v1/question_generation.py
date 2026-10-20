@@ -30,8 +30,8 @@ router = APIRouter(prefix="/question-generation", tags=["题目生成"])
     summary="创建题目生成任务",
     description=(
         "创建 AI 题目生成任务，后台异步执行。"
+        "支持 manual（指定知识点）和 auto（智能分配）两种模式。"
         "立即返回任务 ID，通过任务详情查询进度。"
-        "生成的题目状态为 pending_review，需管理员审核后才能使用。"
     ),
 )
 async def create_generation_task(
@@ -40,54 +40,174 @@ async def create_generation_task(
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:
     """创建题目生成任务。"""
+    from app.core.exceptions import ValidationException, ResourceNotFoundException
+    from app.models.question_bank import QuestionBank
+    from app.models.knowledge import Knowledge
+
+    allocation_mode = request.get("allocation_mode")
     knowledge_id = request.get("knowledge_id")
     question_bank_id = request.get("question_bank_id")
     question_type = request.get("question_type", "SINGLE_CHOICE")
     difficulty = request.get("difficulty", 2)
     count = request.get("count", 5)
+    allow_partial = request.get("allow_partial", False)
 
-    # 参数校验
-    if not knowledge_id or not question_bank_id:
-        return ApiResponse(code=40001, message="knowledge_id 和 question_bank_id 必填", data=None)
-    if count < 1 or count > 50:
-        return ApiResponse(code=40001, message="count 范围 1~50", data=None)
+    # 兼容旧请求：未传 allocation_mode 但传了 knowledge_id → manual
+    if not allocation_mode:
+        allocation_mode = "manual" if knowledge_id else "auto"
+
+    # 基本校验
+    if not question_bank_id:
+        raise ValidationException("question_bank_id 必填")
+    if count < 1 or count > 500:
+        raise ValidationException("count 范围 1~500")
     if question_type not in ("SINGLE_CHOICE", "MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER"):
-        return ApiResponse(code=40001, message="无效的题型", data=None)
+        raise ValidationException("无效的题型")
     if difficulty not in (1, 2, 3):
-        return ApiResponse(code=40001, message="难度必须是 1/2/3", data=None)
-
-    # 校验题库和知识点存在
-    from app.models.question_bank import QuestionBank
-    from app.models.knowledge import Knowledge
+        raise ValidationException("难度必须是 1/2/3")
 
     bank = db.query(QuestionBank).filter(QuestionBank.id == question_bank_id).first()
     if not bank:
-        return ApiResponse(code=40401, message=f"题库 {question_bank_id} 不存在", data=None)
+        raise ResourceNotFoundException(f"题库 {question_bank_id} 不存在")
 
-    knowledge = db.query(Knowledge).filter(Knowledge.id == knowledge_id).first()
-    if not knowledge:
-        return ApiResponse(code=40401, message=f"知识点 {knowledge_id} 不存在", data=None)
+    if allocation_mode == "manual":
+        if not knowledge_id:
+            raise ValidationException("manual 模式必须提供 knowledge_id")
+        knowledge = db.query(Knowledge).filter(Knowledge.id == knowledge_id).first()
+        if not knowledge:
+            raise ResourceNotFoundException(f"知识点 {knowledge_id} 不存在")
 
-    # 创建任务记录
-    task = QuestionGenerationTask(
-        created_by=current_admin.id,
-        request_config=request,
-        status="pending",
-        total_count=count,
-    )
-    db.add(task)
-    db.commit()
-    db.refresh(task)
+        # 创建任务
+        task = QuestionGenerationTask(
+            created_by=current_admin.id,
+            request_config=request,
+            status="pending",
+            total_count=count,
+            allocation_mode="manual",
+            allocation_plan={
+                "allocation_mode": "manual",
+                "requested_count": count,
+                "allocated_count": count,
+                "unallocated_count": 0,
+                "policy_version": None,
+                "items": [{
+                    "knowledge_id": knowledge.id,
+                    "knowledge_name": knowledge.name,
+                    "knowledge_base_id": knowledge.knowledge_base_id,
+                    "knowledge_base_name": "",
+                    "importance_level": knowledge.importance_level,
+                    "importance_label": "",
+                    "planned_count": count,
+                }],
+            },
+            requested_count=count,
+            allocated_count=count,
+            unallocated_count=0,
+        )
+        db.add(task)
+        db.commit()
+        db.refresh(task)
 
-    # 后台执行
-    from app.services.background_runner import run_generation_in_background
-    run_generation_in_background(task.id, request)
+        from app.services.background_runner import run_generation_in_background
+        run_generation_in_background(task.id, request)
 
-    return ApiResponse(data={
-        "task_id": task.id,
-        "status": task.status,
-        "message": "任务已创建，后台执行中",
-    })
+        return ApiResponse(data={
+            "task_id": task.id,
+            "status": task.status,
+            "allocation_mode": "manual",
+            "requested_count": count,
+            "allocated_count": count,
+            "unallocated_count": 0,
+            "message": "任务已创建，后台执行中",
+        })
+
+    else:  # auto
+        from app.services.policy_service import PolicyService
+        from app.services.knowledge_demand_service import KnowledgePointDemandService
+
+        policy_svc = PolicyService(db)
+        effective = policy_svc.get_effective_policy(question_bank_id)
+        policy = effective["policy"]
+
+        if not policy.get("is_enabled", True):
+            raise ValidationException("QUESTION_DEMAND_POLICY_DISABLED: 出题策略未启用，无法使用智能分配")
+
+        demand_svc = KnowledgePointDemandService(db)
+        evaluations = demand_svc.evaluate(question_bank_id, question_type, difficulty, policy)
+        allocations, allocatable, unallocated, warnings = demand_svc.allocate(evaluations, count, policy)
+
+        if allocatable == 0:
+            raise ValidationException("NO_ELIGIBLE_KNOWLEDGE_POINTS: 无候选知识点")
+
+        if allocatable < count and not allow_partial:
+            raise ValidationException(
+                f"ALLOCATION_INSUFFICIENT: 最多可分配 {allocatable} 道，少于目标 {count} 道。"
+                f"请确认后以 allow_partial=true 重新提交。"
+            )
+
+        # 构建分配计划
+        kb_names = demand_svc._get_knowledge_base_names(
+            list(set(a["knowledge_base_id"] for a in allocations))
+        )
+        plan_items = []
+        for a in allocations:
+            plan_items.append({
+                "knowledge_id": a["knowledge_id"],
+                "knowledge_name": a["knowledge_name"],
+                "knowledge_base_id": a["knowledge_base_id"],
+                "knowledge_base_name": kb_names.get(a["knowledge_base_id"], ""),
+                "importance_level": a["importance_level"],
+                "importance_label": a["importance_label"],
+                "planned_count": a["allocated_count"],
+            })
+
+        allocated_total = sum(a["allocated_count"] for a in allocations)
+        allocation_plan = {
+            "allocation_mode": "auto",
+            "requested_count": count,
+            "allocated_count": allocated_total,
+            "unallocated_count": count - allocated_total,
+            "policy_version": policy.get("version"),
+            "items": plan_items,
+        }
+
+        task = QuestionGenerationTask(
+            created_by=current_admin.id,
+            request_config=request,
+            status="pending",
+            total_count=allocated_total,
+            allocation_mode="auto",
+            allocation_plan=allocation_plan,
+            policy_snapshot=policy,
+            requested_count=count,
+            allocated_count=allocated_total,
+            unallocated_count=count - allocated_total,
+        )
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+
+        # 构建后台执行配置（auto 模式按分配计划逐知识点生成）
+        bg_config = {
+            "allocation_mode": "auto",
+            "allocation_plan": allocation_plan,
+            "question_bank_id": question_bank_id,
+            "question_type": question_type,
+            "difficulty": difficulty,
+            "count": allocated_total,
+        }
+        from app.services.background_runner import run_generation_in_background
+        run_generation_in_background(task.id, bg_config)
+
+        return ApiResponse(data={
+            "task_id": task.id,
+            "status": task.status,
+            "allocation_mode": "auto",
+            "requested_count": count,
+            "allocated_count": allocated_total,
+            "unallocated_count": count - allocated_total,
+            "message": f"任务已创建，已按智能分配方案创建 {allocated_total} 道题目生成计划",
+        })
 
 
 @router.get(
@@ -117,6 +237,10 @@ def get_generation_tasks(
         item_data.append({
             "id": t.id,
             "status": t.status,
+            "allocation_mode": t.allocation_mode,
+            "requested_count": t.requested_count,
+            "allocated_count": t.allocated_count,
+            "unallocated_count": t.unallocated_count,
             "total_count": t.total_count,
             "success_count": t.success_count,
             "duplicate_count": t.duplicate_count,
@@ -182,6 +306,11 @@ def get_generation_task_detail(
         "task_id": task.id,
         "created_by": task.created_by,
         "status": task.status,
+        "allocation_mode": task.allocation_mode,
+        "allocation_plan": task.allocation_plan,
+        "requested_count": task.requested_count,
+        "allocated_count": task.allocated_count,
+        "unallocated_count": task.unallocated_count,
         "request_config": task.request_config,
         "total_count": task.total_count,
         "success_count": task.success_count,

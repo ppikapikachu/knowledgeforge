@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.exceptions import ResourceNotFoundException, ValidationException
 from app.dependencies.auth import get_current_admin
 from app.models.admin import AdminUser
 from app.repositories.knowledge_repository import KnowledgeRepository
@@ -17,6 +18,7 @@ from app.schemas.knowledge import (
     KnowledgeResponse,
     KnowledgeUpdate,
 )
+from app.schemas.question_demand import ImportanceResponse, ImportanceUpdate
 from app.services.knowledge_service import KnowledgeService
 from app.utils.response import paginated_response, success_response
 
@@ -151,6 +153,41 @@ def delete_knowledge(
     service = KnowledgeService(db)
     knowledge = service.delete_knowledge(knowledge_id)
     return ApiResponse(data=KnowledgeResponse.model_validate(knowledge))
+
+
+@router.patch(
+    "/{knowledge_id}/importance",
+    response_model=ApiResponse[ImportanceResponse],
+    summary="修改知识点重要程度",
+    description="手动修改知识点重要程度，设置后来源标记为 manual，不会被后续导入覆盖。",
+)
+def update_knowledge_importance(
+    knowledge_id: int,
+    request: ImportanceUpdate,
+    db: Session = Depends(get_db),
+    current_admin: AdminUser = Depends(get_current_admin),
+) -> ApiResponse:
+    valid_levels = {"core", "important", "normal", "supplementary"}
+    if request.importance_level not in valid_levels:
+        raise ValidationException(f"非法重要程度: {request.importance_level}，允许值: {valid_levels}")
+
+    from app.models.knowledge import Knowledge
+    from app.core.exceptions import ResourceNotFoundException
+    knowledge = db.query(Knowledge).filter(Knowledge.id == knowledge_id).first()
+    if not knowledge:
+        raise ResourceNotFoundException("知识点不存在")
+
+    knowledge.importance_level = request.importance_level
+    knowledge.importance_source = "manual"
+    db.commit()
+    db.refresh(knowledge)
+
+    return ApiResponse(data=ImportanceResponse(
+        id=knowledge.id,
+        importance_level=knowledge.importance_level,
+        importance_source=knowledge.importance_source,
+        updated_at=knowledge.updated_at,
+    ))
 
 
 # Knowledge Relations

@@ -17,6 +17,7 @@ import {
   DIFFICULTY_LABELS,
   formatDateTime,
 } from '@/constants/questionManagement'
+import { ALLOCATION_MODE_LABELS } from '@/constants/questionDemand'
 import TaskStatusTag from '@/components/question-management/TaskStatusTag.vue'
 import { ElMessage } from 'element-plus'
 import { Search, RefreshCw, Eye, Sparkles, ClipboardList } from 'lucide-vue-next'
@@ -174,6 +175,14 @@ onMounted(async () => {
     <div v-else class="card">
       <el-table :data="tableData" style="width: 100%;">
         <el-table-column prop="id" label="任务ID" width="80" align="center" />
+        <el-table-column label="分配模式" width="110" align="center">
+          <template #default="{ row }">
+            <span v-if="row.allocation_mode" class="mode-tag">
+              {{ ALLOCATION_MODE_LABELS[row.allocation_mode] || row.allocation_mode }}
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="题库" width="130" align="center">
           <template #default="{ row }">{{ bankLabel(row) }}</template>
         </el-table-column>
@@ -187,6 +196,14 @@ onMounted(async () => {
           <template #default="{ row }">{{ difficultyLabel(row) }}</template>
         </el-table-column>
         <el-table-column prop="total_count" label="计划" width="70" align="center" />
+        <el-table-column label="分配(请求/可分配/未分配)" width="170" align="center">
+          <template #default="{ row }">
+            <template v-if="row.requested_count !== null">
+              {{ row.requested_count }} / {{ row.allocated_count }} / {{ row.unallocated_count }}
+            </template>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="成功/跳过/失败" width="130" align="center">
           <template #default="{ row }">
             {{ row.success_count }} / {{ row.duplicate_count }} / {{ row.failed_count }}
@@ -228,3 +245,14 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.mode-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #EFF6FF;
+  color: var(--color-primary, #1E40AF);
+}
+</style>

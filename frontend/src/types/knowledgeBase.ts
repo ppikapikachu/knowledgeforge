@@ -27,5 +27,6 @@ export interface KnowledgeBaseStatusRequest {
 export interface KnowledgeBaseQueryParams {
   page?: number
   page_size?: number
+  keyword?: string | null
   status?: number | null
 }

@@ -20,7 +20,7 @@ Prompt 结构：
 # ==================== Prompt 版本号 ====================
 # 每次修改 Prompt 后递增此版本号
 # 后续知识点可记录 "prompt_version": "v1" 用于追溯
-KNOWLEDGE_EXTRACT_PROMPT_VERSION = "v3"
+KNOWLEDGE_EXTRACT_PROMPT_VERSION = "v4"
 
 # ==================== 系统提示词 ====================
 # v3: 单元级来源绑定 + 内容完整性 + 截断检测
@@ -52,7 +52,19 @@ SYSTEM_PROMPT = """你是一个专业的知识点提取专家。你的任务是�
 - 正确填写 source_chunk_id
 - 如果知识点来自特定章节，填写 source_title
 
-### 6. 允许零知识点
+### 6. 重要程度判断（importance_level）
+每个知识点必须给出重要程度，取值：core / important / normal / supplementary
+- `core`：文档明确体现为基础主干、核心机制、关键原理或多个知识点共同依赖的前置概念
+- `important`：文档重点讲解、反复强调，或包含重要机制、常用实践和关键限制
+- `normal`：常规知识点，内容明确且有学习/考查价值，但不属于主干或重点
+- `supplementary`：补充细节、冷门 API、边缘场景或拓展阅读
+
+约束：
+- 只根据输入文档内容和知识点本身判断
+- 不得因为内容长就必然标为 core，也不得因为内容短就必然标为 supplementary
+- 若证据不足，返回 normal
+
+### 7. 允许零知识点
 - 目录、版权声明、纯标题行等返回空数组
 - 没有实质答案的题目跳过"""
 

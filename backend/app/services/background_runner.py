@@ -43,59 +43,84 @@ def run_generation_in_background(task_id: int, request_config: dict) -> None:
                 task.started_at = datetime.utcnow()
                 db.commit()
 
-                knowledge_id = request_config.get("knowledge_id")
                 question_bank_id = request_config.get("question_bank_id")
                 question_type = request_config.get("question_type", "SINGLE_CHOICE")
                 difficulty = request_config.get("difficulty", 2)
-                count = request_config.get("count", 5)
+                allocation_mode = request_config.get("allocation_mode", "manual")
 
                 agent = QuestionGenerateAgent(db)
-                result = agent.generate_for_plan_item(
-                    knowledge_id=knowledge_id,
-                    question_bank_id=question_bank_id,
-                    question_type=question_type,
-                    difficulty=difficulty,
-                    count=count,
-                )
+
+                # Determine generation targets: manual (single knowledge_id) or auto (allocation_plan)
+                if allocation_mode == "auto" and task.allocation_plan:
+                    plan_items = task.allocation_plan.get("items", [])
+                    targets = [
+                        {"knowledge_id": item["knowledge_id"], "count": item.get("planned_count", 1)}
+                        for item in plan_items
+                    ]
+                else:
+                    knowledge_id = request_config.get("knowledge_id")
+                    count = request_config.get("count", 5)
+                    targets = [{"knowledge_id": knowledge_id, "count": count}]
 
                 saved_count = 0
-                for q in result["questions"]:
-                    question = Question(
-                        question_type=q.question_type,
-                        content=q.content,
-                        answer=q.answer,
-                        analysis=q.analysis,
-                        difficulty=q.difficulty,
-                        status="pending_review",
-                        source_type="AI",
-                        question_bank_id=question_bank_id,
-                        generation_task_id=task_id,
-                        content_hash=agent.generate_content_hash(q),
-                    )
-                    db.add(question)
-                    db.flush()
+                total_requested = sum(t["count"] for t in targets)
+                all_errors = []
 
-                    for opt in q.options:
-                        db.add(QuestionOption(
-                            question_id=question.id,
-                            option_key=opt.option_key,
-                            option_content=opt.option_content,
-                            is_correct=opt.is_correct,
-                            sort_order=ord(opt.option_key) - ord("A"),
-                        ))
+                for target in targets:
+                    kid = target["knowledge_id"]
+                    t_count = target["count"]
+                    try:
+                        result = agent.generate_for_plan_item(
+                            knowledge_id=kid,
+                            question_bank_id=question_bank_id,
+                            question_type=question_type,
+                            difficulty=difficulty,
+                            count=t_count,
+                        )
 
-                    db.add(QuestionKnowledge(
-                        question_id=question.id,
-                        knowledge_id=knowledge_id,
-                    ))
-                    saved_count += 1
+                        for q in result["questions"]:
+                            question = Question(
+                                question_type=q.question_type,
+                                content=q.content,
+                                answer=q.answer,
+                                analysis=q.analysis,
+                                difficulty=q.difficulty,
+                                status="pending_review",
+                                source_type="AI",
+                                question_bank_id=question_bank_id,
+                                generation_task_id=task_id,
+                                content_hash=agent.generate_content_hash(q),
+                            )
+                            db.add(question)
+                            db.flush()
+
+                            for opt in q.options:
+                                db.add(QuestionOption(
+                                    question_id=question.id,
+                                    option_key=opt.option_key,
+                                    option_content=opt.option_content,
+                                    is_correct=opt.is_correct,
+                                    sort_order=ord(opt.option_key) - ord("A"),
+                                ))
+
+                            db.add(QuestionKnowledge(
+                                question_id=question.id,
+                                knowledge_id=kid,
+                            ))
+                            saved_count += 1
+
+                        if result["errors"]:
+                            all_errors.extend(result["errors"])
+                    except Exception as item_err:
+                        all_errors.append(f"知识点 {kid}: {item_err}")
+                        logger.error(f"生成任务 {task_id} 知识点 {kid} 生成失败: {item_err}")
 
                 task.success_count = saved_count
-                task.failed_count = count - saved_count
-                task.status = "success" if saved_count == count else "partial_success"
+                task.failed_count = total_requested - saved_count
+                task.status = "success" if saved_count == total_requested else ("partial_success" if saved_count > 0 else "failed")
                 task.completed_at = datetime.utcnow()
-                if result["errors"]:
-                    task.error_summary = "; ".join(result["errors"][:5])
+                if all_errors:
+                    task.error_summary = "; ".join(all_errors[:5])
                 db.commit()
 
             except Exception as e:
