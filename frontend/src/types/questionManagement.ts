@@ -63,6 +63,11 @@ export interface GenerationTask {
   total_count: number
   success_count: number
   duplicate_count: number
+  generated_count: number
+  exact_duplicate_count: number
+  semantic_duplicate_count: number
+  uncertain_count: number
+  unfulfilled_count: number
   failed_count: number
   request_config: Record<string, unknown> | null
   error_summary: string | null
@@ -111,7 +116,14 @@ export interface GenerationTaskDetail {
   total_count: number
   success_count: number
   duplicate_count: number
+  generated_count: number
+  exact_duplicate_count: number
+  semantic_duplicate_count: number
+  uncertain_count: number
+  unfulfilled_count: number
   failed_count: number
+  dedup_review_status: 'manual_review_required' | 'deduplicated' | 'clean'
+  dedup_manual_review_count: number
   progress: number
   error_summary: string | null
   started_at: string | null

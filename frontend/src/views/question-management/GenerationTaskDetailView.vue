@@ -197,8 +197,8 @@ onUnmounted(() => {
             />
             <div class="counts-row">
               <span>计划 <b>{{ task.total_count }}</b></span>
-              <span class="ok">成功 <b>{{ task.success_count }}</b></span>
-              <span class="dup">去重跳过 <b>{{ task.duplicate_count }}</b></span>
+              <span class="ok">生成 <b>{{ task.generated_count }}</b></span>
+              <span class="dup">判重 <b>{{ task.duplicate_count }}</b></span>
               <span class="fail">失败 <b>{{ task.failed_count }}</b></span>
             </div>
           </div>
@@ -209,6 +209,55 @@ onUnmounted(() => {
           </div>
           <div v-if="task.status === 'pending'" class="hint-block">
             任务等待执行中，可手动刷新查看进度。
+          </div>
+        </div>
+      </div>
+
+      <!-- 去重统计 -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          去重统计
+          <span
+            v-if="task.dedup_manual_review_count > 0"
+            class="status-badge status-badge--warning"
+            style="margin-left: 12px; cursor: pointer;"
+            @click="router.push(`/question-management/dedup?task_id=${task.task_id}&needs_manual_review=1`)"
+          >
+            {{ task.dedup_manual_review_count }} 条待人工复核
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="dedup-stats-grid">
+            <div class="dedup-stat">
+              <div class="dedup-stat-value">{{ task.generated_count }}</div>
+              <div class="dedup-stat-label">生成成功</div>
+            </div>
+            <div class="dedup-stat">
+              <div class="dedup-stat-value warn">{{ task.duplicate_count }}</div>
+              <div class="dedup-stat-label">判重淘汰</div>
+            </div>
+            <div class="dedup-stat">
+              <div class="dedup-stat-value">{{ task.exact_duplicate_count }}</div>
+              <div class="dedup-stat-label">精确重复</div>
+            </div>
+            <div class="dedup-stat">
+              <div class="dedup-stat-value">{{ task.semantic_duplicate_count }}</div>
+              <div class="dedup-stat-label">语义重复</div>
+            </div>
+            <div class="dedup-stat">
+              <div class="dedup-stat-value warn">{{ task.uncertain_count }}</div>
+              <div class="dedup-stat-label">不确定</div>
+            </div>
+            <div class="dedup-stat">
+              <div class="dedup-stat-value">{{ task.unfulfilled_count }}</div>
+              <div class="dedup-stat-label">未完成</div>
+            </div>
+          </div>
+          <div class="dedup-review-status">
+            去重复核状态：
+            <span :class="['status-badge', `status-badge--${task.dedup_review_status === 'manual_review_required' ? 'warning' : task.dedup_review_status === 'clean' ? 'success' : 'info'}`]">
+              {{ task.dedup_review_status === 'manual_review_required' ? '需人工复核' : task.dedup_review_status === 'clean' ? '无重复' : '有判重' }}
+            </span>
           </div>
         </div>
       </div>
@@ -457,5 +506,43 @@ onUnmounted(() => {
 .plan-label {
   font-size: 12px;
   color: var(--color-muted-foreground);
+}
+
+.dedup-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-muted);
+  border-radius: var(--radius-md);
+}
+
+.dedup-stat {
+  text-align: center;
+}
+
+.dedup-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+
+.dedup-stat-value.warn {
+  color: var(--color-warning, #D97706);
+}
+
+.dedup-stat-label {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+}
+
+.dedup-review-status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>

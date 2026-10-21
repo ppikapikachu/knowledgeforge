@@ -6,7 +6,7 @@ LLM 复核过的配对也各落一行；不保存全库候选。
 
 from typing import Optional
 
-from sqlalchemy import BigInteger, Boolean, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.mysql import JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -53,6 +53,7 @@ class QuestionDedupRecord(Base, TimestampMixin):
         String(20), nullable=True, comment="same_scope / cross_scope / global_exact / batch_internal"
     )
     keyword_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, comment="关键词通道分数")
+    vector_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, comment="向量通道分数")
     algorithm_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, comment="融合算法分数")
 
     llm_called: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, comment="是否调用 LLM")
@@ -70,6 +71,23 @@ class QuestionDedupRecord(Base, TimestampMixin):
     )
     needs_manual_review: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, comment="是否需要人工复核"
+    )
+
+    # 人工复核结论（与自动判定证据分离保存，§3.3）：
+    # decision/llm_decision/algorithm_score/vector_score 等自动判定字段不被人工结论覆盖；
+    # effective_decision = manual_resolution or decision（派生，不落库）。
+    manual_resolution: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True, comment="人工最终结论: duplicate/distinct（人工必须二选一）"
+    )
+    resolution_reason: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True, comment="人工判断依据"
+    )
+    resolved_by: Mapped[Optional[int]] = mapped_column(
+        BigInteger, ForeignKey("admin_user.id", ondelete="SET NULL"),
+        nullable=True, comment="处理人（管理员 ID，取自认证上下文）"
+    )
+    resolved_at: Mapped[Optional[DateTime]] = mapped_column(
+        DateTime(3), nullable=True, comment="人工处理时间"
     )
 
     embedding_model: Mapped[Optional[str]] = mapped_column(

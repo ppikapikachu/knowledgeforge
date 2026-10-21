@@ -111,8 +111,14 @@ def get_question(
             else "duplicate" if record.decision == "duplicate"
             else "distinct"
         )
+        # 人工复核结论（不覆盖自动判定；uncertain 不被映射成 duplicate，
+        # 人工结论以独立字段 + effective_decision 提供，§2.5/§3.3）
+        data["dedup_manual_resolution"] = record.manual_resolution
+        data["dedup_effective_decision"] = record.manual_resolution or record.decision
     else:
         data["dedup_review_status"] = "none"
+        data["dedup_manual_resolution"] = None
+        data["dedup_effective_decision"] = "none"
     return ApiResponse(data=data)
 
 

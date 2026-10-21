@@ -1127,6 +1127,7 @@ class QuestionDeduplicationService:
             matched_source=(pair.candidate_source if pair else result.matched_source),
             scope_mode=(pair.scope if pair else result.scope_mode),
             keyword_score=float(pair.keyword_score if pair else result.keyword_score),
+            vector_score=float(pair.vector_score if pair else result.vector_score),
             algorithm_score=float(pair.algorithm_score if pair else result.algorithm_score),
             llm_called=bool(result.llm_called),
             llm_decision=(result.pair_verdicts.get(pair_id) if pair_id else None),

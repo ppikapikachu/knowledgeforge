@@ -106,6 +106,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '题库知识范围' },
       },
       {
+        path: 'question-management/dedup',
+        name: 'DedupRecords',
+        component: () => import('@/views/question-management/DedupRecordsView.vue'),
+        meta: { title: '去重疑点' },
+      },
+      {
         path: 'questions',
         name: 'QuestionList',
         component: () => import('@/views/question/QuestionList.vue'),

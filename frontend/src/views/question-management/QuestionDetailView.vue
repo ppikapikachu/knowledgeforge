@@ -13,6 +13,7 @@ import { reviewQuestion } from '@/api/questionGeneration'
 import { useQuestionLookups } from '@/composables/useQuestionLookups'
 import type { Question, QuestionUpdateRequest } from '@/types/question'
 import { QUESTION_STATUS, normalizeQuestionStatus } from '@/constants/questionManagement'
+import { getQuestionDedupStatusLabel, QUESTION_DEDUP_STATUS_CLASSES } from '@/constants/questionDedup'
 import QuestionPreview from '@/components/question-management/QuestionPreview.vue'
 import QuestionForm from '@/components/question-management/QuestionForm.vue'
 import QuestionStatusTag from '@/components/question-management/QuestionStatusTag.vue'
@@ -230,8 +231,38 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- 预览模式 -->
+      <!-- 非编辑模式：预览 + 操作 -->
       <template v-else>
+        <!-- 去重疑点提示（独立信息条，不替代预览） -->
+        <div v-if="question.dedup_review_status && question.dedup_review_status !== 'none'" class="card" style="margin-bottom: 16px;">
+          <div class="card-body" style="padding: 12px 16px;">
+            <div class="dedup-alert" :class="`da-${QUESTION_DEDUP_STATUS_CLASSES[question.dedup_effective_decision || question.dedup_review_status] || 'muted'}`">
+              <span :class="['status-badge', `status-badge--${QUESTION_DEDUP_STATUS_CLASSES[question.dedup_effective_decision || question.dedup_review_status] || 'muted'}`]">
+                {{ getQuestionDedupStatusLabel(question.dedup_effective_decision || question.dedup_review_status) }}
+              </span>
+              <template v-if="question.dedup_manual_resolution">
+                <span class="dedup-hint">
+                  人工裁定：{{ question.dedup_manual_resolution === 'duplicate' ? '确认重复' : '确认不重复' }}
+                  <span class="muted-text">（自动判定：{{ getQuestionDedupStatusLabel(question.dedup_review_status) }}）</span>
+                </span>
+              </template>
+              <template v-else-if="question.dedup_review_status === 'uncertain'">
+                <span class="dedup-hint">去重结果不确定，请人工检查是否存在重复题</span>
+              </template>
+              <template v-else-if="question.dedup_review_status === 'duplicate'">
+                <span class="dedup-hint">存在疑似重复题，请先对比后再审核</span>
+              </template>
+              <template v-else>
+                <span class="dedup-hint">去重判定：不重复</span>
+              </template>
+              <el-button text type="primary" size="small" style="margin-left: auto;" @click="router.push(`/question-management/dedup?question_id=${questionId}`)">
+                查看相似题
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 题目预览 -->
         <div class="card">
           <div class="card-header">
             题目预览
@@ -330,6 +361,44 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.dedup-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+}
+
+.dedup-alert.da-warning {
+  background: #FFFBEB;
+  border: 1px solid #FCD34D;
+}
+
+.dedup-alert.da-error {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+}
+
+.dedup-alert.da-success {
+  background: #ECFDF5;
+  border: 1px solid #6EE7B7;
+}
+
+.dedup-alert.da-muted {
+  background: var(--color-muted);
+  border: 1px solid var(--color-border);
+}
+
+.dedup-hint {
+  font-size: 13px;
+  color: var(--color-foreground);
+}
+
+.muted-text {
+  color: var(--color-muted-foreground);
+  font-size: 12px;
 }
 
 .hint-block {

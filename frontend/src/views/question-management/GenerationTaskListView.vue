@@ -204,9 +204,22 @@ onMounted(async () => {
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column label="成功/跳过/失败" width="130" align="center">
+        <el-table-column label="生成/判重/失败" width="120" align="center">
           <template #default="{ row }">
-            {{ row.success_count }} / {{ row.duplicate_count }} / {{ row.failed_count }}
+            {{ row.generated_count }} / {{ row.duplicate_count }} / {{ row.failed_count }}
+          </template>
+        </el-table-column>
+        <el-table-column label="待复核" width="90" align="center">
+          <template #default="{ row }">
+            <span
+              v-if="row.uncertain_count > 0"
+              class="status-badge status-badge--warning"
+              style="cursor: pointer;"
+              @click="router.push(`/question-management/dedup?task_id=${row.id}&needs_manual_review=1`)"
+            >
+              {{ row.uncertain_count }} 条
+            </span>
+            <span v-else class="muted-text">0</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="110" align="center">
@@ -254,5 +267,10 @@ onMounted(async () => {
   font-size: 12px;
   background: #EFF6FF;
   color: var(--color-primary, #1E40AF);
+}
+
+.muted-text {
+  color: var(--color-muted-foreground);
+  font-size: 12px;
 }
 </style>

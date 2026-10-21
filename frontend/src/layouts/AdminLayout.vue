@@ -52,6 +52,7 @@ const menuItems = [
       { label: '题目列表', path: '/question-management/questions' },
       { label: '出题策略', path: '/question-management/policies' },
       { label: '题库知识范围', path: '/question-management/knowledge-scope' },
+      { label: '去重疑点', path: '/question-management/dedup' },
     ],
   },
   {

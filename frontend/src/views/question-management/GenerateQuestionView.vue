@@ -27,6 +27,7 @@ import {
   formatScore,
 } from '@/constants/questionDemand'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import DedupStatusCard from '@/components/question-management/DedupStatusCard.vue'
 import {
   Sparkles,
   ArrowLeft,
@@ -321,6 +322,11 @@ onMounted(() => {
           }}
         </div>
       </div>
+    </div>
+
+    <!-- 语义去重状态 -->
+    <div style="margin-top: 16px;">
+      <DedupStatusCard />
     </div>
 
     <!-- 表单 -->

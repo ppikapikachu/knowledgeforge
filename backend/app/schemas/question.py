@@ -181,6 +181,14 @@ class QuestionResponse(BaseModel):
         default=None,
         description="去重复核状态（uncertain/duplicate/distinct/none，详情接口返回）",
     )
+    dedup_manual_resolution: Optional[str] = Field(
+        default=None,
+        description="人工复核结论（duplicate/distinct，未处理为 null；不覆盖自动判定）",
+    )
+    dedup_effective_decision: Optional[str] = Field(
+        default=None,
+        description="最终结论：有人工结论时优先人工结论，否则为原始自动结论",
+    )
     created_at: datetime = Field(description="创建时间")
     updated_at: datetime = Field(description="更新时间")
 

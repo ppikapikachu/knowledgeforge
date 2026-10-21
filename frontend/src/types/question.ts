@@ -23,6 +23,9 @@ export interface Question {
   correct_count: number
   options: QuestionOption[]
   knowledge_ids: number[]
+  dedup_review_status?: string
+  dedup_manual_resolution?: string | null
+  dedup_effective_decision?: string
   created_at: string
   updated_at: string
 }
