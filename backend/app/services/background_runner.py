@@ -323,6 +323,34 @@ def execute_generation_task(task_id: int, request_config: dict, session_factory=
         db.close()
 
 
+def run_review_batch_in_background(batch_id: int) -> None:
+    """在后台线程中执行手动批量 AI 审核批次（§7：不在 HTTP 请求线程跑 LLM）。"""
+    _spawn(f"review-batch-{batch_id}", execute_review_batch_task, (batch_id,))
+
+
+def execute_review_batch_task(batch_id: int, session_factory=None) -> None:
+    """批量 AI 审核任务主流程（同步可测；run_review_batch_in_background 包一层线程）。
+
+    复用 QuestionReviewBatchService.execute：单题审核走 QuestionReviewService，
+    不复制审核实现；LLM 调用发生在独立会话/线程中，不持长写事务。
+    """
+    if session_factory is None:
+        from app.core.database import SessionLocal as session_factory  # noqa: N813
+
+    from app.services.question_review_batch_service import QuestionReviewBatchService
+
+    db = session_factory()
+    try:
+        service = QuestionReviewBatchService(db)
+        result = service.execute(batch_id)
+        logger.info(f"批量审核任务 {batch_id} 执行完成: {result}")
+    except Exception as exc:  # noqa: BLE001 单批失败不影响其他后台任务
+        logger.error(f"批量审核任务 {batch_id} 执行异常: {exc}", exc_info=True)
+        db.rollback()
+    finally:
+        db.close()
+
+
 def run_import_in_background(task_id: int) -> None:
     """在后台线程中执行导入任务。
 

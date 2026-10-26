@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class QuestionReviewReopenRequest(BaseModel):
@@ -14,6 +14,25 @@ class QuestionReviewReopenRequest(BaseModel):
         max_length=1000,
         description="重新开启原因，1~1000 字符",
     )
+
+
+class QuestionReviewBatchRequest(BaseModel):
+    """批量 AI 审核请求（§6.1/§6.2，preview 与 create 共用）。"""
+
+    question_ids: list[int] = Field(
+        ...,
+        min_length=1,
+        max_length=200,
+        description="待审核题目 ID 列表（非空去重；硬上限 200，实际受配置上限约束）",
+    )
+
+    @field_validator("question_ids")
+    @classmethod
+    def _dedupe_preserve_order(cls, v: list[int]) -> list[int]:
+        """按文档 §6.1：前端提交先去重（保持顺序）。"""
+        if any(qid <= 0 for qid in v):
+            raise ValueError("question_ids 必须为正整数")
+        return list(dict.fromkeys(v))
 
 
 class QuestionReviewRecordOut(BaseModel):

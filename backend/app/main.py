@@ -75,6 +75,14 @@ async def lifespan(_app: FastAPI):
     try:
         readiness = initialize_question_index(db)
         logger.info("题目向量索引初始化完成: %s", readiness)
+
+        # 批量审核批次重启恢复（补充开发文档 §8）：queued/running 批次的
+        # 卡死项标记中断失败并释放题目认领，不静默挂起、不无限重试
+        from app.services.question_review_batch_service import QuestionReviewBatchService
+
+        recovery = QuestionReviewBatchService(db).recover_incomplete_batches()
+        if recovery.get("recovered_batches"):
+            logger.warning("批量审核批次重启恢复: %s", recovery)
     finally:
         db.close()
 

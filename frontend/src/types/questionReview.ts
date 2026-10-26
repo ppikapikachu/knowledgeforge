@@ -58,6 +58,8 @@ export interface QuestionReviewRecordQueryParams {
   question_id?: number | null
   decision?: AiReviewDecision | null
   execution_status?: AiReviewExecutionStatus | null
+  batch_id?: number | null
+  trigger_source?: string | null
   page?: number
   page_size?: number
 }

@@ -53,6 +53,7 @@ const menuItems = [
       { label: '出题策略', path: '/question-management/policies' },
       { label: '题库知识范围', path: '/question-management/knowledge-scope' },
       { label: '去重疑点', path: '/question-management/dedup' },
+      { label: 'AI 审核批次', path: '/question-management/review-batches' },
       { label: 'AI 审核记录', path: '/question-management/ai-reviews' },
     ],
   },

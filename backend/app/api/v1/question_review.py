@@ -22,7 +22,7 @@ from app.models.question_bank import QuestionBank
 from app.models.question_generation_task import QuestionGenerationTask
 from app.models.question_review_record import QuestionReviewRecord
 from app.schemas.common import ApiResponse
-from app.schemas.question_review import QuestionReviewReopenRequest
+from app.schemas.question_review import QuestionReviewBatchRequest, QuestionReviewReopenRequest
 from app.utils.response import paginated_response
 
 logger = logging.getLogger(__name__)
@@ -40,6 +40,10 @@ def list_review_records(
     execution_status: Optional[str] = Query(
         None, description="执行状态 success/failed/skipped"
     ),
+    batch_id: Optional[int] = Query(None, description="批量审核批次 ID（补充开发）"),
+    trigger_source: Optional[str] = Query(
+        None, description="触发来源 generation_task/manual_batch（补充开发）"
+    ),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
@@ -55,6 +59,10 @@ def list_review_records(
         query = query.filter(QuestionReviewRecord.decision == decision)
     if execution_status:
         query = query.filter(QuestionReviewRecord.execution_status == execution_status)
+    if batch_id is not None:
+        query = query.filter(QuestionReviewRecord.batch_id == batch_id)
+    if trigger_source:
+        query = query.filter(QuestionReviewRecord.trigger_source == trigger_source)
 
     total = query.count()
     rows = (
@@ -77,6 +85,7 @@ def list_review_records(
             "id": r.id,
             "question_id": r.question_id,
             "generation_task_id": r.generation_task_id,
+            "batch_id": r.batch_id,
             "review_round": r.review_round,
             "trigger_source": r.trigger_source,
             "execution_status": r.execution_status,
@@ -210,3 +219,112 @@ def reopen_question(
         "reopen_reason": reason[:1000],
         "record_id": latest.id,
     })
+
+
+# ----------------------------------------------------------------------
+# 手动批量 AI 审核（补充开发文档 §6）
+# ----------------------------------------------------------------------
+
+
+def _check_batch_enabled_and_size(ids: list) -> None:
+    """批量共用总开关（§4.3）与单批上限（§6.1）。"""
+    from agent.common.config import agent_settings
+    from app.core.exceptions import ValidationException
+
+    if not agent_settings.QUESTION_AI_REVIEW_ENABLED:
+        raise ValidationException(
+            "AI 质量审核功能当前未启用（QUESTION_AI_REVIEW_ENABLED=false），"
+            "不允许创建/预检批量审核任务"
+        )
+    max_items = min(agent_settings.QUESTION_AI_REVIEW_BATCH_MAX_ITEMS, 200)
+    if len(ids) > max_items:
+        raise ValidationException(f"单批题目数量超过上限 {max_items}")
+
+
+@router.post("/batches/preview", summary="批量 AI 审核预检")
+def preview_review_batch(
+    request: QuestionReviewBatchRequest,
+    db: Session = Depends(get_db),
+    current_admin: AdminUser = Depends(get_current_admin),
+) -> ApiResponse:
+    """预检：不建任务、不调 LLM、不产生持久化。创建时会重新校验（不信任预检结果）。"""
+    from app.services.question_review_batch_service import QuestionReviewBatchService
+
+    ids = list(dict.fromkeys(request.question_ids or []))
+    _check_batch_enabled_and_size(ids)
+    result = QuestionReviewBatchService(db).preview(ids)
+    return ApiResponse(code=0, message="success", data=result)
+
+
+@router.post("/batches", summary="创建批量 AI 审核任务")
+def create_review_batch(
+    request: QuestionReviewBatchRequest,
+    db: Session = Depends(get_db),
+    current_admin: AdminUser = Depends(get_current_admin),
+) -> ApiResponse:
+    """创建并异步执行批量 AI 审核。
+
+    - 创建时逐题重建校验 + DB 唯一约束认领（活动项冲突→该题 skipped）；
+    - 无任何可执行题目（accepted=0）→ 业务错误，不创建批次；
+    - 审核在后台线程执行（不阻塞 HTTP 请求，§13）。
+    """
+    from app.core.exceptions import ValidationException
+    from app.services.background_runner import run_review_batch_in_background
+    from app.services.question_review_batch_service import QuestionReviewBatchService
+
+    ids = list(dict.fromkeys(request.question_ids or []))
+    _check_batch_enabled_and_size(ids)
+
+    service = QuestionReviewBatchService(db)
+    result = service.create_batch(ids, created_by=current_admin.id)
+    if result.get("error") == "no_eligible_questions" or result.get("accepted", 0) == 0:
+        raise ValidationException("没有可执行 AI 审核的题目（均不满足准入条件），未创建批次")
+
+    run_review_batch_in_background(result["batch_id"])
+    return ApiResponse(code=0, message="success", data={
+        "batch_id": result["batch_id"],
+        "status": result["status"],
+        "requested": result["requested"],
+        "accepted": result["accepted"],
+        "skipped": result["skipped"],
+    })
+
+
+@router.get("/batches", summary="批量审核任务列表")
+def list_review_batches(
+    status: Optional[str] = Query(
+        None, description="批次状态 queued/running/completed/partial/failed/cancelled"
+    ),
+    created_by: Optional[int] = Query(None, description="创建管理员 ID"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_admin: AdminUser = Depends(get_current_admin),
+) -> ApiResponse:
+    """批次列表（管理员可查看全部；筛选按 AND 组合）。"""
+    from app.services.question_review_batch_service import QuestionReviewBatchService
+
+    items, total = QuestionReviewBatchService(db).list_batches(
+        status=status, created_by=created_by, page=page, page_size=page_size
+    )
+    return paginated_response(items, total, page, page_size)
+
+
+@router.get("/batches/{batch_id}", summary="批量审核任务详情")
+def get_review_batch(
+    batch_id: int,
+    db: Session = Depends(get_db),
+    current_admin: AdminUser = Depends(get_current_admin),
+) -> ApiResponse:
+    """批次总体统计 + 每个题目的执行明细（含审核结论摘要/跳过原因/错误）。"""
+    from app.core.exceptions import ResourceNotFoundException
+    from app.services.question_review_batch_service import QuestionReviewBatchService
+
+    detail = QuestionReviewBatchService(db).get_batch_detail(batch_id)
+    if not detail:
+        raise ResourceNotFoundException(f"批量审核任务 {batch_id} 不存在")
+    return ApiResponse(code=0, message="success", data=detail)
+
+
+# §6.6 cancel：本版未提供取消接口——后台执行器暂无安全取消机制（强行取消
+# 会与单题审核的条件更新/认领释放逻辑竞争）；批次失败可重新发起新批次。

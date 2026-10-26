@@ -169,14 +169,21 @@ SAMPLES = [
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", default=None, help="结果 JSON 输出路径")
+    parser.add_argument("--only", default=None,
+                        help="仅运行 id 含指定子串的样本（逗号分隔，如 'R1,R7'）")
     args = parser.parse_args()
+
+    samples = SAMPLES
+    if args.only:
+        keys = [k.strip() for k in args.only.split(",") if k.strip()]
+        samples = [s for s in SAMPLES if any(k in s["id"] for k in keys)]
 
     agent = QuestionReviewAgent()
     rows = []
     mismatch = 0
     false_approve = 0
     false_reject = 0
-    for sample in SAMPLES:
+    for sample in samples:
         started = time.monotonic()
         try:
             output: QuestionReviewOutput = agent.review(sample["context"])

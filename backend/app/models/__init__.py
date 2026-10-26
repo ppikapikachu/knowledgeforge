@@ -12,6 +12,10 @@ from app.models.question_knowledge import QuestionKnowledge
 from app.models.question_generation_task import QuestionGenerationTask
 from app.models.question_dedup_record import QuestionDedupRecord
 from app.models.question_review_record import QuestionReviewRecord
+from app.models.question_review_batch import (
+    QuestionReviewBatch,
+    QuestionReviewBatchItem,
+)
 from app.models.question_answer_record import QuestionAnswerRecord
 from app.models.question_comment import QuestionComment
 from app.models.import_task import KnowledgeImportTask
@@ -29,6 +33,8 @@ __all__ = [
     "QuestionGenerationTask",
     "QuestionDedupRecord",
     "QuestionReviewRecord",
+    "QuestionReviewBatch",
+    "QuestionReviewBatchItem",
     "QuestionAnswerRecord",
     "QuestionComment",
     "KnowledgeImportTask",

@@ -35,7 +35,13 @@ class QuestionReviewRecord(Base, TimestampMixin):
         BigInteger().with_variant(BigInteger, "mysql"),
         ForeignKey("question_generation_task.id", ondelete="SET NULL"),
         nullable=True,
-        comment="生成任务 ID",
+        comment="生成任务 ID（手动批量审核为空，不伪造出题任务 ID）",
+    )
+    batch_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger().with_variant(BigInteger, "mysql"),
+        ForeignKey("question_review_batch.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="手动批量审核批次 ID（生成任务自动审核为空）",
     )
     review_round: Mapped[int] = mapped_column(
         Integer,
@@ -47,7 +53,7 @@ class QuestionReviewRecord(Base, TimestampMixin):
         String(30),
         nullable=False,
         default="generation_task",
-        comment="触发来源（第一版固定 generation_task）",
+        comment="触发来源: generation_task/ manual_batch",
     )
     execution_status: Mapped[str] = mapped_column(
         String(20),
@@ -142,5 +148,7 @@ class QuestionReviewRecord(Base, TimestampMixin):
         UniqueConstraint("question_id", "review_round", name="uq_qrr_question_round"),
         Index("idx_qrr_task_id", "generation_task_id"),
         Index("idx_qrr_question_id", "question_id"),
+        Index("idx_qrr_batch_id", "batch_id"),
+        Index("idx_qrr_trigger_source", "trigger_source"),
         {"mysql_charset": "utf8mb4", "mysql_collate": "utf8mb4_0900_ai_ci"},
     )

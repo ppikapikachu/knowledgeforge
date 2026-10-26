@@ -118,6 +118,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'AI 审核记录' },
       },
       {
+        path: 'question-management/review-batches',
+        name: 'ReviewBatchList',
+        component: () => import('@/views/question-management/ReviewBatchListView.vue'),
+        meta: { title: 'AI 审核批次' },
+      },
+      {
+        path: 'question-management/review-batches/:batchId',
+        name: 'ReviewBatchDetail',
+        component: () => import('@/views/question-management/ReviewBatchDetailView.vue'),
+        meta: { title: '审核批次详情' },
+      },
+      {
         path: 'questions',
         name: 'QuestionList',
         component: () => import('@/views/question/QuestionList.vue'),

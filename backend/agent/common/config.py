@@ -171,6 +171,9 @@ class AgentSettings(BaseSettings):
     QUESTION_AI_REVIEW_MAX_CONCURRENCY: int = 1
     # 每任务审核并发上限（第一版串行执行，复用生成后台线程，不新开每题线程）
 
+    QUESTION_AI_REVIEW_BATCH_MAX_ITEMS: int = 100
+    # 手动批量 AI 审核单批题目数上限（硬上限 200，防无界 LLM 调用）
+
 
 # 全局配置单例
 # 在模块加载时自动读取 .env 文件，后续通过 agent_settings 直接访问

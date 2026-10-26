@@ -46,6 +46,8 @@ SKIP_UNSUPPORTED_TYPE = "unsupported_question_type"
 SKIP_DEDUP_UNRESOLVED = "dedup_unresolved"
 SKIP_DEDUP_DUPLICATE = "dedup_duplicate"
 SKIP_BUDGET_EXCEEDED = "budget_exceeded"
+SKIP_QUESTION_NOT_PENDING = "question_not_pending"
+SKIP_CONCURRENT_REVIEW = "concurrent_review_in_progress"
 FAIL_EXECUTION = "execution_failed"
 FAIL_CONTENT_CHANGED = "content_changed_during_review"
 
@@ -65,10 +67,15 @@ class QuestionReviewService:
 
         verdict:
         - "eligible"：可进入 AI 审核；
-        - "skipped"：跳过（reason_code=unsupported_question_type/dedup_unresolved/dedup_duplicate）。
+        - "skipped"：跳过（reason_code=question_not_pending/unsupported_question_type/
+          dedup_unresolved/dedup_duplicate）。
         """
         if question.question_type not in SUPPORTED_QUESTION_TYPES:
             return "skipped", SKIP_UNSUPPORTED_TYPE
+
+        # 批量补充开发 §4.1：仅待审核状态可进入 AI 审核（人工终态/已发布/已驳回不覆盖）
+        if question.status != "pending_review":
+            return "skipped", SKIP_QUESTION_NOT_PENDING
 
         verdict, code, _ = self._dedup_gate(question)
         if not verdict:
@@ -151,8 +158,14 @@ class QuestionReviewService:
         question_id: int,
         task_id: Optional[int] = None,
         review_round: int = 1,
+        trigger_source: str = "generation_task",
+        batch_id: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """审核单题并按决策执行状态流转。返回审核结果 dict。"""
+        """审核单题并按决策执行状态流转。返回审核结果 dict。
+
+        trigger_source/batch_id：手动批量审核（manual_batch）携带批次信息；
+        生成任务自动审核保持默认值（兼容既有调用）。
+        """
         question = self.db.query(Question).filter(Question.id == question_id).first()
         if not question:
             return {"question_id": question_id, "execution_status": "failed",
@@ -182,6 +195,8 @@ class QuestionReviewService:
                 error_code=skip_code,
                 error_message=f"跳过 AI 审核: {skip_code}",
                 reviewed_content_hash=self.review_content_hash(self.db, question),
+                trigger_source=trigger_source,
+                batch_id=batch_id,
             )
             self.db.commit()
             return self._record_to_result(record)
@@ -205,6 +220,8 @@ class QuestionReviewService:
                 error_message=str(exc)[:1000],
                 reviewed_content_hash=content_hash_before,
                 duration_ms=duration_ms,
+                trigger_source=trigger_source,
+                batch_id=batch_id,
             )
             self.db.commit()
             return self._record_to_result(record)
@@ -229,6 +246,8 @@ class QuestionReviewService:
             evidence=[e.model_dump() for e in output.evidence],
             reviewed_content_hash=content_hash_before,
             duration_ms=duration_ms,
+            trigger_source=trigger_source,
+            batch_id=batch_id,
         )
 
         # 状态流转（auto_approve/auto_reject 带二次保护；manual_review 保持 pending_review）
@@ -413,6 +432,13 @@ class QuestionReviewService:
         self._agent = QuestionReviewAgent()
         return self._agent
 
+    def allocate_review_round(self, question_id: int) -> int:
+        """分配本题下一个审核轮次（唯一约束 (question_id, review_round) 幂等基座）。
+
+        手动批量审核入口使用（§5.3 每次真实 Agent 审核新 review_round）。
+        """
+        return self._next_round(question_id)
+
     def _next_round(self, question_id: int) -> int:
         max_round = (
             self.db.query(QuestionReviewRecord.review_round)
@@ -492,12 +518,15 @@ class QuestionReviewService:
         duration_ms: Optional[int] = None,
         error_code: Optional[str] = None,
         error_message: Optional[str] = None,
+        trigger_source: str = "generation_task",
+        batch_id: Optional[int] = None,
     ) -> QuestionReviewRecord:
         record = QuestionReviewRecord(
             question_id=question.id,
             generation_task_id=task_id,
+            batch_id=batch_id,
             review_round=review_round,
-            trigger_source="generation_task",
+            trigger_source=trigger_source,
             execution_status=execution_status,
             decision=decision,
             risk_level=risk_level,

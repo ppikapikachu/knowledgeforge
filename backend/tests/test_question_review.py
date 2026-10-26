@@ -55,13 +55,13 @@ def ensure_knowledge(db, ids=(1, 2)):
 
 def make_question(db, *, content="题目内容示例", status="pending_review",
                   question_type="SINGLE_CHOICE", generation_task_id=None,
-                  analysis="解析内容", knowledge_ids=(1,)):
+                  analysis="解析内容", knowledge_ids=(1,), answer="A"):
     ensure_knowledge(db, knowledge_ids)
     from app.services.question_normalizer import question_normalizer
     q = Question(
         question_type=question_type,
         content=content,
-        answer="A",
+        answer=answer,
         analysis=analysis,
         difficulty=2,
         status=status,
@@ -69,7 +69,7 @@ def make_question(db, *, content="题目内容示例", status="pending_review",
         question_bank_id=_bank_id(db),
         generation_task_id=generation_task_id,
         content_hash=question_normalizer.compute_content_hash(
-            question_type, content, "A", [("选项一", 1), ("选项二", 0)]),
+            question_type, content, answer, [("选项一", 1), ("选项二", 0)]),
         hash_version="2",
     )
     db.add(q)
@@ -309,7 +309,7 @@ class TestStateTransition:
         assert q.status == "pending_review"
 
     def test_late_review_does_not_override_human(self, db):
-        """人工已处理（published）→ 迟到审核不得覆盖。"""
+        """人工已处理（published）→ 迟到审核不得覆盖（入口+决策双保护）。"""
         ensure_knowledge(db)
         q = make_question(db)
         q.status = "published"
@@ -318,7 +318,25 @@ class TestStateTransition:
         result = svc.review_one(q.id, task_id=None)
         db.refresh(q)
         assert q.status == "published"
-        assert result["transition"]["reason"] == "question_status_changed_by_human"
+        # 入口保护（§4.4 开始前查 pending_review）：非待审直接跳过，不流转
+        assert result["execution_status"] == "skipped"
+        assert result["error_code"] == "question_not_pending"
+
+        # 决策保护：审核期间人工发布 → 不覆盖（question_status_changed_by_human）
+        q2 = make_question(db)
+
+        class HumanPublishAgent(StubReviewAgent):
+            def review(self, context):
+                out = super().review(context)
+                q2.status = "published"
+                db.commit()
+                return out
+
+        svc2 = QuestionReviewService(db, agent=HumanPublishAgent([reject_output()]))
+        result2 = svc2.review_one(q2.id, task_id=None)
+        db.refresh(q2)
+        assert q2.status == "published"
+        assert result2["transition"]["reason"] == "question_status_changed_by_human"
 
     def test_content_changed_during_review_not_flowed(self, db):
         """审核期间内容被修改（指纹变化）→ 不流转。"""

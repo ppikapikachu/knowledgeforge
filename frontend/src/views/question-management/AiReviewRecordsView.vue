@@ -37,6 +37,8 @@ const queryParams = ref<QuestionReviewRecordQueryParams>({
   question_id: undefined,
   decision: undefined,
   execution_status: undefined,
+  batch_id: undefined,
+  trigger_source: undefined,
 })
 
 // 详情弹窗
@@ -48,7 +50,9 @@ const hasFilters = computed(() =>
     queryParams.value.task_id ||
     queryParams.value.question_id ||
     queryParams.value.decision ||
-    queryParams.value.execution_status
+    queryParams.value.execution_status ||
+    queryParams.value.batch_id ||
+    queryParams.value.trigger_source
   ),
 )
 
@@ -61,6 +65,8 @@ async function fetchData() {
     if (!params.question_id) delete params.question_id
     if (!params.decision) delete params.decision
     if (!params.execution_status) delete params.execution_status
+    if (!params.batch_id) delete params.batch_id
+    if (!params.trigger_source) delete params.trigger_source
 
     const res = await getReviewRecords(params)
     tableData.value = res.data.items
@@ -86,6 +92,8 @@ function handleReset() {
     question_id: undefined,
     decision: undefined,
     execution_status: undefined,
+    batch_id: undefined,
+    trigger_source: undefined,
   }
   fetchData()
 }
@@ -120,16 +128,20 @@ function goToTask(taskId: number) {
 }
 
 onMounted(() => {
-  // 从 URL 读取过滤参数（从任务列表跳转时带入）
+  // 从 URL 读取过滤参数（从任务列表/批次详情跳转时带入）
   const taskParam = route.query.task_id
   const questionParam = route.query.question_id
   const decisionParam = route.query.decision
   const execParam = route.query.execution_status
+  const batchParam = route.query.batch_id
+  const triggerParam = route.query.trigger_source
 
   if (taskParam) queryParams.value.task_id = Number(taskParam)
   if (questionParam) queryParams.value.question_id = Number(questionParam)
   if (decisionParam) queryParams.value.decision = decisionParam as AiReviewDecision
   if (execParam) queryParams.value.execution_status = execParam as AiReviewExecutionStatus
+  if (batchParam) queryParams.value.batch_id = Number(batchParam)
+  if (triggerParam) queryParams.value.trigger_source = triggerParam as string
 
   fetchData()
 })
@@ -183,6 +195,26 @@ onMounted(() => {
         <el-option label="执行成功" value="success" />
         <el-option label="执行失败" value="failed" />
         <el-option label="已跳过" value="skipped" />
+      </el-select>
+
+      <el-input
+        v-model="queryParams.batch_id"
+        placeholder="批次 ID"
+        clearable
+        style="width: 110px;"
+        type="number"
+        @change="handleFilterChange"
+      />
+
+      <el-select
+        v-model="queryParams.trigger_source"
+        placeholder="触发来源"
+        clearable
+        style="width: 150px;"
+        @change="handleFilterChange"
+      >
+        <el-option label="出题任务自动审核" value="generation_task" />
+        <el-option label="管理员手动批量审核" value="manual_batch" />
       </el-select>
 
       <el-button type="primary" @click="handleSearch">
@@ -285,6 +317,29 @@ onMounted(() => {
               #{{ row.generation_task_id }}
             </el-link>
             <span v-else class="muted-text">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="批次" width="80" align="center">
+          <template #default="{ row }">
+            <el-link
+              v-if="row.batch_id"
+              type="primary"
+              @click.stop="router.push(`/question-management/review-batches/${row.batch_id}`)"
+            >
+              #{{ row.batch_id }}
+            </el-link>
+            <span v-else class="muted-text">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="触发来源" width="130" align="center">
+          <template #default="{ row }">
+            <span v-if="row.trigger_source === 'manual_batch'" class="source-tag batch">
+              手动批量审核
+            </span>
+            <span v-else-if="row.trigger_source === 'generation_task'" class="source-tag task">
+              出题任务
+            </span>
+            <span v-else class="muted-text">{{ row.trigger_source || '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="审核时间" width="150" align="center">
@@ -472,6 +527,23 @@ onMounted(() => {
 .muted-text {
   color: var(--color-muted-foreground);
   font-size: 12px;
+}
+
+.source-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.source-tag.batch {
+  background: #EFF6FF;
+  color: var(--color-primary, #1E40AF);
+}
+
+.source-tag.task {
+  background: #ECFDF5;
+  color: var(--color-success, #059669);
 }
 
 .issue-tag {
