@@ -27,6 +27,7 @@ import {
   IMPORTANCE_LABELS,
   IMPORTANCE_CLASSES,
 } from '@/constants/questionDemand'
+import { getAiReviewStatusLabel, getAiReviewStatusClass } from '@/constants/questionReview'
 import TaskStatusTag from '@/components/question-management/TaskStatusTag.vue'
 import QuestionStatusTag from '@/components/question-management/QuestionStatusTag.vue'
 import { ElMessage } from 'element-plus'
@@ -258,6 +259,71 @@ onUnmounted(() => {
             <span :class="['status-badge', `status-badge--${task.dedup_review_status === 'manual_review_required' ? 'warning' : task.dedup_review_status === 'clean' ? 'success' : 'info'}`]">
               {{ task.dedup_review_status === 'manual_review_required' ? '需人工复核' : task.dedup_review_status === 'clean' ? '无重复' : '有判重' }}
             </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 审核统计 -->
+      <div v-if="task.enable_ai_review" class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          AI 质量审核
+          <span
+            :class="['status-badge', `status-badge--${getAiReviewStatusClass(task.ai_review_status)}`]"
+            style="margin-left: 12px;"
+          >
+            {{ getAiReviewStatusLabel(task.ai_review_status) }}
+          </span>
+          <el-button
+            v-if="task.ai_manual_review_count > 0"
+            text
+            type="primary"
+            size="small"
+            style="margin-left: 12px;"
+            @click="router.push(`/question-management/ai-reviews?task_id=${task.task_id}&decision=manual_review`)"
+          >
+            查看 {{ task.ai_manual_review_count }} 条待人工审核
+          </el-button>
+        </div>
+        <div class="card-body">
+          <div class="ai-stats-grid">
+            <div class="ai-stat">
+              <div class="ai-stat-value">{{ task.ai_review_total_count }}</div>
+              <div class="ai-stat-label">进入审核</div>
+            </div>
+            <div class="ai-stat">
+              <div class="ai-stat-value">{{ task.ai_review_processed_count }}</div>
+              <div class="ai-stat-label">已处理</div>
+            </div>
+            <div class="ai-stat">
+              <div class="ai-stat-value ok">{{ task.ai_auto_approved_count }}</div>
+              <div class="ai-stat-label">自动通过</div>
+            </div>
+            <div class="ai-stat">
+              <div class="ai-stat-value err">{{ task.ai_auto_rejected_count }}</div>
+              <div class="ai-stat-label">自动驳回</div>
+            </div>
+            <div class="ai-stat">
+              <div class="ai-stat-value warn">{{ task.ai_manual_review_count }}</div>
+              <div class="ai-stat-label">建议人工</div>
+            </div>
+            <div class="ai-stat">
+              <div class="ai-stat-value err">{{ task.ai_review_failed_count }}</div>
+              <div class="ai-stat-label">执行失败</div>
+            </div>
+            <div class="ai-stat">
+              <div class="ai-stat-value muted">{{ task.ai_review_skipped_count }}</div>
+              <div class="ai-stat-label">已跳过</div>
+            </div>
+            <div class="ai-stat">
+              <div class="ai-stat-value">{{ task.ai_review_pending_count }}</div>
+              <div class="ai-stat-label">待处理</div>
+            </div>
+          </div>
+          <div class="ai-review-note">
+            说明：去重淘汰的题目不计入 AI 审核总数；简答题、去重疑点和超预算的会计入「已跳过」。
+            <template v-if="task.ai_review_status === 'running'">
+              后台逐题审核中，审核并发默认为 1，请耐心等待。
+            </template>
           </div>
         </div>
       </div>
@@ -544,5 +610,45 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.ai-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-muted);
+  border-radius: var(--radius-md);
+}
+
+.ai-stat {
+  text-align: center;
+}
+
+.ai-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+
+.ai-stat-value.ok { color: var(--color-success, #059669); }
+.ai-stat-value.err { color: var(--color-error, #DC2626); }
+.ai-stat-value.warn { color: var(--color-warning, #D97706); }
+.ai-stat-value.muted { color: var(--color-muted-foreground); }
+
+.ai-stat-label {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+}
+
+.ai-review-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #FFFBEB;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: #92400E;
+  line-height: 1.6;
 }
 </style>

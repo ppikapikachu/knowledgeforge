@@ -15,7 +15,7 @@
 
 import logging
 import threading
-from typing import Literal
+from typing import Literal, Optional
 
 from langchain_openai import ChatOpenAI
 
@@ -26,21 +26,23 @@ logger = logging.getLogger(__name__)
 # 思考模式类型
 ThinkingMode = Literal["enabled", "disabled"]
 
-# 按模式缓存的 LLM 实例
+# 按（模式, 模型）缓存的 LLM 实例
 _llm_instances: dict[str, ChatOpenAI] = {}
 _llm_lock = threading.Lock()
 
 
-def get_llm(*, thinking: ThinkingMode) -> ChatOpenAI:
+def get_llm(*, thinking: ThinkingMode, model: Optional[str] = None) -> ChatOpenAI:
     """按固定思考模式获取进程内缓存的 LLM 客户端。
 
     Args:
         thinking: 思考模式
             - "disabled": 知识提取等不需要深度推理的任务
             - "enabled": 语义去重、冲突判断等需要推理的任务
+        model: 可选的模型覆盖（如独立审核模型 QUESTION_AI_REVIEW_MODEL）；
+            为空时使用 agent_settings.LLM_MODEL
 
     Returns:
-        缓存的 ChatOpenAI 实例（同模式返回同一对象）
+        缓存的 ChatOpenAI 实例（同模式+模型返回同一对象）
 
     Raises:
         ValueError: 非法的 thinking 值
@@ -48,20 +50,22 @@ def get_llm(*, thinking: ThinkingMode) -> ChatOpenAI:
     if thinking not in ("enabled", "disabled"):
         raise ValueError(f"不支持的思考模式: {thinking}，必须是 'enabled' 或 'disabled'")
 
+    cache_key = f"{thinking}:{model or ''}"
+
     # 快速路径：已缓存
-    cached = _llm_instances.get(thinking)
+    cached = _llm_instances.get(cache_key)
     if cached is not None:
         return cached
 
     # 慢路径：双重检查加锁创建
     with _llm_lock:
-        cached = _llm_instances.get(thinking)
+        cached = _llm_instances.get(cache_key)
         if cached is not None:
             return cached
 
         config = agent_settings
         kwargs = {
-            "model": config.LLM_MODEL,
+            "model": model or config.LLM_MODEL,
             "api_key": config.LLM_API_KEY,
             "base_url": config.LLM_BASE_URL,
             "max_tokens": config.LLM_MAX_TOKENS,
@@ -74,11 +78,11 @@ def get_llm(*, thinking: ThinkingMode) -> ChatOpenAI:
             kwargs["temperature"] = config.LLM_TEMPERATURE
 
         cached = ChatOpenAI(**kwargs)
-        _llm_instances[thinking] = cached
+        _llm_instances[cache_key] = cached
 
         logger.info(
             f"LLM 实例创建: thinking={thinking}, "
-            f"model={config.LLM_MODEL}"
+            f"model={model or config.LLM_MODEL}"
         )
         return cached
 

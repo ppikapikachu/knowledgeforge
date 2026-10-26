@@ -14,11 +14,13 @@ import { useQuestionLookups } from '@/composables/useQuestionLookups'
 import type { Question, QuestionUpdateRequest } from '@/types/question'
 import { QUESTION_STATUS, normalizeQuestionStatus } from '@/constants/questionManagement'
 import { getQuestionDedupStatusLabel, QUESTION_DEDUP_STATUS_CLASSES } from '@/constants/questionDedup'
+import { getAiDecisionLabel, getAiDecisionClass, getRiskLevelLabel, getRiskLevelClass, getIssueTypeLabel } from '@/constants/questionReview'
+import { reopenQuestionReview } from '@/api/questionReview'
 import QuestionPreview from '@/components/question-management/QuestionPreview.vue'
 import QuestionForm from '@/components/question-management/QuestionForm.vue'
 import QuestionStatusTag from '@/components/question-management/QuestionStatusTag.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, Edit, CheckCircle, XCircle, Ban, Eye } from 'lucide-vue-next'
+import { ArrowLeft, Edit, CheckCircle, XCircle, Ban, Eye, RotateCcw } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -30,6 +32,7 @@ const loadError = ref(false)
 const editing = ref(false)
 const saving = ref(false)
 const reviewing = ref(false)
+const reopenLoading = ref(false)
 
 const questionId = computed(() => Number(route.params.questionId))
 const fromReview = computed(() => route.query.from === 'review')
@@ -42,6 +45,14 @@ const isPendingReview = computed(() => normalizedStatus.value === QUESTION_STATU
 const isPublished = computed(() => normalizedStatus.value === QUESTION_STATUS.PUBLISHED)
 const isRejected = computed(() => normalizedStatus.value === QUESTION_STATUS.REJECTED)
 const isDisabled = computed(() => normalizedStatus.value === QUESTION_STATUS.DISABLED)
+
+// 可重新开启人工审核：AI 自动驳回且题目当前已驳回
+const canReopen = computed(() => {
+  return (
+    question.value?.ai_review_decision === 'auto_reject' &&
+    isRejected.value
+  )
+})
 
 const knowledgeNames = computed(() => {
   if (!question.value) return []
@@ -170,6 +181,56 @@ async function handleDisable() {
   }
 }
 
+// ---------- 重新开启人工审核（AI 误驳回恢复） ----------
+async function handleReopen() {
+  if (!question.value) return
+  let reason = ''
+  try {
+    const res = await ElMessageBox.prompt(
+      '重新开启人工审核后，题目将回到「待审核」状态，需人工重新审核。请填写原因（1~1000 字符）：',
+      '重新开启人工审核',
+      {
+        confirmButtonText: '确认开启',
+        cancelButtonText: '取消',
+        inputType: 'textarea',
+        inputPlaceholder: '例如：人工发现题目可能被 AI 误驳回，要求重新审核',
+        inputValidator: (v: string) => {
+          const trimmed = (v || '').trim()
+          if (!trimmed) return '请填写原因'
+          if (trimmed.length > 1000) return '原因不能超过 1000 字符'
+          return true
+        },
+      },
+    )
+    reason = res.value.trim()
+  } catch {
+    return
+  }
+
+  reopenLoading.value = true
+  try {
+    await reopenQuestionReview(questionId.value, { reason })
+    ElMessage.success('已重新开启人工审核，题目状态已恢复为待审核')
+    await fetchDetail()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : '操作失败'
+    // 40901：已被其他管理员处理或重复 reopen
+    if (msg.includes('40901') || msg.includes('已被') || msg.includes('并发')) {
+      ElMessage.warning(msg)
+      await fetchDetail()
+    } else if (msg.includes('40401')) {
+      ElMessage.error('题目或审核记录不存在，正在刷新...')
+      await fetchDetail()
+    } else if (msg.includes('timeout') || msg.includes('超时')) {
+      ElMessage.warning('请求结果暂不确定，请重新查询详情确认，不要重复提交')
+    } else {
+      ElMessage.error(msg)
+    }
+  } finally {
+    reopenLoading.value = false
+  }
+}
+
 function goBack() {
   if (fromReview.value) {
     router.push('/question-management/review')
@@ -262,6 +323,60 @@ onMounted(async () => {
           </div>
         </div>
 
+        <!-- AI 质量审核 -->
+        <div v-if="question.ai_review_decision || question.ai_review_record_id" class="card" style="margin-bottom: 16px;">
+          <div class="card-header">
+            AI 质量审核
+            <span
+              v-if="question.ai_review_record_id"
+              class="header-status"
+              style="margin-left: 12px; cursor: pointer;"
+              @click="router.push(`/question-management/ai-reviews?question_id=${questionId}`)"
+            >
+              <el-link type="primary" size="small">查看审核记录 #{{ question.ai_review_record_id }}</el-link>
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="ai-review-info">
+              <div class="ai-review-row">
+                <span class="ai-label">审核结论</span>
+                <span :class="['status-badge', `status-badge--${getAiDecisionClass(question.ai_review_decision)}`]">
+                  {{ getAiDecisionLabel(question.ai_review_decision) }}
+                </span>
+              </div>
+              <div class="ai-review-row">
+                <span class="ai-label">风险级别</span>
+                <span :class="['status-badge', `status-badge--${getRiskLevelClass(question.ai_review_risk_level)}`]">
+                  {{ getRiskLevelLabel(question.ai_review_risk_level) }}
+                </span>
+              </div>
+              <div v-if="question.ai_review_reason" class="ai-review-row">
+                <span class="ai-label">审核理由</span>
+                <span class="ai-reason">{{ question.ai_review_reason }}</span>
+              </div>
+              <div v-if="question.ai_review_issue_types && question.ai_review_issue_types.length > 0" class="ai-review-row">
+                <span class="ai-label">问题类型</span>
+                <div class="issue-tags">
+                  <span v-for="(issue, idx) in question.ai_review_issue_types" :key="idx" class="issue-tag">
+                    {{ getIssueTypeLabel(issue) }}
+                  </span>
+                </div>
+              </div>
+              <div v-if="question.ai_reviewed_at" class="ai-review-row">
+                <span class="ai-label">审核时间</span>
+                <span>{{ new Date(question.ai_reviewed_at).toLocaleString('zh-CN') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="question.dedup_review_status === 'none' || question.dedup_review_status === 'distinct'" class="card" style="margin-bottom: 16px;">
+          <div class="card-body" style="padding: 12px 16px;">
+            <div class="ai-review-empty">
+              尚无 AI 审核记录
+            </div>
+          </div>
+        </div>
+
         <!-- 题目预览 -->
         <div class="card">
           <div class="card-header">
@@ -320,6 +435,18 @@ onMounted(async () => {
               >
                 <Ban :size="16" style="margin-right: 4px;" />
                 下架题目
+              </el-button>
+
+              <!-- 重新开启人工审核：仅 AI 自动驳回且题目已驳回 -->
+              <el-button
+                v-if="canReopen"
+                type="warning"
+                plain
+                :loading="reopenLoading"
+                @click="handleReopen"
+              >
+                <RotateCcw :size="16" style="margin-right: 4px;" />
+                重新开启人工审核
               </el-button>
 
               <!-- 跳转正式列表 -->
@@ -399,6 +526,55 @@ onMounted(async () => {
 .muted-text {
   color: var(--color-muted-foreground);
   font-size: 12px;
+}
+
+.ai-review-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-review-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.ai-label {
+  min-width: 70px;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  padding-top: 2px;
+}
+
+.ai-reason {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-foreground);
+  flex: 1;
+}
+
+.issue-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.issue-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--color-muted);
+  color: var(--color-foreground);
+}
+
+.ai-review-empty {
+  font-size: 13px;
+  color: var(--color-muted-foreground);
+  text-align: center;
+  padding: 8px 0;
 }
 
 .hint-block {

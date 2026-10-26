@@ -43,6 +43,31 @@ export interface GenerationTaskCreateRequest {
   question_type: string
   difficulty: number
   count: number
+  /** 启用 AI 自动审核（默认 false） */
+  enable_ai_review?: boolean
+}
+
+/** AI 审核任务状态 */
+export type AiReviewStatus =
+  | 'not_requested'
+  | 'queued'
+  | 'running'
+  | 'completed'
+  | 'partial'
+  | 'failed'
+
+/** AI 审核任务级统计字段（任务列表/详情通用） */
+export interface AiReviewTaskFields {
+  enable_ai_review: boolean
+  ai_review_status: AiReviewStatus
+  ai_review_total_count: number
+  ai_review_processed_count: number
+  ai_auto_approved_count: number
+  ai_auto_rejected_count: number
+  ai_manual_review_count: number
+  ai_review_failed_count: number
+  ai_review_skipped_count: number
+  ai_review_pending_count: number
 }
 
 /** 创建任务响应 data */
@@ -53,7 +78,7 @@ export interface GenerationTaskCreateResponse {
 }
 
 /** 任务列表项（GET /question-generation/tasks） */
-export interface GenerationTask {
+export interface GenerationTask extends AiReviewTaskFields {
   id: number
   status: TaskStatus
   allocation_mode: string | null
@@ -88,7 +113,7 @@ export interface GenerationTaskQuestionSummary {
 }
 
 /** 任务详情（GET /question-generation/tasks/{id}） */
-export interface GenerationTaskDetail {
+export interface GenerationTaskDetail extends AiReviewTaskFields {
   task_id: number
   created_by: number
   status: TaskStatus

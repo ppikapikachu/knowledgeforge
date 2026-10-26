@@ -152,6 +152,25 @@ class AgentSettings(BaseSettings):
     EMBEDDING_VERSION: str = "bge-small-zh-v1.5"
     # Embedding 版本标签，写入向量索引 metadata，用于一致性检查/重算
 
+    # ==================== AI 质量审核配置（QuestionReviewAgent） ====================
+    QUESTION_AI_REVIEW_ENABLED: bool = False
+    # 后端功能总开关（默认关闭）。任务级 enable_ai_review=true 须同时满足本开关开启
+
+    QUESTION_AI_REVIEW_MODEL: str = ""
+    # 独立审核模型（可选）；为空时复用 LLM_MODEL（独立调用与独立 Prompt 不变）
+
+    QUESTION_AI_REVIEW_TIMEOUT_SECONDS: int = 60
+    # 单题审核单次模型调用超时（秒）；超时 fail-safe 转人工，不自动通过/驳回
+
+    QUESTION_AI_REVIEW_MAX_RETRIES: int = 1
+    # 单题审核模型调用重试上限（结构化输出失败时）
+
+    QUESTION_AI_REVIEW_MAX_PER_TASK: int = 200
+    # 每任务最大审核题目数（成本保护）；超出部分计入 skipped（budget_exceeded）
+
+    QUESTION_AI_REVIEW_MAX_CONCURRENCY: int = 1
+    # 每任务审核并发上限（第一版串行执行，复用生成后台线程，不新开每题线程）
+
 
 # 全局配置单例
 # 在模块加载时自动读取 .env 文件，后续通过 agent_settings 直接访问

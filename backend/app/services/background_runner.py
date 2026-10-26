@@ -288,6 +288,28 @@ def execute_generation_task(task_id: int, request_config: dict, session_factory=
             task.error_summary = "; ".join(str(e) for e in all_errors[:5])
         db.commit()
 
+        # ---- AI 质量审核阶段（§6/§7）：生成完成后执行；失败不影响生成结果 ----
+        if task.enable_ai_review and agent_settings.QUESTION_AI_REVIEW_ENABLED:
+            try:
+                from app.services.question_review_service import QuestionReviewService
+                review_service = QuestionReviewService(db)
+                review_result = review_service.run_task_review(task_id)
+                logger.info(f"任务 {task_id} AI 质量审核完成: {review_result}")
+            except Exception as review_err:  # noqa: BLE001
+                db.rollback()
+                logger.error(
+                    f"任务 {task_id} AI 质量审核异常（生成结果不受影响）: {review_err}",
+                    exc_info=True,
+                )
+                try:
+                    task = db.query(QuestionGenerationTask).filter(
+                        QuestionGenerationTask.id == task_id).first()
+                    if task:
+                        task.ai_review_status = "failed"
+                        db.commit()
+                except Exception:  # noqa: BLE001
+                    db.rollback()
+
     except Exception as e:
         logger.error(f"生成任务 {task_id} 失败: {e}", exc_info=True)
         try:

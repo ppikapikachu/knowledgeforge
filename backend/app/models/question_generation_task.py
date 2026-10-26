@@ -134,6 +134,57 @@ class QuestionGenerationTask(Base, TimestampMixin):
         default=0,
         comment="未分配题量",
     )
+    enable_ai_review: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="本次任务是否启用 AI 质量审核: 1=是, 0=否（创建时快照，不可静默更改）",
+    )
+    ai_review_status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="not_requested",
+        comment="AI 审核状态: not_requested/queued/running/completed/partial/failed",
+    )
+    ai_review_total_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="进入本次任务 AI 审核阶段的题目数（不含去重淘汰候选）",
+    )
+    ai_review_processed_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="AI 审核已处理数（success，不含 skipped/failed）",
+    )
+    ai_auto_approved_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="AI 自动通过数",
+    )
+    ai_auto_rejected_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="AI 自动驳回数",
+    )
+    ai_manual_review_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="AI 判定需人工审核数",
+    )
+    ai_review_failed_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="AI 审核执行失败数（安全降级人工）",
+    )
+    ai_review_skipped_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="AI 审核跳过数（不支持题型/去重疑点/超预算）",
+    )
+    ai_review_pending_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        comment="AI 审核待处理数（任务执行中）",
+    )
 
     __table_args__ = (
         Index("idx_qgt_status", "status"),

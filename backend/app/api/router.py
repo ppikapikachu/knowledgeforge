@@ -31,6 +31,7 @@ from app.api.v1.knowledge_base_mapping import router as knowledge_base_mapping_r
 from app.api.v1.answer import router as answer_router
 from app.api.v1.comment import router as comment_router
 from app.api.v1.question_dedup import router as question_dedup_router
+from app.api.v1.question_review import router as question_review_router
 
 # v1 版本的总路由器，所有 v1 接口都挂在此路由器下
 api_v1_router = APIRouter(prefix="/api/v1")
@@ -53,3 +54,4 @@ api_v1_router.include_router(agent_router)        # Agent 测试：知识点提�
 api_v1_router.include_router(agent_dedup_router)  # Agent 测试：知识点去重测试接口
 api_v1_router.include_router(agent_relation_router)  # Agent 测试：知识点关系判断测试接口
 api_v1_router.include_router(question_dedup_router)  # 题目去重：状态/审计/索引重建
+api_v1_router.include_router(question_review_router)  # AI 质量审核：记录/统计/重新开启

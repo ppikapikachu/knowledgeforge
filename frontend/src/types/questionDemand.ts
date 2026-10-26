@@ -161,6 +161,7 @@ export interface TaskCreateRequest {
   difficulty: number
   count: number
   allow_partial?: boolean
+  enable_ai_review?: boolean
 }
 
 /** 后端 TaskCreateResponse */

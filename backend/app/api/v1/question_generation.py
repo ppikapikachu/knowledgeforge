@@ -78,6 +78,14 @@ async def create_generation_task(
     if difficulty not in (1, 2, 3):
         raise ValidationException("难度必须是 1/2/3")
 
+    # ---- AI 质量审核开关（§2.2）：默认 false；请求 true 但总开关关 → 明确业务错误，不静默降级 ----
+    enable_ai_review = bool(request.get("enable_ai_review", False))
+    if enable_ai_review and not agent_settings.QUESTION_AI_REVIEW_ENABLED:
+        raise ValidationException(
+            "AI 质量审核功能当前未启用（QUESTION_AI_REVIEW_ENABLED=false），"
+            "本次任务无法开启 AI 审核；请启用服务端总开关后重新发起任务"
+        )
+
     bank = db.query(QuestionBank).filter(QuestionBank.id == question_bank_id).first()
     if not bank:
         raise ResourceNotFoundException(f"题库 {question_bank_id} 不存在")
@@ -96,6 +104,8 @@ async def create_generation_task(
             status="pending",
             total_count=count,
             allocation_mode="manual",
+            enable_ai_review=enable_ai_review,
+            ai_review_status="queued" if enable_ai_review else "not_requested",
             allocation_plan={
                 "allocation_mode": "manual",
                 "requested_count": count,
@@ -189,6 +199,8 @@ async def create_generation_task(
             status="pending",
             total_count=allocated_total,
             allocation_mode="auto",
+            enable_ai_review=enable_ai_review,
+            ai_review_status="queued" if enable_ai_review else "not_requested",
             allocation_plan=allocation_plan,
             policy_snapshot=policy,
             requested_count=count,
@@ -262,6 +274,16 @@ def get_generation_tasks(
             "uncertain_count": t.uncertain_count,
             "unfulfilled_count": t.unfulfilled_count,
             "failed_count": t.failed_count,
+            "enable_ai_review": bool(t.enable_ai_review),
+            "ai_review_status": t.ai_review_status,
+            "ai_review_total_count": t.ai_review_total_count,
+            "ai_review_processed_count": t.ai_review_processed_count,
+            "ai_auto_approved_count": t.ai_auto_approved_count,
+            "ai_auto_rejected_count": t.ai_auto_rejected_count,
+            "ai_manual_review_count": t.ai_manual_review_count,
+            "ai_review_failed_count": t.ai_review_failed_count,
+            "ai_review_skipped_count": t.ai_review_skipped_count,
+            "ai_review_pending_count": t.ai_review_pending_count,
             "request_config": t.request_config,
             "error_summary": t.error_summary,
             "started_at": t.started_at.isoformat() if t.started_at else None,
@@ -354,6 +376,16 @@ def get_generation_task_detail(
         "failed_count": task.failed_count,
         "dedup_review_status": dedup_review_status,
         "dedup_manual_review_count": manual_review_rows,
+        "enable_ai_review": bool(task.enable_ai_review),
+        "ai_review_status": task.ai_review_status,
+        "ai_review_total_count": task.ai_review_total_count,
+        "ai_review_processed_count": task.ai_review_processed_count,
+        "ai_auto_approved_count": task.ai_auto_approved_count,
+        "ai_auto_rejected_count": task.ai_auto_rejected_count,
+        "ai_manual_review_count": task.ai_manual_review_count,
+        "ai_review_failed_count": task.ai_review_failed_count,
+        "ai_review_skipped_count": task.ai_review_skipped_count,
+        "ai_review_pending_count": task.ai_review_pending_count,
         "progress": progress,
         "error_summary": task.error_summary,
         "started_at": task.started_at.isoformat() if task.started_at else None,

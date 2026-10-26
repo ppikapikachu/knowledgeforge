@@ -18,6 +18,7 @@ import {
   formatDateTime,
 } from '@/constants/questionManagement'
 import { ALLOCATION_MODE_LABELS } from '@/constants/questionDemand'
+import { getAiReviewStatusLabel, getAiReviewStatusClass } from '@/constants/questionReview'
 import TaskStatusTag from '@/components/question-management/TaskStatusTag.vue'
 import { ElMessage } from 'element-plus'
 import { Search, RefreshCw, Eye, Sparkles, ClipboardList } from 'lucide-vue-next'
@@ -218,6 +219,34 @@ onMounted(async () => {
               @click="router.push(`/question-management/dedup?task_id=${row.id}&needs_manual_review=1`)"
             >
               {{ row.uncertain_count }} 条
+            </span>
+            <span v-else class="muted-text">0</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="AI 审核" width="100" align="center">
+          <template #default="{ row }">
+            <span :class="['status-badge', row.enable_ai_review ? 'status-badge--info' : 'status-badge--muted']">
+              {{ row.enable_ai_review ? '已启用' : '未启用' }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="审核状态" width="110" align="center">
+          <template #default="{ row }">
+            <span v-if="row.enable_ai_review" :class="['status-badge', `status-badge--${getAiReviewStatusClass(row.ai_review_status)}`]">
+              {{ getAiReviewStatusLabel(row.ai_review_status) }}
+            </span>
+            <span v-else class="muted-text">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="人工复核" width="90" align="center">
+          <template #default="{ row }">
+            <span
+              v-if="row.enable_ai_review && row.ai_manual_review_count > 0"
+              class="status-badge status-badge--warning"
+              style="cursor: pointer;"
+              @click="router.push(`/question-management/ai-reviews?task_id=${row.id}&decision=manual_review`)"
+            >
+              {{ row.ai_manual_review_count }} 条
             </span>
             <span v-else class="muted-text">0</span>
           </template>

@@ -112,6 +112,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '去重疑点' },
       },
       {
+        path: 'question-management/ai-reviews',
+        name: 'AiReviewRecords',
+        component: () => import('@/views/question-management/AiReviewRecordsView.vue'),
+        meta: { title: 'AI 审核记录' },
+      },
+      {
         path: 'questions',
         name: 'QuestionList',
         component: () => import('@/views/question/QuestionList.vue'),

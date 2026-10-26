@@ -119,6 +119,31 @@ def get_question(
         data["dedup_review_status"] = "none"
         data["dedup_manual_resolution"] = None
         data["dedup_effective_decision"] = "none"
+
+    # AI 质量审核结果（最新一轮，无记录为 null，§7.2）
+    from app.models.question_review_record import QuestionReviewRecord as QRR
+    review_record = (
+        db.query(QRR)
+        .filter(QRR.question_id == question.id)
+        .order_by(QRR.review_round.desc(), QRR.id.desc())
+        .first()
+    )
+    if review_record is not None:
+        data["ai_review_decision"] = review_record.decision
+        data["ai_review_risk_level"] = review_record.risk_level
+        data["ai_review_reason"] = review_record.reason
+        data["ai_review_issue_types"] = review_record.issue_types or []
+        data["ai_reviewed_at"] = (
+            review_record.updated_at.isoformat() if review_record.updated_at else None
+        )
+        data["ai_review_record_id"] = review_record.id
+    else:
+        data["ai_review_decision"] = None
+        data["ai_review_risk_level"] = None
+        data["ai_review_reason"] = None
+        data["ai_review_issue_types"] = None
+        data["ai_reviewed_at"] = None
+        data["ai_review_record_id"] = None
     return ApiResponse(data=data)
 
 

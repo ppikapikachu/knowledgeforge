@@ -189,6 +189,26 @@ class QuestionResponse(BaseModel):
         default=None,
         description="最终结论：有人工结论时优先人工结论，否则为原始自动结论",
     )
+    ai_review_decision: Optional[str] = Field(
+        default=None,
+        description="AI 质量审核决策（auto_approve/auto_reject/manual_review，无记录为 null）",
+    )
+    ai_review_risk_level: Optional[str] = Field(
+        default=None,
+        description="AI 审核风险级别（low/medium/high/unknown）",
+    )
+    ai_review_reason: Optional[str] = Field(
+        default=None, description="AI 审核理由"
+    )
+    ai_review_issue_types: Optional[List[str]] = Field(
+        default=None, description="AI 审核问题类型列表"
+    )
+    ai_reviewed_at: Optional[str] = Field(
+        default=None, description="AI 审核完成时间"
+    )
+    ai_review_record_id: Optional[int] = Field(
+        default=None, description="AI 审核记录 ID（最新一轮）"
+    )
     created_at: datetime = Field(description="创建时间")
     updated_at: datetime = Field(description="更新时间")
 

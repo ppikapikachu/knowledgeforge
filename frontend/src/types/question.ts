@@ -26,6 +26,12 @@ export interface Question {
   dedup_review_status?: string
   dedup_manual_resolution?: string | null
   dedup_effective_decision?: string
+  ai_review_decision?: 'auto_approve' | 'auto_reject' | 'manual_review' | null
+  ai_review_risk_level?: 'low' | 'medium' | 'high' | 'unknown' | null
+  ai_review_reason?: string | null
+  ai_review_issue_types?: string[] | null
+  ai_reviewed_at?: string | null
+  ai_review_record_id?: number | null
   created_at: string
   updated_at: string
 }

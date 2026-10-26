@@ -54,6 +54,9 @@ const previewInvalidated = ref(false)
 // 分配模式
 const allocationMode = ref<AllocationMode>('manual')
 
+// AI 自动审核开关（默认关闭，每次创建任务由管理员明确决定）
+const enableAiReview = ref(false)
+
 const form = ref({
   question_bank_id: undefined as number | undefined,
   knowledge_id: undefined as number | undefined,
@@ -194,6 +197,7 @@ async function handleCreateManual() {
       question_type: f.question_type,
       difficulty: f.difficulty,
       count: Number(f.count),
+      enable_ai_review: enableAiReview.value,
     })
     ElMessage.success(res.data?.message || '任务已创建')
     router.push(`/question-management/tasks/${res.data?.task_id}`)
@@ -261,6 +265,7 @@ async function handleCreateAuto() {
       difficulty: form.value.difficulty,
       count: Number(form.value.count),
       allow_partial: allowPartial,
+      enable_ai_review: enableAiReview.value,
     })
     ElMessage.success(res.data?.message || '任务已创建')
     router.push(`/question-management/tasks/${res.data?.task_id}`)
@@ -381,6 +386,27 @@ onMounted(() => {
           <el-form-item :label="isAuto ? '期望生成总量' : '生成数量'" required>
             <el-input-number v-model="form.count" :min="1" :max="500" :step="1" />
             <div class="field-hint">1 ~ 500，由后端校验</div>
+          </el-form-item>
+
+          <!-- AI 自动审核开关 -->
+          <el-form-item label="AI 自动审核">
+            <div class="ai-review-toggle">
+              <el-switch v-model="enableAiReview" />
+              <span class="ai-review-label">
+                {{ enableAiReview ? '已启用' : '默认关闭' }}
+              </span>
+            </div>
+            <div class="ai-review-hint">
+              开启后，题目完成去重并满足审核准入条件时，系统将调用 AI 进行质量审核。
+              符合条件的客观题可能自动发布；存在明确严重缺陷的题目可能自动驳回；
+              无法确定、去重疑点、简答题或审核失败的题目仍保留在人工审核队列。
+            </div>
+            <div class="ai-review-warnings">
+              <div class="warn-item">⚠ 自动通过会将题目状态变为「已发布」</div>
+              <div class="warn-item">⚠ 自动驳回会将题目软驳回为「已驳回」，不会删除数据</div>
+              <div class="warn-item">⚠ 简答题会跳过 AI 审核，继续人工审核</div>
+              <div class="warn-item">⚠ 自动审核受服务端总开关控制，未启用时提交会被拒绝</div>
+            </div>
           </el-form-item>
 
           <!-- 操作按钮 -->
@@ -536,6 +562,42 @@ onMounted(() => {
   font-size: 12px;
   color: var(--color-muted-foreground, #9CA3AF);
   margin-top: 4px;
+}
+
+.ai-review-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-review-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-foreground);
+}
+
+.ai-review-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-muted-foreground);
+  max-width: 680px;
+}
+
+.ai-review-warnings {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ai-review-warnings .warn-item {
+  font-size: 12px;
+  color: #92400E;
+  background: #FFFBEB;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm, 4px);
+  width: fit-content;
 }
 
 .option-sub {
