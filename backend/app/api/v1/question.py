@@ -94,31 +94,63 @@ def get_question(
     question = service.get_question(question_id)
     data = _build_question_response(question)
 
-    # 去重复核状态（uncertain 可追踪，§6）：查最近一条去重判定审计记录
+    # 去重复核状态（uncertain 可追踪，§6）：按记录方向区分——
+    # 本题作为新题侧（new_content_hash == 本题指纹）的裁定才是本题自己的结论；
+    # 仅匹配侧（matched_question_id == 本题）的记录说明"别的候选撞上本题被拦"，
+    # 本题是胜出方，不得据此标注 duplicate。
     from app.models.question_dedup_record import QuestionDedupRecord as QDR
-    record = (
+    q_hash = question.content_hash or ""
+    linked_rows = (
         db.query(QDR)
         .filter(
             (QDR.matched_question_id == question.id)
-            | (QDR.new_content_hash == (question.content_hash or ""))
+            | (QDR.new_content_hash == q_hash)
         )
         .order_by(QDR.id.desc())
-        .first()
+        .all()
+    ) if q_hash else (
+        db.query(QDR)
+        .filter(QDR.matched_question_id == question.id)
+        .order_by(QDR.id.desc())
+        .all()
     )
-    if record is not None:
+    own_record = next(
+        (
+            r for r in linked_rows
+            if r.new_content_hash == q_hash
+            and r.matched_question_id != question.id
+            and not (r.decision == "duplicate" and r.matched_question_id is None)
+        ),
+        None,
+    )
+    blocked_candidate_count = sum(
+        1 for r in linked_rows
+        if (r.matched_question_id == question.id
+            or (r.matched_question_id is None and r.new_content_hash == q_hash))
+        and (r.manual_resolution or r.decision) == "duplicate"
+    )
+    if own_record is not None:
         data["dedup_review_status"] = (
-            "uncertain" if record.decision == "uncertain"
-            else "duplicate" if record.decision == "duplicate"
+            "uncertain" if own_record.decision == "uncertain"
+            else "duplicate" if own_record.decision == "duplicate"
             else "distinct"
         )
         # 人工复核结论（不覆盖自动判定；uncertain 不被映射成 duplicate，
         # 人工结论以独立字段 + effective_decision 提供，§2.5/§3.3）
-        data["dedup_manual_resolution"] = record.manual_resolution
-        data["dedup_effective_decision"] = record.manual_resolution or record.decision
+        data["dedup_manual_resolution"] = own_record.manual_resolution
+        data["dedup_effective_decision"] = own_record.manual_resolution or own_record.decision
+        data["dedup_role"] = "candidate"
+    elif linked_rows:
+        data["dedup_review_status"] = "distinct"
+        data["dedup_manual_resolution"] = None
+        data["dedup_effective_decision"] = "distinct"
+        data["dedup_role"] = "historical"
     else:
         data["dedup_review_status"] = "none"
         data["dedup_manual_resolution"] = None
         data["dedup_effective_decision"] = "none"
+        data["dedup_role"] = None
+    data["dedup_blocked_candidate_count"] = blocked_candidate_count
 
     # AI 质量审核结果（最新一轮，无记录为 null，§7.2）
     from app.models.question_review_record import QuestionReviewRecord as QRR

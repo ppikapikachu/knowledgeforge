@@ -83,19 +83,41 @@ class QuestionReviewService:
         return "eligible", ""
 
     def _dedup_gate(self, question: Question) -> Tuple[bool, str, str]:
-        """去重疑点聚合判断（§2.1.4/§2.1.5）。
+        """去重疑点聚合判断（§2.1.4/§2.1.5），按记录方向区分：
+
+        - **新题侧**（记录 ``new_content_hash == 本题指纹`` 且 ``matched_question_id``
+          不是本题）：这条记录的裁定是针对"本题这个候选"的，是本题自己的疑点；
+        - **匹配侧**（记录 ``matched_question_id == 本题``）：被裁定重复的是别的候选
+          （撞上本题被拦），本题是胜出方，不得据此拦截本题自动审核。
 
         返回 (通过, 原因码, 去重状态描述)：
-        - 任一关联记录 needs_manual_review=True 且未被人工裁定 → 不准入（dedup_unresolved）；
-        - 任一关联记录 effective_decision=duplicate → 不准入且禁止发布（dedup_duplicate）；
+        - 任一新题侧记录 needs_manual_review=True 且未被人工裁定 → 不准入（dedup_unresolved）；
+        - 任一新题侧记录 effective_decision=duplicate → 不准入且禁止发布（dedup_duplicate）；
         - effective_decision = manual_resolution or decision（人工结论优先）。
+
+        例外（保护胜出方）：decision=duplicate 且 matched_question_id 为空的记录
+        （同批次同指纹双胞胎被拦时胜出题尚未入库，记录无法指向胜出题）无法区分
+        "被拦的双胞胎"与"胜出题本人"，为避免重蹈题目 9 式误标，不拦截仅以此类
+        记录关联的题目，交人工判断。
         """
-        rows = self.db.query(QDR).filter(
-            or_(
-                QDR.matched_question_id == question.id,
+        if not question.content_hash:
+            return True, "", "clean"
+
+        rows = (
+            self.db.query(QDR)
+            .filter(
                 QDR.new_content_hash == question.content_hash,
+                or_(
+                    QDR.matched_question_id.is_(None),
+                    QDR.matched_question_id != question.id,
+                ),
+                or_(
+                    QDR.decision != "duplicate",
+                    QDR.matched_question_id.isnot(None),
+                ),
             )
-        ).all()
+            .all()
+        )
 
         if not rows:
             return True, "", "clean"

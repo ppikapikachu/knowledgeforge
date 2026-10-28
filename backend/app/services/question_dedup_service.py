@@ -463,10 +463,11 @@ class QuestionDeduplicationService:
             for prev in batch_context.get("accepted", []):
                 prev_hash = prev.ensure_hash(self.normalizer)
                 if prev_hash == q_hash:
-                    # 批次内指纹相同：直接判重
+                    # 批次内指纹相同：直接判重（记录指向胜出候选，
+                    # 使胜出题不被此记录误标为 duplicate）
                     result = DedupCheckResult(
                         decision="duplicate", scope_mode="batch_internal",
-                        matched_question_id=None, matched_source="batch",
+                        matched_question_id=prev.question_id, matched_source="batch",
                         decision_method="batch_internal", algorithm_score=1.0,
                         content_hash=q_hash, candidate_count=1,
                     )

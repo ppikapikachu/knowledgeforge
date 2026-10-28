@@ -254,6 +254,8 @@ def execute_generation_task(task_id: int, request_config: dict, session_factory=
 
                     got += 1
                     stats["saved"] += 1
+                    # 同批次后续候选的去重审计记录可指向本胜出题（matched_question_id）
+                    snap.question_id = question.id
                     if dr.decision == "uncertain" or dr.needs_manual_review:
                         stats["uncertain"] += 1
                     if not verdict.get("indexed", True):

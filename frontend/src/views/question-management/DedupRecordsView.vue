@@ -324,7 +324,7 @@ onMounted(() => {
             <span v-else class="muted-text">-</span>
           </template>
         </el-table-column>
-        <el-table-column label="新题快照" min-width="180" show-overflow-tooltip>
+        <el-table-column label="候选题快照" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
             <div class="snapshot-text">{{ row.new_content_snapshot }}</div>
             <div class="snapshot-meta">
@@ -332,7 +332,7 @@ onMounted(() => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="匹配历史题" width="110" align="center">
+        <el-table-column label="对照题目" width="130" align="center">
           <template #default="{ row }">
             <el-link
               v-if="row.matched_question_id"
@@ -341,7 +341,8 @@ onMounted(() => {
             >
               #{{ row.matched_question_id }}
             </el-link>
-            <span v-else class="muted-text">批次内</span>
+            <span v-else-if="row.matched_source === 'batch'" class="muted-text">批次内候选</span>
+            <span v-else class="muted-text">-</span>
           </template>
         </el-table-column>
         <el-table-column label="相似度分数" width="110" align="center">
@@ -460,10 +461,10 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- 新题 -->
+        <!-- 候选题（新题快照） -->
         <div class="compare-section">
           <div class="compare-header">
-            <span class="compare-label">新生成题目</span>
+            <span class="compare-label">候选题（快照）</span>
             <span class="compare-meta">
               {{ QUESTION_TYPE_LABELS[compareRecord.new_question_type] || compareRecord.new_question_type }}
               <span v-if="compareRecord.new_question_bank_id"> · 题库#{{ compareRecord.new_question_bank_id }}</span>
@@ -473,25 +474,30 @@ onMounted(() => {
           <div v-if="compareRecord.new_knowledge_ids && compareRecord.new_knowledge_ids.length > 0" class="compare-knowledge">
             知识点：{{ compareRecord.new_knowledge_ids.join(', ') }}
           </div>
+          <div v-if="compareRecord.decision === 'duplicate'" class="compare-note" style="margin-top: 8px;">
+            ⚠ 判定为重复，该候选题已被拦截、未入库，无题目 ID。
+          </div>
         </div>
 
-        <!-- 匹配历史题 -->
+        <!-- 对照题 -->
         <div class="compare-section">
           <div class="compare-header">
-            <span class="compare-label">匹配历史题目</span>
+            <span class="compare-label">
+              {{ compareRecord.matched_source === 'batch' ? '同批次对照题' : '历史库对照题' }}
+            </span>
             <span class="compare-meta" v-if="compareRecord.matched_question_id">
               题目 #{{ compareRecord.matched_question_id }}
               <el-link type="primary" size="small" @click="goToQuestion(compareRecord.matched_question_id)">
                 查看详情
               </el-link>
             </span>
-            <span v-else class="compare-meta">批次内新题</span>
+            <span v-else class="compare-meta">无题目 ID（批次内候选）</span>
           </div>
           <div v-if="compareRecord.matched_question_id" class="compare-hint">
             点击"查看详情"可查看完整历史题目内容（题干、选项、答案、解析）。
           </div>
           <div v-else class="compare-hint">
-            此记录为批次内新题之间的比对，无外部历史题目。
+            对照题为同批次生成的候选（非历史库已入库题），双方均尚未入库，无题目 ID 可跳转。
           </div>
           <div v-if="compareRecord.matched_knowledge_ids && compareRecord.matched_knowledge_ids.length > 0" class="compare-knowledge">
             知识点：{{ compareRecord.matched_knowledge_ids.join(', ') }}
@@ -553,26 +559,37 @@ onMounted(() => {
       :close-on-click-modal="false"
     >
       <div v-if="resolveRecord" class="resolve-container">
-        <!-- 新题快照 -->
+        <!-- 候选题快照 -->
         <div class="resolve-section">
-          <div class="resolve-section-title">新题快照</div>
+          <div class="resolve-section-title">候选题目（快照）</div>
           <div class="resolve-snapshot">
             <div class="resolve-meta">
               {{ QUESTION_TYPE_LABELS[resolveRecord.new_question_type] || resolveRecord.new_question_type }}
               <span v-if="resolveRecord.new_question_bank_id"> · 题库#{{ resolveRecord.new_question_bank_id }}</span>
             </div>
             <pre class="resolve-content">{{ resolveRecord.new_content_snapshot }}</pre>
+            <div v-if="resolveRecord.decision === 'uncertain'" class="muted-text" style="margin-top: 8px;">
+              该候选题保留入库（pending_review），人工裁定后按去重结论处理。
+            </div>
           </div>
         </div>
 
-        <!-- 匹配历史题 -->
+        <!-- 对照题 -->
         <div class="resolve-section" v-if="resolveRecord.matched_question_id">
-          <div class="resolve-section-title">匹配历史题 #{{ resolveRecord.matched_question_id }}</div>
+          <div class="resolve-section-title">
+            {{ resolveRecord.matched_source === 'batch' ? '同批次对照题' : '历史库对照题' }} #{{ resolveRecord.matched_question_id }}
+          </div>
           <div class="resolve-hint">
             <el-link type="primary" @click="goToQuestion(resolveRecord.matched_question_id)">
               查看历史题详情
             </el-link>
             <span class="muted-text" style="margin-left: 8px;">请在对比后做出判断</span>
+          </div>
+        </div>
+        <div class="resolve-section" v-else>
+          <div class="resolve-section-title">对照题</div>
+          <div class="resolve-hint muted-text">
+            对照题为同批次生成的候选（{{ resolveRecord.matched_source === 'batch' ? '非历史库已入库题' : '无匹配' }}），无题目 ID 可跳转。
           </div>
         </div>
 
@@ -611,11 +628,11 @@ onMounted(() => {
           <el-radio-group v-model="resolveConclusion" class="conclusion-group">
             <el-radio value="duplicate" class="conclusion-radio">
               <span class="conclusion-label error-text">确认重复</span>
-              <span class="conclusion-desc">新题与历史题内容重复，保留历史题</span>
+              <span class="conclusion-desc">候选题与对照题内容重复，判重拦截（保留历史题）</span>
             </el-radio>
             <el-radio value="distinct" class="conclusion-radio">
               <span class="conclusion-label success-text">确认不重复</span>
-              <span class="conclusion-desc">新题与历史题不同，疑点排除</span>
+              <span class="conclusion-desc">候选题与对照题内容不同，疑点排除，放行入库</span>
             </el-radio>
           </el-radio-group>
 

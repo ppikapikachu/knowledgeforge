@@ -189,6 +189,17 @@ class QuestionResponse(BaseModel):
         default=None,
         description="最终结论：有人工结论时优先人工结论，否则为原始自动结论",
     )
+    dedup_role: Optional[str] = Field(
+        default=None,
+        description=(
+            "本题在去重审计记录中的方向角色：candidate=新题侧（有以本题指纹为新题的记录）；"
+            "historical=仅匹配侧（本题只作为历史胜出方被其他候选撞上，未被判重）；无记录为 null"
+        ),
+    )
+    dedup_blocked_candidate_count: int = Field(
+        default=0,
+        description="撞上本题后被判重复而被拦截的候选题目数量（historical 角色的参考信息）",
+    )
     ai_review_decision: Optional[str] = Field(
         default=None,
         description="AI 质量审核决策（auto_approve/auto_reject/manual_review，无记录为 null）",

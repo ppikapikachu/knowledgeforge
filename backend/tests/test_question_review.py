@@ -249,6 +249,7 @@ class TestEligibility:
         from app.models.question_dedup_record import QuestionDedupRecord
         ensure_knowledge(db)
         q = make_question(db)
+        q_ref = make_question(db, content="被候选撞上的另一道历史题（判重参照）")
         db.add(QuestionDedupRecord(
             new_content_hash=q.content_hash or "x",
             new_hash_version="2",
@@ -256,6 +257,7 @@ class TestEligibility:
             new_question_type=q.question_type,
             decision="duplicate",
             decision_method="exact_hash",
+            matched_question_id=q_ref.id,
             needs_manual_review=False,
         ))
         db.commit()
@@ -279,6 +281,123 @@ class TestEligibility:
 
 
 # ---------------------------------------------------------------- 集成：状态流转
+
+class TestDedupDirection:
+    """方向语义：只有"新题侧"记录映射/拦截本题；匹配侧（历史胜出方）不被误标误拦。"""
+
+    def test_historical_winner_not_blocked_or_flagged(self, db):
+        """仅匹配侧记录（同批次双胞胎被拦撞上本题）→ 不拦，正常进审核。"""
+        from app.models.question_dedup_record import QuestionDedupRecord
+        ensure_knowledge(db)
+        q = make_question(db)
+        db.add(QuestionDedupRecord(
+            new_content_hash="twin-candidate-hash",
+            new_hash_version="2",
+            new_content_snapshot=q.content,
+            new_question_type=q.question_type,
+            decision="duplicate",
+            decision_method="batch_internal",
+            matched_question_id=q.id,
+            needs_manual_review=False,
+        ))
+        db.commit()
+        agent = StubReviewAgent([approve_output()])
+        svc = QuestionReviewService(db, agent=agent)
+        verdict, code = svc.check_eligibility(q)
+        assert verdict == "eligible", code
+        result = svc.review_one(q.id, task_id=None)
+        assert result["execution_status"] == "success"
+        assert agent.calls  # 真进审核，不再被 dedup_duplicate 拦
+
+    def test_ambiguous_twin_record_not_blocked(self, db):
+        """同指纹歧义记录（decision=duplicate 且 matched 为空）不拦——胜出方保护。"""
+        from app.models.question_dedup_record import QuestionDedupRecord
+        ensure_knowledge(db)
+        q = make_question(db)
+        db.add(QuestionDedupRecord(
+            new_content_hash=q.content_hash or "x",
+            new_hash_version="2",
+            new_content_snapshot=q.content,
+            new_question_type=q.question_type,
+            decision="duplicate",
+            decision_method="batch_internal",
+            matched_question_id=None,
+            needs_manual_review=False,
+        ))
+        db.commit()
+        agent = StubReviewAgent([approve_output()])
+        svc = QuestionReviewService(db, agent=agent)
+        result = svc.review_one(q.id, task_id=None)
+        assert result["execution_status"] == "success"
+        assert agent.calls
+
+    def test_own_side_duplicate_vs_other_blocked(self, db):
+        """新题侧记录撞上别的题被判重 → 保守拦 dedup_duplicate（既有行为保持）。"""
+        from app.models.question_dedup_record import QuestionDedupRecord
+        ensure_knowledge(db)
+        q = make_question(db)
+        q_ref = make_question(db, content="被候选撞上的另一道历史题（判重参照）")
+        db.add(QuestionDedupRecord(
+            new_content_hash=q.content_hash or "x",
+            new_hash_version="2",
+            new_content_snapshot=q.content,
+            new_question_type=q.question_type,
+            decision="duplicate",
+            decision_method="vector_and_llm",
+            matched_question_id=q_ref.id,
+            needs_manual_review=False,
+        ))
+        db.commit()
+        agent = StubReviewAgent()
+        svc = QuestionReviewService(db, agent=agent)
+        result = svc.review_one(q.id, task_id=None)
+        assert result["execution_status"] == "skipped"
+        assert result["error_code"] == "dedup_duplicate"
+
+    def test_question_detail_dedup_direction_fields(self, client, auth_headers, db):
+        """详情字段方向语义：历史题 distinct/historical/计数；新题侧 uncertain/candidate。"""
+        from app.models.question_dedup_record import QuestionDedupRecord
+        ensure_knowledge(db)
+        q_hist = make_question(db, content="历史胜出题（曾撞上双胞胎候选）")
+        db.add(QuestionDedupRecord(
+            new_content_hash="twin-hash",
+            new_hash_version="2",
+            new_content_snapshot=q_hist.content,
+            new_question_type=q_hist.question_type,
+            decision="duplicate",
+            decision_method="batch_internal",
+            matched_question_id=q_hist.id,
+            needs_manual_review=False,
+        ))
+        q_own = make_question(db, content="新题侧 uncertain 待裁题")
+        db.add(QuestionDedupRecord(
+            new_content_hash=q_own.content_hash or "x",
+            new_hash_version="2",
+            new_content_snapshot=q_own.content,
+            new_question_type=q_own.question_type,
+            decision="uncertain",
+            decision_method="vector_and_llm",
+            matched_question_id=None,
+            needs_manual_review=True,
+        ))
+        db.commit()
+
+        resp = client.get(f"/api/v1/questions/{q_hist.id}", headers=auth_headers)
+        assert resp.status_code == 200
+        d = resp.json()["data"]
+        assert d["dedup_review_status"] == "distinct"
+        assert d["dedup_role"] == "historical"
+        assert d["dedup_blocked_candidate_count"] == 1
+        assert d["dedup_manual_resolution"] is None
+        assert d["dedup_effective_decision"] == "distinct"
+
+        resp2 = client.get(f"/api/v1/questions/{q_own.id}", headers=auth_headers)
+        assert resp2.status_code == 200
+        d2 = resp2.json()["data"]
+        assert d2["dedup_review_status"] == "uncertain"
+        assert d2["dedup_role"] == "candidate"
+        assert d2["dedup_effective_decision"] == "uncertain"
+
 
 class TestStateTransition:
     def test_auto_approve_publishes_atomically(self, db):
@@ -403,6 +522,7 @@ class TestRunTaskReview:
         q_short = make_question(db, content="简答题内容", question_type="SHORT_ANSWER",
                                 generation_task_id=task.id)
         q_dup = make_question(db, content="重复题内容", generation_task_id=task.id)
+        q_ref = make_question(db, content="被候选撞上的另一道历史题（判重参照）")
         db.add(QuestionDedupRecord(
             new_content_hash=q_dup.content_hash or "x",
             new_hash_version="2",
@@ -410,6 +530,7 @@ class TestRunTaskReview:
             new_question_type=q_dup.question_type,
             decision="duplicate",
             decision_method="exact_hash",
+            matched_question_id=q_ref.id,
             needs_manual_review=False,
         ))
         db.commit()
