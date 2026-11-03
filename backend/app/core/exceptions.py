@@ -6,9 +6,10 @@ from typing import Any, Optional
 class BusinessException(Exception):
     """Base business exception."""
 
-    def __init__(self, code: int = 40000, message: str = "业务错误"):
+    def __init__(self, code: int = 40000, message: str = "业务错误", data: Any = None):
         self.code = code
         self.message = message
+        self.data = data
         super().__init__(message)
 
 
@@ -25,8 +26,8 @@ class ResourceNotFoundException(BusinessException):
 class ValidationException(BusinessException):
     """Validation error exception."""
 
-    def __init__(self, message: str = "数据验证失败"):
-        super().__init__(code=40001, message=message)
+    def __init__(self, message: str = "数据验证失败", data: Any = None):
+        super().__init__(code=40001, message=message, data=data)
 
 
 class AuthenticationException(BusinessException):

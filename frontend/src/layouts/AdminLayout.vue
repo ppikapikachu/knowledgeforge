@@ -46,6 +46,7 @@ const menuItems = [
     label: '题库管理',
     icon: ClipboardList,
     children: [
+      { label: '题库管理', path: '/question-management/question-banks' },
       { label: 'AI 生成题目', path: '/question-management/generate' },
       { label: '生成任务', path: '/question-management/tasks' },
       { label: '题目审核', path: '/question-management/review' },
@@ -70,7 +71,10 @@ const menuItems = [
   {
     label: '系统',
     icon: Settings,
-    children: [{ label: '管理员', path: '/admin' }],
+    children: [
+      { label: '管理员', path: '/admin' },
+      { label: '普通用户管理', path: '/admin/app-users' },
+    ],
   },
 ]
 

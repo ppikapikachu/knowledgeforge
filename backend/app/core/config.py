@@ -53,10 +53,18 @@ class Settings(BaseSettings):
     # JWT 签名密钥，生产环境必须修改为随机字符串
     JWT_ALGORITHM: str = "HS256"        # JWT 签名算法
     JWT_EXPIRE_MINUTES: int = 120       # Token 有效期（分钟）
+    USER_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30   # 普通用户 Access Token 有效期（分钟）
+    # 登出语义（无状态 JWT，不引 Redis）：logout 只撤销 refresh 会话；
+    # 已签发的 access token 在 exp 前仍然有效，短 TTL 缩小风险窗口。
+    JWT_REFRESH_EXPIRE_DAYS: int = 30   # 普通用户 Refresh Token 有效期（天）
 
     # ==================== 文件上传配置 ====================
     UPLOAD_DIR: str = "./uploads"       # 上传文件保存目录
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 最大上传大小：10MB
+
+    # ==================== 答题统计配置 ====================
+    QUESTION_STATISTICS_MIN_SAMPLES: int = 20
+    # 题目正确率展示的最少有效样本数，未达到时 accuracy 置 NULL + display_status
 
     # ==================== CORS 跨域配置 ====================
     CORS_ORIGINS: str = '["http://localhost:3000","http://localhost:5173"]'

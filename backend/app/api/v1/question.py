@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import get_current_admin
+from app.dependencies.auth import get_current_admin, get_current_principal
 from app.models.admin import AdminUser
 from app.schemas.common import ApiResponse
 from app.schemas.question import (
@@ -287,3 +287,19 @@ def delete_question(
     service = QuestionService(db)
     question = service.delete_question(question_id)
     return ApiResponse(data=QuestionResponse.model_validate(question))
+
+
+@router.get(
+    "/{question_id}/statistics",
+    summary="题目答题统计",
+    description="只做聚合统计，不暴露任何用户信息；管理员或普通用户均可查看。",
+)
+def get_question_statistics(
+    question_id: int,
+    db: Session = Depends(get_db),
+    principal=Depends(get_current_principal),
+):
+    """Question answer statistics（统一口径，样本阈值配置化）。"""
+    from app.services.statistics_service import StatisticsService
+
+    return success_response(StatisticsService(db).question_statistics(question_id))

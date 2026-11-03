@@ -32,12 +32,17 @@ from app.api.v1.answer import router as answer_router
 from app.api.v1.comment import router as comment_router
 from app.api.v1.question_dedup import router as question_dedup_router
 from app.api.v1.question_review import router as question_review_router
+from app.api.v1.users import router as users_router
+from app.api.v1.practice import router as practice_router
+from app.api.v1.admin_app_users import router as admin_app_users_router
 
 # v1 版本的总路由器，所有 v1 接口都挂在此路由器下
 api_v1_router = APIRouter(prefix="/api/v1")
 
 # 注册各业务模块路由
 api_v1_router.include_router(auth_router)         # 认证管理：登录、获取管理员信息
+api_v1_router.include_router(users_router)        # 普通用户：注册/登录/刷新/资料
+api_v1_router.include_router(practice_router)     # 练习：组卷快照/会话/判分
 api_v1_router.include_router(knowledge_router)    # 知识点管理：CRUD、关系管理
 api_v1_router.include_router(knowledge_base_router)  # 知识库管理
 api_v1_router.include_router(question_router)     # 题目管理：CRUD、选项、知识点关联
@@ -55,3 +60,4 @@ api_v1_router.include_router(agent_dedup_router)  # Agent 测试：知识点去�
 api_v1_router.include_router(agent_relation_router)  # Agent 测试：知识点关系判断测试接口
 api_v1_router.include_router(question_dedup_router)  # 题目去重：状态/审计/索引重建
 api_v1_router.include_router(question_review_router)  # AI 质量审核：记录/统计/重新开启
+api_v1_router.include_router(admin_app_users_router)  # 普通用户管理（管理员）

@@ -112,6 +112,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '去重疑点' },
       },
       {
+        path: 'question-management/question-banks',
+        name: 'QuestionBankList',
+        component: () => import('@/views/question-management/QuestionBankListView.vue'),
+        meta: { title: '题库管理' },
+      },
+      {
         path: 'question-management/ai-reviews',
         name: 'AiReviewRecords',
         component: () => import('@/views/question-management/AiReviewRecordsView.vue'),
@@ -170,6 +176,12 @@ const routes: RouteRecordRaw[] = [
         name: 'Admin',
         component: () => import('@/views/admin/AdminView.vue'),
         meta: { title: '管理员' },
+      },
+      {
+        path: 'admin/app-users',
+        name: 'AppUserList',
+        component: () => import('@/views/admin/AppUserListView.vue'),
+        meta: { title: '普通用户管理' },
       },
     ],
   },

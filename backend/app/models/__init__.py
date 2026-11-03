@@ -19,6 +19,12 @@ from app.models.question_review_batch import (
 from app.models.question_answer_record import QuestionAnswerRecord
 from app.models.question_comment import QuestionComment
 from app.models.import_task import KnowledgeImportTask
+from app.models.app_user import AppUser
+from app.models.user_auth_session import UserAuthSession
+from app.models.practice_paper import PracticePaper
+from app.models.practice_paper_item import PracticePaperItem
+from app.models.practice_session import PracticeSession
+from app.models.practice_session_item import PracticeSessionItem
 
 __all__ = [
     "Base",
@@ -38,4 +44,10 @@ __all__ = [
     "QuestionAnswerRecord",
     "QuestionComment",
     "KnowledgeImportTask",
+    "AppUser",
+    "UserAuthSession",
+    "PracticePaper",
+    "PracticePaperItem",
+    "PracticeSession",
+    "PracticeSessionItem",
 ]

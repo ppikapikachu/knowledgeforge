@@ -23,6 +23,10 @@ class QuestionBankCreate(BaseModel):
         default=None,
         description="内容范围说明",
     )
+    is_available_for_practice: Optional[bool] = Field(
+        default=False,
+        description="是否开放练习（普通用户可组卷练习；关闭只挡未来组卷，不删历史试卷）",
+    )
 
 
 class QuestionBankUpdate(BaseModel):
@@ -34,6 +38,18 @@ class QuestionBankUpdate(BaseModel):
         default=None, ge=0, le=1,
         description="状态: 1=启用, 0=停用",
     )
+    is_available_for_practice: Optional[bool] = Field(
+        default=None,
+        description="是否开放练习（可选更新；关闭只挡未来组卷，不删历史试卷与会话）",
+    )
+
+
+class PracticeAvailabilityRequest(BaseModel):
+    """开放练习开关请求（管理端）。"""
+
+    is_available_for_practice: bool = Field(
+        ..., description="true=开放练习（普通用户可组卷），false=关闭（只挡未来组卷，不删历史）"
+    )
 
 
 class QuestionBankResponse(BaseModel):
@@ -44,7 +60,13 @@ class QuestionBankResponse(BaseModel):
     name: str = Field(description="显示名称")
     description: Optional[str] = Field(description="内容范围说明")
     status: int = Field(description="状态: 1=启用, 0=停用")
+    is_available_for_practice: bool = Field(
+        default=False, description="是否开放练习（普通用户可组卷练习）"
+    )
     question_count: int = Field(default=0, description="题库下题目数量")
+    published_question_count: int = Field(default=0, description="已发布（可组卷）题目数量")
+    pending_review_count: int = Field(default=0, description="待审核题目数量")
+    can_assemble: bool = Field(default=False, description="是否可组卷（至少 1 道已发布题）")
     created_at: datetime = Field(description="创建时间")
     updated_at: datetime = Field(description="更新时间")
 

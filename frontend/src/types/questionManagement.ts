@@ -13,7 +13,15 @@ export interface QuestionBank {
   name: string
   description: string | null
   status: number // 1=启用 0=停用
+  /** 是否允许普通用户使用该题库创建新练习试卷 */
+  is_available_for_practice: boolean
   question_count: number
+  /** 当前题库已发布、可参与组卷的题目数量 */
+  published_question_count: number
+  /** 当前处于待审核状态的题目数量 */
+  pending_review_count: number
+  /** 是否至少存在一条可参与组卷的已发布题目 */
+  can_assemble: boolean
   created_at: string
   updated_at: string
 }

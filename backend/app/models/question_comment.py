@@ -29,7 +29,14 @@ class QuestionComment(Base, TimestampMixin):
     user_id: Mapped[int] = mapped_column(
         BigInteger().with_variant(BigInteger, "mysql"),
         nullable=False,
-        comment="用户 ID",
+        comment="历史兼容用户 ID（旧记录为 admin_user，不改写不迁移）",
+    )
+    app_user_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger().with_variant(BigInteger, "mysql"),
+        ForeignKey("app_user.id", ondelete="RESTRICT"),
+        nullable=True,
+        default=None,
+        comment="正式普通用户 ID（新接口必填；历史记录为 NULL）",
     )
     content: Mapped[str] = mapped_column(
         Text,

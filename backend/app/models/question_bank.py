@@ -11,7 +11,7 @@
 
 from typing import Optional
 
-from sqlalchemy import BigInteger, Index, String, Text
+from sqlalchemy import BigInteger, Boolean, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TimestampMixin
@@ -49,6 +49,12 @@ class QuestionBank(Base, TimestampMixin):
         nullable=False,
         default=1,
         comment="状态: 1=启用, 0=停用。停用后不能作为新建题目或决策目标",
+    )
+    is_available_for_practice: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        comment="是否对用户端开放练习（默认 false，管理员主动开放后才能组卷）",
     )
 
     __table_args__ = (

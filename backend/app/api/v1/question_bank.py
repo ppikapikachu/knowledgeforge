@@ -12,13 +12,27 @@ from app.models.admin import AdminUser
 from app.repositories.question_bank_repository import QuestionBankRepository
 from app.schemas.common import ApiResponse
 from app.schemas.question_bank import (
+    PracticeAvailabilityRequest,
     QuestionBankCreate,
     QuestionBankResponse,
     QuestionBankUpdate,
 )
+from app.services.question_bank_stats import bank_question_stats
 from app.utils.response import paginated_response
 
 router = APIRouter(prefix="/question-banks", tags=["题库管理"])
+
+
+def _bank_payload(qb, stats_entry: Optional[dict], question_count: int) -> dict:
+    """题库响应负载：基础字段 + 开放练习 + 统计（一次聚合，禁 N+1）。"""
+    data = QuestionBankResponse.model_validate(qb).model_dump(mode="json")
+    data["question_count"] = question_count
+    stats = stats_entry or {}
+    data["is_available_for_practice"] = bool(getattr(qb, "is_available_for_practice", False))
+    data["published_question_count"] = stats.get("published_question_count", 0)
+    data["pending_review_count"] = stats.get("pending_review_count", 0)
+    data["can_assemble"] = data["published_question_count"] > 0
+    return data
 
 
 @router.get(
@@ -40,12 +54,11 @@ def get_question_bank_list(
 
     qb_ids = [qb.id for qb in items]
     counts = repo.get_question_counts(qb_ids)
+    stats_map = bank_question_stats(db, qb_ids)
 
     item_data = []
     for qb in items:
-        data = QuestionBankResponse.model_validate(qb).model_dump(mode="json")
-        data["question_count"] = counts.get(qb.id, 0)
-        item_data.append(data)
+        item_data.append(_bank_payload(qb, stats_map.get(qb.id), counts.get(qb.id, 0)))
 
     return paginated_response(items=item_data, total=total, page=page, page_size=page_size)
 
@@ -67,8 +80,7 @@ def get_question_bank(
     if not qb:
         raise ResourceNotFoundException("题库", qb_id)
 
-    data = QuestionBankResponse.model_validate(qb).model_dump(mode="json")
-    data["question_count"] = repo.get_question_count(qb_id)
+    data = _bank_payload(qb, bank_question_stats(db, [qb_id]).get(qb_id), repo.get_question_count(qb_id))
     return ApiResponse[QuestionBankResponse](data=data)
 
 
@@ -92,8 +104,7 @@ def create_question_bank(
     db.commit()
     db.refresh(qb)
 
-    data = QuestionBankResponse.model_validate(qb).model_dump(mode="json")
-    data["question_count"] = 0
+    data = _bank_payload(qb, bank_question_stats(db, [qb.id]).get(qb.id), 0)
     return ApiResponse[QuestionBankResponse](data=data)
 
 
@@ -119,6 +130,34 @@ def update_question_bank(
     db.commit()
     db.refresh(qb)
 
-    data = QuestionBankResponse.model_validate(qb).model_dump(mode="json")
-    data["question_count"] = repo.get_question_count(qb_id)
+    data = _bank_payload(qb, bank_question_stats(db, [qb_id]).get(qb_id), repo.get_question_count(qb_id))
+    return ApiResponse[QuestionBankResponse](data=data)
+
+
+@router.patch(
+    "/{qb_id}/practice-availability",
+    response_model=ApiResponse[QuestionBankResponse],
+    summary="开关题库练习开放",
+    description=(
+        "管理端设置题库是否开放练习（普通用户组卷入口的唯一开关）。"
+        "关闭只影响未来的组卷请求，不删除历史试卷与练习会话。"
+    ),
+)
+def update_practice_availability(
+    qb_id: int,
+    request: PracticeAvailabilityRequest,
+    db: Session = Depends(get_db),
+    current_admin: AdminUser = Depends(get_current_admin),
+) -> ApiResponse[QuestionBankResponse]:
+    """开关题库练习开放（管理端）。"""
+    repo = QuestionBankRepository(db)
+    qb = repo.get_by_id(qb_id)
+    if not qb:
+        raise ResourceNotFoundException("题库", qb_id)
+
+    qb.is_available_for_practice = bool(request.is_available_for_practice)
+    db.commit()
+    db.refresh(qb)
+
+    data = _bank_payload(qb, bank_question_stats(db, [qb_id]).get(qb_id), repo.get_question_count(qb_id))
     return ApiResponse[QuestionBankResponse](data=data)
