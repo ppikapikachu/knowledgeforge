@@ -1,5 +1,7 @@
 package com.knowledgeforge.app.network.auth;
 
+import com.knowledgeforge.app.data.local.TokenStorage;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -8,10 +10,10 @@ import okhttp3.Response;
 
 /** 自动为需要登录的普通用户接口添加 Bearer access_token。 */
 public class AuthInterceptor implements Interceptor {
-    private final TokenManager tokenManager;
+    private final TokenStorage tokenStorage;
 
-    public AuthInterceptor(TokenManager tokenManager) {
-        this.tokenManager = tokenManager;
+    public AuthInterceptor(TokenStorage tokenStorage) {
+        this.tokenStorage = tokenStorage;
     }
 
     @Override
@@ -24,7 +26,7 @@ public class AuthInterceptor implements Interceptor {
             return chain.proceed(original);
         }
 
-        String accessToken = tokenManager.getAccessToken();
+        String accessToken = tokenStorage.getAccessToken();
         if (accessToken == null || accessToken.trim().isEmpty()) {
             return chain.proceed(original);
         }
