@@ -42,12 +42,18 @@ class StatisticsService:
     def question_statistics(self, question_id: int) -> dict:
         question = self.db.query(Question).get(question_id)
         if question is None:
+            # 题目不存在：返回与正常分支结构完全一致的空结果（全部键齐全、计数为 0、
+            # 正确率为 None），避免调用方取键 KeyError，同时符合"合理的空结果"约定。
             return {
                 "question_id": question_id,
                 "accuracy": None,
                 "first_attempt_accuracy": None,
+                "first_attempt_total": 0,
+                "first_attempt_correct": 0,
                 "unique_user_count": 0,
                 "graded_submission_count": 0,
+                "total_submission_count": 0,
+                "correct_submission_count": 0,
                 "display_status": "insufficient_samples",
                 "sample_threshold": settings.QUESTION_STATISTICS_MIN_SAMPLES,
             }

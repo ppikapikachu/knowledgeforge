@@ -12,6 +12,7 @@ from app.api.router import api_v1_router
 from app.core.config import settings
 from app.middleware.exception_handler import register_exception_handlers
 from app.middleware.request_id import RequestIdMiddleware
+from app.schemas.common import HealthResponse, RootInfoResponse
 
 # Configure logging
 logging.basicConfig(
@@ -119,14 +120,26 @@ def create_app() -> FastAPI:
     # Include API routers
     app.include_router(api_v1_router)
 
-    @app.get("/", tags=["健康检查"])
+    @app.get(
+        "/",
+        tags=["健康检查"],
+        response_model=RootInfoResponse,
+        summary="根路径服务信息",
+        description="返回应用基本信息（状态/应用名/版本），非统一 {code,message,data} 信封。调用时机：前端/运维快速确认服务身份；只读、不写库、无需鉴权。",
+    )
     def root():
-        """Health check endpoint."""
+        """根路径：返回应用身份信息。"""
         return {"status": "ok", "app": settings.APP_NAME, "version": "1.0.0"}
 
-    @app.get("/health", tags=["健康检查"])
+    @app.get(
+        "/health",
+        tags=["健康检查"],
+        response_model=HealthResponse,
+        summary="存活健康检查",
+        description="返回存活状态 healthy，供负载均衡/容器探活。调用时机：探针轮询；只读、不写库、无需鉴权。",
+    )
     def health():
-        """Health check endpoint."""
+        """健康检查：返回存活状态。"""
         return {"status": "healthy"}
 
     return app

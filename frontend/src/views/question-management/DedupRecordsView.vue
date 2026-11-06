@@ -20,6 +20,7 @@ import {
 import { QUESTION_TYPE_LABELS } from '@/constants/questionManagement'
 import DedupStatusCard from '@/components/question-management/DedupStatusCard.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { ApiError } from '@/types/api'
 import {
   Search,
   RefreshCw,
@@ -168,18 +169,19 @@ async function handleResolveSubmit() {
     resolveVisible.value = false
     await fetchData()
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : ''
-    // 40901 并发冲突：已被其他管理员处理
-    if (msg.includes('40901') || msg.includes('已被') || msg.includes('并发')) {
+    const code = e instanceof ApiError ? e.code : undefined
+    // 40901 冲突：已被其他管理员处理 / 重复提交 / 并发冲突
+    if (code === 40901) {
       ElMessage.warning('该记录可能已被其他管理员处理，正在刷新...')
       resolveVisible.value = false
       await fetchData()
-    } else if (msg.includes('40401')) {
+    } else if (code === 40401) {
       ElMessage.error('记录已不存在，正在刷新...')
       resolveVisible.value = false
       await fetchData()
     } else {
       // 其他错误：保留弹窗内容供修正
+      const msg = e instanceof Error ? e.message : ''
       ElMessage.error(msg || '裁定失败，请检查输入后重试')
     }
   } finally {

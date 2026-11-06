@@ -12,7 +12,7 @@ import logging
 import threading
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, Path, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -22,8 +22,15 @@ from app.dependencies.auth import get_current_admin
 from app.models.admin import AdminUser
 from app.models.question import Question
 from app.models.question_dedup_record import QuestionDedupRecord
-from app.schemas.common import ApiResponse
-from app.schemas.question_dedup import QuestionDedupResolveRequest
+from app.schemas.common import ApiErrorResponse, ApiResponse, PaginatedData
+from app.schemas.question_dedup import (
+    QuestionDedupIndexRebuildResponse,
+    QuestionDedupRecordItem,
+    QuestionDedupResolveRequest,
+    QuestionDedupResolutionResponse,
+    QuestionDedupStatsResponse,
+    QuestionDedupStatusResponse,
+)
 from app.services.question_normalizer import HASH_VERSION
 from app.utils.response import paginated_response
 
@@ -31,12 +38,43 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/question-dedup", tags=["题目去重"])
 
+# 错误响应文档（OpenAPI responses；仅文档用途，不改变运行时 HTTP 状态码）。
+# 运行时业务异常（40000/40001/40101/40301/40401/40901 等）统一经全局异常处理器以
+# HTTP 400 信封返回；请求体校验失败为 HTTP 422（业务码 42201）；系统内部错误为
+# HTTP 500（业务码 50000）。
+ERROR_RESPONSES = {
+    400: {
+        "model": ApiErrorResponse,
+        "description": "业务错误（HTTP 400，envelope code 区分）：40001 参数校验（decision 必须是 duplicate/distinct/uncertain/reason 不能为空或超 1000 字）/ 40401 不存在（题目/去重记录/任务不存在）/ 40901 冲突（记录已被其他管理员处理不允许覆盖/向量索引重建中）/ 40101 未认证（管理员令牌无效/过期/管理员不存在/已禁用）",
+    },
+    403: {"model": ApiErrorResponse, "description": "未提供或非法 Authorization 请求头（HTTP 403）"},
+    422: {"model": ApiErrorResponse, "description": "请求参数格式校验失败（HTTP 422，code 42201）"},
+    500: {"model": ApiErrorResponse, "description": "系统内部错误（HTTP 500，code 50000）"},
+}
+
 # 进程内重建互斥：重建期间重复点击返回冲突，不并发重建
 _rebuild_lock = threading.Lock()
 _rebuild_in_progress = False
 
 
-@router.get("/status", summary="获取去重服务状态")
+@router.get(
+    "/status",
+    response_model=ApiResponse[QuestionDedupStatusResponse],
+    responses=ERROR_RESPONSES,
+    summary="获取去重服务状态",
+    description=(
+        "用途：查看题目去重服务的就绪状态、向量索引统计与当前阈值配置。\n"
+        "调用时机：管理端巡检、生成任务前确认去重可用、排查疑似重复问题。\n"
+        "权限：管理员 access token。\n"
+        "幂等性：只读幂等。\n"
+        "写库：否。\n"
+        "返回 data：enabled 去重总开关/status 进程内就绪状态 ready|initializing|degraded|disabled/reason 状态原因描述/"
+        "stats 向量索引统计 total/success/failed/skipped 与耗时、embedding 模型与版本/failures 最近索引写入失败列表/"
+        "blocking_question_count 参与去重阻断的题目数（status in pending_review|published）/"
+        "thresholds 当前阈值配置（same_scope 同范围候选阈值/cross_scope 跨范围阈值/final_block 最终拦截阈值/vector_top_k/keyword_top_k/"
+        "llm_max_candidates_per_question/llm_batch_size）/hash_version 当前指纹版本"
+    ),
+)
 def get_dedup_status(
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
@@ -58,7 +96,7 @@ def get_dedup_status(
             "status": readiness.get("status"),
             "reason": readiness.get("reason"),
             "stats": readiness.get("stats") or {},
-            "failures": readiness.get("failures") or [],
+            "failures": readiness.get("recent_failures") or [],
             "blocking_question_count": blocking_count,
             "thresholds": {
                 "same_scope_candidate_threshold": agent_settings.QUESTION_DEDUP_SAME_SCOPE_CANDIDATE_THRESHOLD,
@@ -74,14 +112,34 @@ def get_dedup_status(
     )
 
 
-@router.get("/records", summary="查询去重判定审计记录")
+@router.get(
+    "/records",
+    response_model=ApiResponse[PaginatedData[QuestionDedupRecordItem]],
+    responses=ERROR_RESPONSES,
+    summary="查询去重判定审计记录",
+    description=(
+        "用途：分页查询去重判定审计记录（question_dedup_record），支撑疑似重复题的人工追溯。\n"
+        "调用时机：审核页排查某题是否被判过重复、统计任务去重情况、追溯 uncertain 待复核记录。\n"
+        "权限：管理员 access token。\n"
+        "幂等性：只读幂等；筛选条件为 AND 语义。\n"
+        "写库：否。\n"
+        "返回 data：items 记录列表（每条含 id 记录 ID/task_id 生成任务 ID（可空）/new_content_hash 新题侧指纹/"
+        "new_question_type 题型/new_question_bank_id 新题侧题库 ID/matched_question_id 匹配到的历史题目 ID/"
+        "matched_question_bank_id 匹配题库 ID/scope_mode 判定范围 global_exact|batch_internal|same_scope|cross_scope/"
+        "keyword_score 关键词相似度/vector_score 向量相似度/algorithm_score 融合算法分/decision 判定 duplicate|distinct|uncertain/"
+        "decision_method 判定途径 exact_hash|algorithm_only|vector_and_llm|batch_internal/llm_called 是否调用 LLM/llm_decision/llm_reason/"
+        "needs_manual_review 是否待人工复核/manual_resolution 人工裁定 duplicate|distinct（可空）/effective_decision 有效判定（人工裁定优先）/"
+        "resolution_reason 裁定理由/resolved_by 裁定管理员 ID/resolved_at 裁定时间/created_at 记录时间）/"
+        "page 当前页码/page_size 每页条数/total 总条数"
+    ),
+)
 def list_dedup_records(
-    task_id: int | None = Query(None, description="生成任务 ID"),
-    question_id: int | None = Query(None, description="题目 ID（新题或匹配题）"),
-    decision: str | None = Query(None, description="duplicate|distinct|uncertain"),
-    needs_manual_review: bool | None = Query(None, description="仅需人工复核的记录"),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    task_id: int | None = Query(None, description="生成任务 ID（可选，按去重发生所在的生成任务精确过滤）"),
+    question_id: int | None = Query(None, description="题目 ID（可选，按新题侧或匹配侧任一关联到该题过滤，题目不存在返回 40401）"),
+    decision: str | None = Query(None, description="判定结果筛选（可选）：duplicate=判重拦截、distinct=判定不同放行、uncertain=待人工复核"),
+    needs_manual_review: bool | None = Query(None, description="是否仅查待人工复核记录（可选）：true=只看 needs_manual_review 的记录"),
+    page: int = Query(1, ge=1, description="页码（可选参数，从 1 开始计数，缺省默认第 1 页）"),
+    page_size: int = Query(20, ge=1, le=100, description="每页条数（可选，默认 20，取值 1~100）"),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:
@@ -154,11 +212,26 @@ def list_dedup_records(
 @router.post(
     "/records/{record_id}/resolve",
     summary="人工复核去重记录",
-    response_model=None,
+    response_model=ApiResponse[QuestionDedupResolutionResponse],
+    responses=ERROR_RESPONSES,
+    description=(
+        "用途：管理员对一条去重疑点（decision=uncertain）记录人工最终结论与理由。\n"
+        "调用时机：人工审核页查看疑似重复记录后做最终裁定（确认重复/确认不重复）。\n"
+        "权限：管理员 access token（操作人取认证上下文，不信任请求体）。\n"
+        "幂等性：**不幂等可重入**——仅 uncertain 且未处理的记录允许首次处理；"
+        "重复提交或并发处理通过条件更新（WHERE manual_resolution IS NULL）保证只有一个成功，另一个返回 40901 冲突。\n"
+        "写库：是（写 question_dedup_record 的 manual_resolution/resolution_reason/resolved_by/resolved_at；**不自动驳回/下架/删除题目**，题目状态仍走原审核流程）。\n"
+        "返回 data：id 记录 ID/decision 原始自动判定（保留不被覆盖）/manual_resolution 人工结论 duplicate|distinct/"
+        "effective_decision 有效结论（人工优先，派生值）/needs_manual_review 处理后 false/resolution_reason 人工理由/"
+        "resolved_by 处理管理员 ID/resolved_at 处理时间"
+    ),
 )
 def resolve_dedup_record(
-    record_id: int,
-    payload: QuestionDedupResolveRequest,
+    record_id: int = Path(..., ge=1, description="去重审计记录 ID（question_dedup_record 主键；不存在返回 40401）"),
+    payload: QuestionDedupResolveRequest = Body(
+        ...,
+        description="人工复核请求体：conclusion 人工结论（duplicate|distinct 二选一）+ reason 判断依据（1~1000 字符）",
+    ),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:
@@ -246,9 +319,23 @@ def resolve_dedup_record(
     )
 
 
-@router.get("/stats/{task_id}", summary="任务去重统计")
+@router.get(
+    "/stats/{task_id}",
+    response_model=ApiResponse[QuestionDedupStatsResponse],
+    responses=ERROR_RESPONSES,
+    summary="任务去重统计",
+    description=(
+        "用途：按生成任务统计去重判定分布（duplicate/distinct/uncertain 与判定途径分组、LLM 调用次数）。\n"
+        "调用时机：生成任务完成后查看去重拦截情况、生成报告取数。\n"
+        "权限：管理员 access token。\n"
+        "幂等性：只读幂等。\n"
+        "写库：否。\n"
+        "返回 data：task_id 任务 ID（可为空表示全局）/records 记录总数/by_decision 按 decision 分组计数/"
+        "by_method 按 decision:method 组合分组计数/llm_called 触发 LLM 复核的记录数"
+    ),
+)
 def get_task_dedup_stats(
-    task_id: int,
+    task_id: int = Path(..., ge=1, description="生成任务 ID（question_generation_task 主键；任务不存在时返回空统计或 40401）"),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:
@@ -265,9 +352,26 @@ def get_task_dedup_stats(
     return ApiResponse(code=0, message="success", data=service.get_dedup_stats(task_id))
 
 
-@router.post("/index/rebuild", summary="手动重建题目向量索引")
+@router.post(
+    "/index/rebuild",
+    response_model=ApiResponse[QuestionDedupIndexRebuildResponse],
+    responses=ERROR_RESPONSES,
+    summary="手动重建题目向量索引",
+    description=(
+        "用途：在**服务进程内**手动重建题目向量索引（脚本进程的索引不能恢复服务进程内存态）。\n"
+        "调用时机：status 显示 degraded/初始化失败、向量缺失或换 embedding 版本后补齐。\n"
+        "权限：管理员 access token。\n"
+        "幂等性：幂等可重跑（only_missing=true 时跳过已有同版本向量）；并发重建返回 40901（互斥锁保护）。\n"
+        "写库：是（写 FAISS 进程内向量索引，不改题目业务数据）。\n"
+        "返回 data：total 扫描题目数/success 构建成功数/failed 失败数/skipped 跳过数（已有向量）/"
+        "duration_seconds 耗时/embedding_model 使用的模型/embedding_version 版本/status 重建后就绪状态（ready|degraded）"
+    ),
+)
 def rebuild_index(
-    only_missing: bool = Query(True, description="仅补齐缺失向量（幂等）"),
+    only_missing: bool = Query(
+        True,
+        description="是否仅补齐缺失向量（可选，默认 true：跳过已有同版本向量，幂等可重跑；false=全量重建覆盖）",
+    ),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:

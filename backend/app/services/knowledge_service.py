@@ -128,6 +128,9 @@ class KnowledgeService:
             relation_type=relation_type,
         )
         self.db.commit()
+        # 填充目标知识点名（ORM 无此列，为响应展示用 transient 属性，与 get_relations 一致）
+        target = self.knowledge_repo.get_by_id(target_id)
+        relation.target_knowledge_name = target.name if target else None
         return relation
 
     def delete_knowledge_relation(

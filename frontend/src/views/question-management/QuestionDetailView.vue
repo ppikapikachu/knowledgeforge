@@ -20,6 +20,7 @@ import QuestionPreview from '@/components/question-management/QuestionPreview.vu
 import QuestionForm from '@/components/question-management/QuestionForm.vue'
 import QuestionStatusTag from '@/components/question-management/QuestionStatusTag.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { ApiError } from '@/types/api'
 import { ArrowLeft, Edit, CheckCircle, XCircle, Ban, Eye, RotateCcw } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -213,17 +214,19 @@ async function handleReopen() {
     ElMessage.success('已重新开启人工审核，题目状态已恢复为待审核')
     await fetchDetail()
   } catch (e) {
-    const msg = e instanceof Error ? e.message : '操作失败'
+    const code = e instanceof ApiError ? e.code : undefined
     // 40901：已被其他管理员处理或重复 reopen
-    if (msg.includes('40901') || msg.includes('已被') || msg.includes('并发')) {
+    if (code === 40901) {
+      const msg = e instanceof Error ? e.message : '操作冲突'
       ElMessage.warning(msg)
       await fetchDetail()
-    } else if (msg.includes('40401')) {
+    } else if (code === 40401) {
       ElMessage.error('题目或审核记录不存在，正在刷新...')
       await fetchDetail()
-    } else if (msg.includes('timeout') || msg.includes('超时')) {
+    } else if (e instanceof Error && (e.message.includes('timeout') || e.message.includes('超时'))) {
       ElMessage.warning('请求结果暂不确定，请重新查询详情确认，不要重复提交')
     } else {
+      const msg = e instanceof Error ? e.message : '操作失败'
       ElMessage.error(msg)
     }
   } finally {

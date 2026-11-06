@@ -227,7 +227,7 @@ class KnowledgePointDemandService:
             if allocated_count <= 0:
                 continue
             allocations.append({
-                **e,
+                **{k: v for k, v in e.items() if k != "_weight"},
                 "allocated_count": allocated_count,
             })
 

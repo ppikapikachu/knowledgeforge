@@ -7,7 +7,7 @@
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, Path, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -17,21 +17,57 @@ from app.models.question import Question
 from app.models.question_generation_task import QuestionGenerationTask
 from app.models.question_knowledge import QuestionKnowledge
 from app.models.question_option import QuestionOption
-from app.schemas.common import ApiResponse
+from app.schemas.common import ApiErrorResponse, ApiResponse, PaginatedData
+from app.schemas.question import (
+    GenerationTaskDetailResponse,
+    GenerationTaskListItem,
+    QuestionManualReviewResponse,
+)
+from app.schemas.question_demand import TaskCreateResponse
 from app.utils.response import paginated_response
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/question-generation", tags=["题目生成"])
 
+# 错误响应文档（OpenAPI responses；仅文档用途，不改变运行时 HTTP 状态码）。
+# 运行时业务异常（40000/40001/40101/40301/40401/40901 等）统一经全局异常处理器以
+# HTTP 400 信封返回；请求体校验失败为 HTTP 422（业务码 42201）；系统内部错误为
+# HTTP 500（业务码 50000）。
+ERROR_RESPONSES = {
+    400: {
+        "model": ApiErrorResponse,
+        "description": "业务错误（HTTP 400，envelope code 区分）：40001 参数校验（question_bank_id 必填/count 范围 1~500/题型或难度非法/manual 模式缺 knowledge_id/去重服务未就绪/AI 审核未启用/无候选知识点/分配不足/出题策略未启用）/ 40401 不存在（题库/知识点不存在）/ 40101 未认证（管理员令牌无效/过期/管理员不存在/已禁用）",
+    },
+    403: {"model": ApiErrorResponse, "description": "未提供或非法 Authorization 请求头（HTTP 403）"},
+    422: {"model": ApiErrorResponse, "description": "请求参数格式校验失败（HTTP 422，code 42201）"},
+    500: {"model": ApiErrorResponse, "description": "系统内部错误（HTTP 500，code 50000）"},
+}
+
 
 @router.post(
     "/tasks",
+    response_model=ApiResponse[TaskCreateResponse],
+    responses=ERROR_RESPONSES,
     summary="创建题目生成任务",
     description=(
-        "创建 AI 题目生成任务，后台异步执行。"
-        "支持 manual（指定知识点）和 auto（智能分配）两种模式。"
-        "立即返回任务 ID，通过任务详情查询进度。"
+        "用途：创建 AI 题目生成任务，后台线程异步执行（立即返回任务，不阻塞请求）。\n"
+        "调用时机：管理端\"智能出题\"页提交生成任务时调用。\n"
+        "请求体（JSON 对象）：\n"
+        "- question_bank_id: 目标题库ID，必填且题库须存在\n"
+        "- question_type: 题型(SINGLE_CHOICE|MULTIPLE_CHOICE|TRUE_FALSE|SHORT_ANSWER)\n"
+        "- difficulty: 难度(1-3)\n"
+        "- count: 生成数量，必填为正整数\n"
+        "- mode: manual 指定知识点 | auto 智能分配（默认 manual）\n"
+        "- knowledge_id: manual 模式必填，知识点ID\n"
+        "- enable_ai_review: 是否启用任务级 AI 质量审核（默认 false；总开关 QUESTION_AI_REVIEW_ENABLED=false 时传 true 会报 40001）\n"
+        "业务约束：题目去重服务未就绪（initializing/degraded）时安全失败明确报错；生成过程带去重（重复候选不入库）与有限补生成。\n"
+        "返回 data 结构：task_id 任务ID / status 任务状态（创建时为 pending，后台执行中依次变为 running→success|partial_success|failed）/"
+        "allocation_mode 分配方式(manual|auto) / requested_count 请求生成数 / allocated_count 已分配生成数 / "
+        "unallocated_count 未分配数 / message 提示。\n"
+        "权限：仅管理员（JWT）。\n"
+        "幂等性：非幂等，每次调用创建新任务。\n"
+        "写库：是（任务记录；题目由后台线程分批写入）。"
     ),
 )
 async def create_generation_task(
@@ -236,13 +272,34 @@ async def create_generation_task(
 
 @router.get(
     "/tasks",
+    response_model=ApiResponse[PaginatedData[GenerationTaskListItem]],
+    responses=ERROR_RESPONSES,
     summary="获取生成任务列表",
-    description="分页获取生成任务列表，支持状态筛选。",
+    description=(
+        "用途：分页查询题目生成任务，供任务列表页使用。\n"
+        "调用时机：进入生成任务列表页或筛选状态时调用。\n"
+        "返回 data 结构（分页信封 {items, page, page_size, total}）：items 每项含 "
+        "id 任务ID / status 状态(pending|running|success|partial_success|failed) / "
+        "allocation_mode 分配方式(manual|auto) / requested_count 请求生成数 / allocated_count 已分配数 / unallocated_count 未分配数 / "
+        "total_count 计划数 / success_count 成功数 / "
+        "duplicate_count 去重跳过数 / failed_count 失败数 / generated_count 生成候选数 / "
+        "exact_duplicate_count 精确重复数 / semantic_duplicate_count 语义重复数 / uncertain_count 待人工复核数 / "
+        "unfulfilled_count 未补足数 / enable_ai_review 是否启用AI审核 / ai_review_status AI审核状态 / "
+        "8 项 AI 审核计数（ai_review_total_count/ai_review_processed_count/ai_auto_approved_count/ai_auto_rejected_count/"
+        "ai_manual_review_count/ai_review_failed_count/ai_review_skipped_count/ai_review_pending_count）/ "
+        "request_config 请求配置快照 / error_summary 错误摘要 / started_at/completed_at/created_at。\n"
+        "权限：仅管理员（JWT）。\n"
+        "幂等性：只读查询，可安全重复调用。\n"
+        "写库：否。"
+    ),
 )
 def get_generation_tasks(
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
-    status: str = Query(default=None),
+    page: int = Query(default=1, ge=1, description="页码参数，从 1 开始递增，默认第 1 页"),
+    page_size: int = Query(default=20, ge=1, le=100, description="每页条数，取值范围 1-100，默认 20"),
+    status: str = Query(
+        default=None,
+        description="任务状态筛选：pending 待执行 | running 执行中 | success 成功 | partial_success 部分成功 | failed 失败；不传为全部",
+    ),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ):
@@ -296,11 +353,30 @@ def get_generation_tasks(
 
 @router.get(
     "/tasks/{task_id}",
+    response_model=ApiResponse[GenerationTaskDetailResponse],
+    responses={**ERROR_RESPONSES, 200: {"description": "成功（code=0）。任务不存在时 HTTP 仍为 200，用 envelope code（40401 任务不存在）标识，前端须检查 code。"}},
     summary="获取生成任务详情",
-    description="查看任务参数、进度、结果和失败原因。",
+    description=(
+        "用途：查看单个生成任务的参数、实时进度、去重/审核统计与失败原因。\n"
+        "调用时机：任务列表点进详情页、或轮询任务进度时调用。\n"
+        "路径参数：task_id 任务ID。\n"
+        "返回 data 结构：task_id/created_by 创建管理员ID/allocation_mode 分配方式/status/"
+        "requested_count/allocated_count/unallocated_count/request_config 请求配置快照/"
+        "total_count 计划数/success_count 已入库数/duplicate_count 去重跳过数（=exact+semantic）/failed_count 失败数/"
+        "generated_count 生成候选数/exact_duplicate_count 精确重复数/semantic_duplicate_count 语义重复数/"
+        "uncertain_count 待人工复核数/unfulfilled_count 未补足数/error_summary 错误摘要/progress 进度百分比(0-100)/"
+        "allocation_plan 分配计划快照/enable_ai_review 是否启用AI审核/"
+        "ai_review_status AI审核状态(not_requested|queued|running|completed|partial|failed)+8 项审核计数/"
+        "dedup_review_status 本任务去重复核状态(manual_review_required|deduplicated|clean)/dedup_manual_review_count 待人工复核记录数/"
+        "questions 生成题目摘要列表（id/question_type/content 截断100字/difficulty/status/knowledge_ids/option_count）/"
+        "started_at/completed_at/created_at。\n"
+        "权限：仅管理员（JWT）。\n"
+        "幂等性：只读查询，可安全重复调用。\n"
+        "写库：否。"
+    ),
 )
 def get_generation_task_detail(
-    task_id: int,
+    task_id: int = Path(..., description="生成任务ID，必须为已存在的任务主键，不存在时返回业务错误 40401"),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:
@@ -397,12 +473,25 @@ def get_generation_task_detail(
 
 @router.post(
     "/questions/{question_id}/review",
+    response_model=ApiResponse[QuestionManualReviewResponse],
+    responses={**ERROR_RESPONSES, 200: {"description": "成功（code=0）。业务错误时 HTTP 仍为 200，用 envelope code（如 40401 题目不存在/40001 状态不允许或 action 非法）标识，前端须检查 code。"}},
     summary="审核题目",
-    description="发布或驳回待审核题目。驳回时建议记录原因。",
+    description=(
+        "用途：人工审核题目——发布（status→published）或驳回（status→rejected，软驳回不删数据）。\n"
+        "调用时机：题目审核页点击\"发布/驳回\"时调用。\n"
+        "路径参数：question_id 题目ID。\n"
+        "请求体（JSON 对象）：action 动作，publish 发布 | reject 驳回；reason 驳回原因（驳回时建议填写）。\n"
+        "业务行为：发布/驳回同步去重索引状态（dedup_key 登记/释放）；题目不存在返回 code=40401。\n"
+        "返回 data 结构：question_id 题目ID / status 审核后的题目状态(published|rejected) / "
+        "reviewed_by 审核管理员ID / reviewed_at 审核时间。\n"
+        "权限：仅管理员（JWT）。\n"
+        "幂等性：条件幂等——同一动作重复提交结果一致（状态条件更新，已发布/已驳回再操作为最终状态覆盖）。\n"
+        "写库：是（题目状态+去重索引状态）。"
+    ),
 )
 async def review_question(
-    question_id: int,
-    request: dict,
+    question_id: int = Path(..., description="题目ID，必须为已存在的题目主键，不存在时返回业务错误 40401"),
+    request: dict = Body(..., description="审核动作：action= publish 发布 | reject 驳回；reason 驳回原因（驳回时建议填写）"),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:

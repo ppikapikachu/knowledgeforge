@@ -28,14 +28,40 @@ router = APIRouter(prefix="/agent", tags=["Agent 测试"])
     "/knowledge-relation/test",
     summary="测试知识点关系判断 Agent",
     description=(
-        "判断锚点知识点与候选知识点之间的关系（prerequisite/related/extension/contrast）。"
+        "用途：判断锚点知识点与候选知识点之间的关系（prerequisite=前置/related=相关/extension=扩展/contrast=对比）。\n"
         "支持三种模式：\n\n"
         "1. **人工候选模式**：传 `source_knowledge` + `candidates`，跳过向量检索\n"
         "2. **指定ID模式**：传 `source_knowledge_id` + `candidate_knowledge_ids`，从数据库读取\n"
         "3. **自动检索模式**：传 `source_knowledge_id`，自动向量检索候选\n\n"
-        "注意：此接口**不会写入 knowledge_relation 表**，仅返回判断结果。"
+        "调用时机：管理后台 Agent 调试页验证关系判断效果时调用。\n"
+        "请求体（RelationTestRequest）：\n"
+        "  source_knowledge_id: 锚点知识点ID（与 source_knowledge 二选一）\n"
+        "  source_knowledge: 人工提供的锚点知识点对象（id/name/summary/content/keywords）\n"
+        "  candidates: 人工候选知识点数组\n"
+        "  candidate_knowledge_ids: 候选知识点ID数组\n"
+        "  top_k: 自动检索返回的候选数量\n"
+        "  min_confidence: 置信度阈值，低于该值的关系不返回\n"
+        "返回 data 结构：\n"
+        "  source_knowledge_id: 锚点知识点ID\n"
+        "  retrieval_mode: 检索模式（manual/ids/auto）\n"
+        "  candidate_count: 候选数量\n"
+        "  relation_count: 判定出关系的数量\n"
+        "  no_relation_count: 判定无关系的数量\n"
+        "  llm_call_count: LLM 调用次数\n"
+        "  elapsed_ms: 耗时（毫秒）\n"
+        "  saved: 是否写库（本接口恒为 false）\n"
+        "  evaluations: 逐条关系判定结果数组\n"
+        "  errors: 错误信息数组\n"
+        "权限：需要管理员登录。\n"
+        "幂等性：只读测试接口，**不会写入 knowledge_relation 表**，可重复调用；\n"
+        "错误：source_knowledge_id 不存在返回业务错误 40401；LLM 超时或异常返回系统错误 50000。"
     ),
     response_model=ApiResponse[RelationTestResponse],
+    responses={
+        200: {
+            "description": "成功（code=0）。业务错误时 HTTP 仍为 200，用 envelope code（如 40401 知识点不存在/40001 参数校验/50000 执行失败）标识，前端须检查 code。",
+        },
+    },
 )
 async def test_knowledge_relation(
     request: RelationTestRequest,

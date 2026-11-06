@@ -30,17 +30,17 @@ class QuestionDecisionRequest(BaseModel):
         ...,
         ge=1,
         le=200,
-        description="本次计划题量",
+        description="本次计划题量 1-200，即出题计划需要分配的题目总数",
         examples=[20],
     )
     question_types: Optional[List[str]] = Field(
         default=None,
-        description="允许的题型列表，不传时不限制",
+        description="允许的题型列表（SINGLE_CHOICE/MULTIPLE_CHOICE/TRUE_FALSE/SHORT_ANSWER），不传时不限制题型",
         examples=[["SINGLE_CHOICE", "SHORT_ANSWER"]],
     )
     difficulty_distribution: Optional[DifficultyDistribution] = Field(
         default=None,
-        description="难度分配百分比，不传时使用默认分配",
+        description="难度分配百分比（easy+medium+hard 建议合计 100），不传时使用默认分配",
     )
 
 

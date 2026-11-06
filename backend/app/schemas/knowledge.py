@@ -111,11 +111,11 @@ class KnowledgeResponse(BaseModel):
     id: int = Field(description="知识点ID")
     knowledge_base_id: int = Field(description="所属知识库 ID")
     name: str = Field(description="知识点名称")
-    summary: Optional[str] = Field(description="简要说明")
-    content: Optional[str] = Field(description="完整内容")
-    difficulty: int = Field(description="难度")
-    status: int = Field(description="状态")
-    source_type: str = Field(description="来源")
+    summary: Optional[str] = Field(description="简要说明，一句话概括知识点")
+    content: Optional[str] = Field(description="完整内容，知识点的详细正文")
+    difficulty: int = Field(description="难度：1=简单，2=中等，3=困难")
+    status: int = Field(description="状态: 1=正常, 0=禁用")
+    source_type: str = Field(description="来源：MANUAL=手动创建，IMPORT=导入生成，AGENT=Agent 生成")
     source_document: Optional[str] = Field(description="来源文档")
     keywords: Optional[list] = Field(description="关键词")
     importance_level: str = Field(default="normal", description="重要程度: core/important/normal/supplementary")
@@ -126,6 +126,15 @@ class KnowledgeResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class KnowledgeListItem(KnowledgeResponse):
+    """知识点列表条目（GET /knowledge 的 data.items 元素）。
+
+    字段与 KnowledgeResponse 完全一致；question_count 为实时聚合的关联题目数量。
+    """
+
+    pass
 
 
 class KnowledgeRelationCreate(BaseModel):
@@ -144,7 +153,7 @@ class KnowledgeRelationResponse(BaseModel):
     id: int = Field(description="关系ID")
     source_knowledge_id: int = Field(description="源知识点ID")
     target_knowledge_id: int = Field(description="目标知识点ID")
-    relation_type: str = Field(description="关系类型")
+    relation_type: str = Field(description="关系类型：prerequisite=前置，related=相关，extension=扩展，contrast=对比")
     target_knowledge_name: Optional[str] = Field(
         default=None, description="目标知识点名称"
     )
@@ -152,3 +161,12 @@ class KnowledgeRelationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class KnowledgeRelationItem(KnowledgeRelationResponse):
+    """知识关系列表条目（GET /knowledge/{knowledge_id}/relations 的 data 数组元素）。
+
+    字段与 KnowledgeRelationResponse 完全一致。
+    """
+
+    pass

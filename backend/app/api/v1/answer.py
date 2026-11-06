@@ -15,7 +15,7 @@ docs/14 §5.8 兼容约定：
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -26,7 +26,13 @@ from app.models.admin import AdminUser
 from app.models.app_user import AppUser
 from app.models.question import Question
 from app.models.question_answer_record import QuestionAnswerRecord
-from app.schemas.common import ApiResponse
+from app.schemas.answer import (
+    AnswerRecordItem,
+    AnswerRecordResponse,
+    AnswerStatisticsResponse,
+    AnswerSubmitResponse,
+)
+from app.schemas.common import ApiErrorResponse, ApiResponse, PaginatedData
 from app.services.statistics_service import StatisticsService
 from app.utils.response import paginated_response, success_response
 
@@ -40,7 +46,22 @@ router = APIRouter(prefix="/answers", tags=["答题记录"])
     summary="提交答题（兼容旧接口）",
     description="普通用户提交答题，自动判分（无快照，按当前题目判分）。"
                 "支持幂等（相同 idempotency_key 不重复入账）。"
-                "练习会话请使用 /practice/sessions/{sid}/items/{pid}/submit。",
+                "练习会话请使用 /practice/sessions/{sid}/items/{pid}/submit。\n\n"
+                "调用时机：题库练习/自由刷题页提交答案（不带练习会话的旧路径）。\n\n"
+                "请求体：question_id: 题目 ID（必填，须为 published 状态）；user_answer: 用户答案"
+                "（选择题为选项键数组或键串，判断题为布尔/TRUE/FALSE，简答为文本）；"
+                "idempotency_key: 幂等键（可空，同用户+题目+同键重复提交返回原记录）；time_spent_ms: 作答耗时毫秒（可空，非负）。\n\n"
+                "返回 data：record_id: 答题记录 ID；is_correct: 判分结果（1=正确 0=错误 null=未判分，简答题为 null）；"
+                "grading_status: 判分状态（graded|ungraded）；idempotent: 幂等命中（同键重复提交）时为 true，新提交不返回该字段。\n\n"
+                "权限：普通用户令牌（user_access，身份取自令牌，不接受传 app_user_id）。\n\n"
+                "幂等性：同 idempotency_key 重复提交返回首条记录（idempotent=true），不同 key 记为新尝试。\n\n"
+                "写库：是（新增 question_answer_record；与练习会话无关时 practice_paper_id/practice_session_id 为空）。",
+    response_model=ApiResponse[AnswerSubmitResponse],
+    responses={
+        400: {"model": ApiErrorResponse, "description": "业务错误（HTTP 400，envelope code 区分）：40001 参数校验（question_id 必填/题目未发布）/ 40401 不存在（题目不存在）/ 40101 未认证（访问令牌无效/过期/用户不存在/已禁用）"},
+        403: {"model": ApiErrorResponse, "description": "未提供或非法 Authorization 请求头（HTTP 403）"},
+        500: {"model": ApiErrorResponse, "description": "系统内部错误（HTTP 500，code 50000）"},
+    },
 )
 async def submit_answer(
     request: dict,
@@ -141,13 +162,29 @@ async def submit_answer(
 @router.get(
     "/history",
     summary="我的答题历史",
-    description="按当前普通用户分页查询答题记录，可按题目/练习会话过滤。",
+    description="按当前普通用户分页查询答题记录，可按题目/练习会话过滤。仅返回本人记录。\n\n"
+                "调用时机：个人中心「我的答题」列表页。\n\n"
+                "返回 data（分页信封）：items: 答题记录数组，每项 {id: 记录 ID, question_id: 题目 ID, "
+                "user_answer: 作答内容, is_correct: 是否正确（1/0/null）, grading_status: graded|ungraded, "
+                "score: 得分（可空）, time_spent_ms: 作答耗时毫秒, practice_paper_id/practice_paper_item_id/practice_session_id: "
+                "所属练习卷/卷题/会话（自由刷题为空）, idempotency_key: 幂等键, created_at: 提交时间}；"
+                "page/page_size/total: 分页信息。\n\n"
+                "权限：普通用户令牌（user_access，仅本人）。\n\n"
+                "幂等性：只读接口，无副作用。\n\n"
+                "写库：否。",
+    response_model=ApiResponse[PaginatedData[AnswerRecordItem]],
+    responses={
+        400: {"model": ApiErrorResponse, "description": "业务错误（HTTP 400，envelope code 区分）：40101 未认证（访问令牌无效/过期/用户不存在/已禁用）"},
+        403: {"model": ApiErrorResponse, "description": "未提供或非法 Authorization 请求头（HTTP 403）"},
+        422: {"model": ApiErrorResponse, "description": "请求参数格式校验失败（HTTP 422，code 42201）"},
+        500: {"model": ApiErrorResponse, "description": "系统内部错误（HTTP 500，code 50000）"},
+    },
 )
 def get_answer_history(
-    question_id: int | None = Query(default=None),
-    practice_session_id: int | None = Query(default=None),
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
+    question_id: int | None = Query(default=None, description="按题目 ID 过滤，只看该题的作答记录；不传=返回全部题目的作答"),
+    practice_session_id: int | None = Query(default=None, description="按练习会话 ID 过滤，只看某次练习会话内的作答；不传=不限会话"),
+    page: int = Query(default=1, ge=1, description="页码，从 1 开始；不传=默认第 1 页"),
+    page_size: int = Query(default=20, ge=1, le=100, description="每页返回条数；不传=默认 20，取值 1~100"),
     db: Session = Depends(get_db),
     current_user: AppUser = Depends(get_current_user),
 ):
@@ -171,10 +208,26 @@ def get_answer_history(
 @router.get(
     "/{record_id}",
     summary="查看单条答题记录",
-    description="仅可查看本人的答题记录。",
+    description=(
+        "查看本人的单条答题记录详情。他人记录按不存在处理（40401），防止 ID 枚举。\n\n"
+        "调用时机：答题记录详情页。\n\n"
+        "返回 data：id: 记录 ID；question_id: 题目 ID；user_answer: 作答内容；is_correct: 是否正确（1/0/null）；"
+        "grading_status: graded|ungraded；score: 得分（可空）；time_spent_ms: 作答耗时毫秒；"
+        "practice_paper_id/practice_paper_item_id/practice_session_id: 所属练习卷/卷题/会话（自由刷题为空）；"
+        "idempotency_key: 幂等键；created_at: 提交时间。\n\n"
+        "权限：普通用户令牌（user_access，仅本人）。\n\n"
+        "幂等性：只读接口，无副作用。\n\n"
+        "写库：否。"
+    ),
+    response_model=ApiResponse[AnswerRecordResponse],
+    responses={
+        400: {"model": ApiErrorResponse, "description": "业务错误（HTTP 400，envelope code 区分）：40401 不存在（答题记录不存在或非本人）/ 40101 未认证（访问令牌无效/过期/用户不存在/已禁用）"},
+        403: {"model": ApiErrorResponse, "description": "未提供或非法 Authorization 请求头（HTTP 403）"},
+        500: {"model": ApiErrorResponse, "description": "系统内部错误（HTTP 500，code 50000）"},
+    },
 )
 def get_answer_record(
-    record_id: int,
+    record_id: int = Path(description="答题记录 ID，对应 question_answer_record 表主键；他人记录按不存在处理"),
     db: Session = Depends(get_db),
     current_user: AppUser = Depends(get_current_user),
 ) -> ApiResponse:
@@ -190,10 +243,29 @@ def get_answer_record(
 @router.get(
     "/statistics/{question_id}",
     summary="获取题目答题统计（兼容旧接口）",
-    description="获取题目的正确率、首次作答正确率等统计数据（统一口径，样本阈值配置化）。",
+    description=(
+        "获取题目的正确率、首次作答正确率等统计数据（统一口径，样本阈值配置化）。"
+        "只聚合统计，不暴露任何用户信息。\n\n"
+        "调用时机：题目统计卡片/管理端题目分析。\n\n"
+        "返回 data：graded_attempt_count: 已判分提交次数；correct_attempt_count: 判分正确次数；"
+        "attempt_accuracy: 全部提交正确率（可空，样本不足为 null）；first_attempt_user_count: 首次作答统计的用户数（分母）；"
+        "first_attempt_correct_count: 首次作答正确数；first_attempt_accuracy: 首次作答正确率（可空）；"
+        "unique_user_count: 独立作答用户数；is_sample_sufficient: 样本是否充足（true/false）；"
+        "accuracy: 同 attempt_accuracy（统一口径字段）；display_status: 统计状态（available|insufficient_samples）；"
+        "sample_threshold: 样本量阈值（QUESTION_STATISTICS_MIN_SAMPLES，默认 20）。\n\n"
+        "权限：管理员令牌。\n\n"
+        "幂等性：只读接口，无副作用。\n\n"
+        "写库：否。"
+    ),
+    response_model=ApiResponse[AnswerStatisticsResponse],
+    responses={
+        400: {"model": ApiErrorResponse, "description": "业务错误（HTTP 400，envelope code 区分）：40101 未认证（管理员令牌无效/过期/管理员不存在/已禁用）"},
+        403: {"model": ApiErrorResponse, "description": "未提供或非法 Authorization 请求头（HTTP 403）"},
+        500: {"model": ApiErrorResponse, "description": "系统内部错误（HTTP 500，code 50000）"},
+    },
 )
 def get_answer_statistics(
-    question_id: int,
+    question_id: int = Path(description="题目 ID，统计该题在全部用户作答下的正确率与样本口径"),
     db: Session = Depends(get_db),
     current_admin: AdminUser = Depends(get_current_admin),
 ) -> ApiResponse:
