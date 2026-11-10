@@ -7,4 +7,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="auth_text">#171A35</color>
+    <color name="auth_secondary">#777B9D</color>
+    <color name="auth_primary">#6548F5</color>
+    <color name="auth_error">#E5484D</color>
+    <color name="auth_divider">#D9D9EC</color>
+    <color name="auth_outline">#D7D6EB</color>
+    <color name="auth_input_background">#F8F8FD</color>
 </resources>

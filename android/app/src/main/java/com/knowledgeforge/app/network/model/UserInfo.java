@@ -16,4 +16,14 @@ public class UserInfo {
     public String getAccount() { return account; }
     public String getNickname() { return nickname; }
     public String getAvatar() { return avatar; }
+
+    @Override
+    public String toString() {
+        return "UserInfo{" +
+                "id=" + id +
+                ", account='" + account + '\'' +
+                ", nickname='" + nickname + '\'' +
+                ", avatar='" + avatar + '\'' +
+                '}';
+    }
 }
