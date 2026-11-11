@@ -17,6 +17,10 @@
         android:theme="@style/Theme.KnowledgeForge"
         tools:targetApi="31">
         <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait"
+            />
+        <activity
             android:name=".ui.auth.RegisterActivity"
             android:screenOrientation="portrait"
             android:exported="false" />

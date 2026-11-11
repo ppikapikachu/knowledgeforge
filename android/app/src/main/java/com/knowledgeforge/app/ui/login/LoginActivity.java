@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
+import com.knowledgeforge.app.MainActivity;
 import com.knowledgeforge.app.R;
 
 
@@ -175,19 +176,19 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void navigateToMain(UserInfo user) {
         Log.i("登录成功",user.toString());
-//        Intent intent = new Intent(
-//                LoginActivity.this,
-//                MainActivity.class
-//        );
-//
-//        // 如果主页面需要，可以传递用户基础信息
-//        intent.putExtra("user_id", user.getId());
-//        intent.putExtra("account", user.getAccount());
-//        intent.putExtra("nickname", user.getNickname());
-//
-//        startActivity(intent);
-//
-//        // 防止按返回键重新回到登录页面
-//        finish();
+        Intent intent = new Intent(
+                LoginActivity.this,
+                MainActivity.class
+        );
+
+        // 如果主页面需要，可以传递用户基础信息
+        intent.putExtra("user_id", user.getId());
+        intent.putExtra("account", user.getAccount());
+        intent.putExtra("nickname", user.getNickname());
+
+        startActivity(intent);
+
+        // 防止按返回键重新回到登录页面
+        finish();
     }
 }

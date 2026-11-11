@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/homeScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/home_background"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:paddingBottom="18dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="22dp">
+
+        <!-- 用户欢迎区 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingTop="14dp"
+            android:paddingBottom="22dp">
+
+            <ImageView
+                android:layout_width="62dp"
+                android:layout_height="62dp"
+                android:contentDescription="用户头像"
+                android:scaleType="fitCenter"
+                android:src="@drawable/illust_avatar" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvGreeting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="欢迎回来"
+                    android:textColor="@color/home_text"
+                    android:textSize="23sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="今天也来巩固一点知识～"
+                    android:textColor="@color/home_secondary"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvProfileShortcut"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_home_circle_button"
+                android:gravity="center"
+                android:text="›"
+                android:textColor="@color/home_primary"
+                android:textSize="29sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvHomeError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_home_error"
+            android:padding="12dp"
+            android:text="部分首页内容暂时无法加载，点击重试"
+            android:textColor="@color/home_error"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/homeLoading"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="10dp"
+            android:indeterminateTint="@color/home_primary"
+            android:visibility="gone" />
+
+        <!-- 继续练习 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardContinue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/home_card"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="3dp"
+            app:strokeColor="@color/home_card_stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/bg_home_status_pill"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="●  进行中"
+                            android:textColor="@color/home_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <ImageView
+                        android:layout_width="96dp"
+                        android:layout_height="68dp"
+                        android:contentDescription="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/illust_continue" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvContinueTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:text="Android 基础能力练习"
+                    android:textColor="@color/home_text"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvContinueProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:text="已完成 8 / 20 题"
+                    android:textColor="@color/home_secondary"
+                    android:textSize="15sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ProgressBar
+                        android:id="@+id/progressContinue"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="0dp"
+                        android:layout_height="8dp"
+                        android:layout_weight="1"
+                        android:indeterminate="false"
+                        android:max="100"
+                        android:progress="40"
+                        android:progressDrawable="@drawable/progress_home" />
+
+                    <TextView
+                        android:id="@+id/tvContinuePercent"
+                        android:layout_width="52dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:text="40%"
+                        android:textColor="@color/home_secondary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnContinue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="10dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="112dp"
+                        android:text="继续答题  ›"
+                        android:textColor="@android:color/white"
+                        android:textSize="13sp"
+                        app:backgroundTint="@color/home_primary"
+                        app:cornerRadius="22dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 开始新练习 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardStartPractice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            app:cardBackgroundColor="@color/home_card"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="3dp"
+            app:strokeColor="@color/home_card_stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="18dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="开始新练习"
+                        android:textColor="@color/home_text"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:text="选择题库、知识点与题目范围"
+                        android:textColor="@color/home_secondary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnStartPractice"
+                        android:layout_width="142dp"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="16dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="去组卷  ›"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        app:backgroundTint="@color/home_primary"
+                        app:cornerRadius="22dp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="112dp"
+                    android:layout_height="112dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/illust_practice" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 开放题库 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="23dp"
+                android:background="@drawable/bg_home_section_mark" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:text="开放题库"
+                android:textColor="@color/home_text"
+                android:textSize="21sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvViewAllBanks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="查看全部  ›"
+                android:textColor="@color/home_primary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <GridLayout
+            android:id="@+id/bankGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:columnCount="1"
+            android:orientation="horizontal" />
+
+        <!-- 最近练习 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="23dp"
+                android:background="@drawable/bg_home_section_mark" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:text="最近练习"
+                android:textColor="@color/home_text"
+                android:textSize="21sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvViewAllRecords"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="全部记录  ›"
+                android:textColor="@color/home_primary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/recentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical" />
+
+        <TextView
+            android:id="@+id/emptyRecent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_home_empty"
+            android:gravity="center"
+            android:padding="22dp"
+            android:text="还没有练习记录，开始第一份练习吧"
+            android:textColor="@color/home_secondary"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="12dp" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.knowledgeforge.app.MainActivity;
 import com.knowledgeforge.app.MyApplication;
 import com.knowledgeforge.app.R;
 import com.knowledgeforge.app.network.model.UserInfo;
@@ -148,17 +149,17 @@ public class RegisterActivity extends AppCompatActivity {
      */
     private void navigateToMain() {
 
-//        Intent intent = new Intent(
-//                RegisterActivity.this,
-//                MainActivity.class
-//        );
-//
-//        // 清空登录、注册页面栈
-//        intent.setFlags(
-//                Intent.FLAG_ACTIVITY_NEW_TASK
-//                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
-//        );
-//
-//        startActivity(intent);
+        Intent intent = new Intent(
+                RegisterActivity.this,
+                MainActivity.class
+        );
+
+        // 清空登录、注册页面栈
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
     }
 }

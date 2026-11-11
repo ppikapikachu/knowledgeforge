@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="home_background">#F8F7FF</color>
+    <color name="home_card">#FFFEFF</color>
+    <color name="home_text">#191B3A</color>
+    <color name="home_secondary">#777B9D</color>
+    <color name="home_primary">#6548F5</color>
+    <color name="home_nav_unselected">#8A8DA9</color>
+    <color name="home_card_stroke">#E5E2FA</color>
+    <color name="home_error">#D94A50</color>
+</resources>
