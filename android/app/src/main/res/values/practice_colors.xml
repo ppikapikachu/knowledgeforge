@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="practice_background">#F8F7FF</color>
+    <color name="practice_card">#FFFEFF</color>
+    <color name="practice_text">#191B3A</color>
+    <color name="practice_secondary">#777B9D</color>
+    <color name="practice_primary">#6548F5</color>
+    <color name="practice_lavender">#EEEAFE</color>
+    <color name="practice_card_stroke">#E5E2FA</color>
+    <color name="practice_error">#D94A50</color>
+</resources>

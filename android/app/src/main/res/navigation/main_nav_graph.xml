@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/nav_home">
+
+    <!-- 顶层 Graph ID 与 menu_bottom_navigation.xml 中的菜单 ID 一一对应。 -->
+    <navigation
+        android:id="@id/nav_home"
+        app:startDestination="@id/homeFragment">
+        <fragment
+            android:id="@+id/homeFragment"
+            android:name="com.knowledgeforge.app.ui.home.HomeFragment"
+            android:label="首页" />
+    </navigation>
+
+    <navigation
+        android:id="@id/nav_practice"
+        app:startDestination="@id/practiceFragment">
+        <fragment
+            android:id="@+id/practiceFragment"
+            android:name="com.knowledgeforge.app.ui.practice.PracticeFragment"
+            android:label="练习" />
+    </navigation>
+
+    <navigation
+        android:id="@id/nav_records"
+        app:startDestination="@id/recordsFragment">
+        <fragment
+            android:id="@+id/recordsFragment"
+            android:name="com.knowledgeforge.app.ui.navigation.RecordsTabFragment"
+            android:label="记录" />
+    </navigation>
+
+    <navigation
+        android:id="@id/nav_mine"
+        app:startDestination="@id/mineFragment">
+        <fragment
+            android:id="@+id/mineFragment"
+            android:name="com.knowledgeforge.app.ui.navigation.MineTabFragment"
+            android:label="我的" />
+    </navigation>
+
+</navigation>

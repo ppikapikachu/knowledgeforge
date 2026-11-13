@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace 'com.knowledgeforge.app'
-    compileSdk 33
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.knowledgeforge.app"
         minSdk 24
-        targetSdk 33
+        targetSdk 36
         versionCode 1
         versionName "1.0"
 
@@ -43,4 +43,14 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0' // JSON解析
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0' // 网络日志拦截器
+
+    // 1. Material 组件库（提供 BottomNavigationView）
+    implementation 'com.google.android.material:material:1.12.0'
+
+    // 2. Navigation 组件（提供 NavController 和 Fragment 集成）
+    def nav_version = "2.7.7"
+    implementation "androidx.navigation:navigation-fragment:$nav_version"
+    implementation "androidx.navigation:navigation-ui:$nav_version"
+
+
 }

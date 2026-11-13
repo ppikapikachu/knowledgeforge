@@ -9,22 +9,25 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
+import androidx.navigation.NavGraph;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.knowledgeforge.app.ui.home.HomeFragment;
-import com.knowledgeforge.app.ui.navigation.ModuleTabFragment;
+import com.knowledgeforge.app.ui.practice.PracticeFragment;
 
 /**
  * KnowledgeForge 主容器。
  *
- * 导航策略：
- * 1. 四个底部 Tab 对应四个根 Fragment；
- * 2. 使用 show/hide，不使用 replace，切换 Tab 时保留滚动位置和页面状态；
- * 3. 用固定 Tag 查找 Fragment，避免重复创建；
- * 4. 不把 Tab 根页面加入 back stack；
- * 5. 返回键在非首页 Tab 时先回首页，在首页才退出 Activity。
+ * 主导航使用 Navigation Component：
+ * 1. BottomNavigationView 通过 setupWithNavController() 绑定 NavController；
+ * 2. 四个 Tab 分别是 main_nav_graph 中的嵌套导航图，彼此拥有独立返回栈；
+ * 3. Navigation 2.4.0+ 自动保存/恢复多返回栈；
+ * 4. 练习 Tab 内部当前仍由 PracticeFragment 的 childFragmentManager 管理入口页与组卷页，
+ *    本次只替换主底部导航，不改动练习页已有业务与页面实现。
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -33,172 +36,172 @@ public class MainActivity extends AppCompatActivity {
     public static final int TAB_RECORDS = R.id.nav_records;
     public static final int TAB_MINE = R.id.nav_mine;
 
-    private static final String STATE_SELECTED_TAB = "selected_bottom_tab";
-
     private BottomNavigationView bottomNavigation;
-    private Fragment currentFragment;
-    private int selectedTabId = TAB_HOME;
+    private NavHostFragment navHostFragment;
+    private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 让状态栏与页面浅色背景融合，图标使用深色。
-        getWindow().setStatusBarColor(Color.rgb(246, 245, 255));
+        // 状态栏与首页/练习页的浅紫色背景保持一致。
+        getWindow().setStatusBarColor(Color.rgb(234, 230, 255));
         getWindow().getDecorView().setSystemUiVisibility(
                 getWindow().getDecorView().getSystemUiVisibility()
                         | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         );
 
         bottomNavigation = findViewById(R.id.bottomNavigation);
+        navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.navHostFragment);
 
-        int restoredTab = savedInstanceState == null
-                ? TAB_HOME
-                : savedInstanceState.getInt(STATE_SELECTED_TAB, TAB_HOME);
-
-        if (!isValidTab(restoredTab)) {
-            restoredTab = TAB_HOME;
+        if (navHostFragment == null) {
+            throw new IllegalStateException("activity_main.xml 未配置 NavHostFragment");
         }
 
-        // 先设置选中状态，再注册监听器，避免初始化时触发一次无意义的 Fragment 切换。
-        selectedTabId = restoredTab;
-        bottomNavigation.setSelectedItemId(selectedTabId);
+        navController = navHostFragment.getNavController();
 
-        setupNavigationListener();
-        restoreOrCreateSelectedFragment(savedInstanceState);
+        // 主导航的选中状态、Tab 切换、多返回栈均交给 NavigationUI 管理。
+        NavigationUI.setupWithNavController(bottomNavigation, navController);
 
+        // 重复点击当前 Tab：返回该 Tab 根页面，并对首页/练习页执行回顶。
+        bottomNavigation.setOnItemReselectedListener(item -> handleTabReselected(item.getItemId()));
+
+        // 组卷页属于练习 Tab 内部页面，隐藏主底部导航；返回入口页后恢复。
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            // destination 就是当前的新页面
+            int tabId = findTopLevelTabId(destination);
+            if (tabId != TAB_PRACTICE) {
+                setBottomNavigationVisible(true);
+                return;
+            }
+
+            Fragment currentFragment = getCurrentNavHostFragment();
+            if (currentFragment instanceof PracticeFragment) {
+                ((PracticeFragment) currentFragment).syncNavigationVisibility();
+            }
+        });
+
+        // 维持原来的返回体验：练习内部页先返回入口；其他 Tab 根页面返回首页；首页再退出。
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (selectedTabId != TAB_HOME) {
+                Fragment currentFragment = getCurrentNavHostFragment();
+
+                // 练习 Tab 的组卷配置页由其 childFragmentManager 管理，先处理内部返回。
+                if (currentFragment instanceof PracticeFragment
+                        && ((PracticeFragment) currentFragment).handleBackPressed()) {
+                    return;
+                }
+
+                NavDestination destination = navController.getCurrentDestination();
+                if (destination == null) {
+                    finish();
+                    return;
+                }
+
+                int currentTabId = findTopLevelTabId(destination);
+
+                // 若当前在某个 Tab 的详情页，先弹出该 Tab 内部的 Navigation 返回栈。
+                if (!isAtTabStartDestination(destination, currentTabId)) {
+                    if (navController.popBackStack()) {
+                        return;
+                    }
+                }
+
+                // 在非首页 Tab 根页面按返回，先切回首页。
+                if (currentTabId != TAB_HOME) {
                     selectTab(TAB_HOME);
                     return;
                 }
 
-                // 首页按返回键时交回系统默认行为（退出/返回上一个 Activity）。
+                // 首页根页面交给系统处理（退出或返回上一个 Activity）。
                 setEnabled(false);
-                getOnBackPressedDispatcher().onBackPressed();
-                setEnabled(true);
+                try {
+                    getOnBackPressedDispatcher().onBackPressed();
+                } finally {
+                    setEnabled(true);
+                }
             }
         });
-    }
-
-    private void setupNavigationListener() {
-        bottomNavigation.setOnItemSelectedListener(item -> selectTab(item.getItemId()));
-
-        bottomNavigation.setOnItemReselectedListener(item -> {
-            // 重复点击首页时回到顶部；其他 Tab 不重复创建、不重置状态。
-            if (item.getItemId() == TAB_HOME && currentFragment instanceof HomeFragment) {
-                ((HomeFragment) currentFragment).scrollToTop();
-            }
-        });
-    }
-
-    private void restoreOrCreateSelectedFragment(Bundle savedInstanceState) {
-        FragmentManager fm = getSupportFragmentManager();
-        String selectedTag = tagFor(selectedTabId);
-        Fragment restored = fm.findFragmentByTag(selectedTag);
-
-        if (restored == null) {
-            // 正常首次启动，或系统恢复状态中没有当前 Tab Fragment。
-            showTab(selectedTabId);
-            return;
-        }
-
-        // 旋转屏幕/进程重建后，FragmentManager 会恢复已有 Fragment。
-        // 这里统一校正可见性，确保只有当前 Tab 显示。
-        FragmentTransaction transaction = fm.beginTransaction()
-                .setReorderingAllowed(true);
-
-        int[] tabs = {TAB_HOME, TAB_PRACTICE, TAB_RECORDS, TAB_MINE};
-        for (int tab : tabs) {
-            Fragment fragment = fm.findFragmentByTag(tagFor(tab));
-            if (fragment == null) {
-                continue;
-            }
-            if (tab == selectedTabId) {
-                transaction.show(fragment);
-            } else {
-                transaction.hide(fragment);
-            }
-        }
-
-        transaction.commitNow();
-        currentFragment = restored;
     }
 
     /**
-     * BottomNavigationView 的选中回调与页面切换统一走这里。
-     * 返回 false 表示本次没有完成切换（例如 FragmentManager 已保存状态）。
+     * 保留首页快捷入口等现有调用方式。
+     * 菜单项 ID 与顶层嵌套 Navigation Graph ID 一致。
      */
-    private boolean selectTab(int tabId) {
+    public void navigateToTab(int tabId) {
         if (!isValidTab(tabId)) {
-            return false;
+            Toast.makeText(this, "暂不支持该页面", Toast.LENGTH_SHORT).show();
+            return;
         }
-
-        if (tabId == selectedTabId && currentFragment != null) {
-            return true;
-        }
-
-        FragmentManager fm = getSupportFragmentManager();
-        if (fm.isStateSaved()) {
-            // Activity 已进入保存状态时不提交 Fragment 事务，防止
-            // IllegalStateException: Can not perform this action after onSaveInstanceState。
-            return false;
-        }
-
-        showTab(tabId);
-        selectedTabId = tabId;
-        return true;
+        selectTab(tabId);
     }
 
-    private void showTab(int tabId) {
-        FragmentManager fm = getSupportFragmentManager();
-        String targetTag = tagFor(tabId);
-        Fragment target = fm.findFragmentByTag(targetTag);
-
-        if (target == null) {
-            target = createFragment(tabId);
+    private void selectTab(int tabId) {
+        if (bottomNavigation == null || !isValidTab(tabId)) {
+            return;
         }
-
-        FragmentTransaction transaction = fm.beginTransaction()
-                .setReorderingAllowed(true);
-
-        if (currentFragment != null && currentFragment.isAdded()) {
-            transaction.hide(currentFragment);
-        }
-
-        if (target.isAdded()) {
-            transaction.show(target);
-        } else {
-            transaction.add(R.id.fragmentContainer, target, targetTag);
-        }
-
-        // 不 addToBackStack：底部 Tab 是并列根页面，不应形成重复的 Tab 返回栈。
-        transaction.commitNow();
-
-        currentFragment = target;
-        selectedTabId = tabId;
-
         if (bottomNavigation.getSelectedItemId() != tabId) {
+            // setupWithNavController 注册的菜单监听会执行实际导航。
             bottomNavigation.setSelectedItemId(tabId);
         }
     }
 
-    private Fragment createFragment(int tabId) {
-        if (tabId == TAB_HOME) {
-            return new HomeFragment();
+    private void handleTabReselected(int tabId) {
+        int rootDestinationId = getTabRootDestinationId(tabId);
+        if (rootDestinationId != 0) {
+            // 当前 Tab 如果已经进入后续详情页，重复点击 Tab 时回到该 Tab 根页面。
+            navController.popBackStack(rootDestinationId, false);
         }
-        return ModuleTabFragment.newInstance(tabId);
+
+        Fragment currentFragment = getCurrentNavHostFragment();
+        if (tabId == TAB_HOME && currentFragment instanceof HomeFragment) {
+            ((HomeFragment) currentFragment).scrollToTop();
+        } else if (tabId == TAB_PRACTICE && currentFragment instanceof PracticeFragment) {
+            ((PracticeFragment) currentFragment).scrollToTop();
+        }
     }
 
-    private String tagFor(int tabId) {
-        if (tabId == TAB_HOME) return "root_home";
-        if (tabId == TAB_PRACTICE) return "root_practice";
-        if (tabId == TAB_RECORDS) return "root_records";
-        if (tabId == TAB_MINE) return "root_mine";
-        throw new IllegalArgumentException("Unknown tab id: " + tabId);
+    private Fragment getCurrentNavHostFragment() {
+        if (navHostFragment == null) {
+            return null;
+        }
+        return navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
+    }
+
+    /** 查找当前目的地所属的顶层 Tab Graph。 */
+    private int findTopLevelTabId(@NonNull NavDestination destination) {
+        NavDestination current = destination;
+        while (current != null) {
+            int id = current.getId();
+            if (isValidTab(id)) {
+                return id;
+            }
+            current = current.getParent();
+        }
+        return TAB_HOME;
+    }
+
+    /** 当前目的地是否就是该 Tab Graph 的 startDestination。 */
+    private boolean isAtTabStartDestination(@NonNull NavDestination destination, int tabId) {
+        NavDestination current = destination;
+        while (current != null) {
+            if (current.getId() == tabId && current instanceof NavGraph) {
+                return destination.getId() == ((NavGraph) current).getStartDestinationId();
+            }
+            current = current.getParent();
+        }
+        return true;
+    }
+
+    private int getTabRootDestinationId(int tabId) {
+        if (tabId == TAB_HOME) return R.id.homeFragment;
+        if (tabId == TAB_PRACTICE) return R.id.practiceFragment;
+        if (tabId == TAB_RECORDS) return R.id.recordsFragment;
+        if (tabId == TAB_MINE) return R.id.mineFragment;
+        return 0;
     }
 
     private boolean isValidTab(int tabId) {
@@ -208,17 +211,10 @@ public class MainActivity extends AppCompatActivity {
                 || tabId == TAB_MINE;
     }
 
-    public void navigateToTab(int tabId) {
-        if (!isValidTab(tabId)) {
-            Toast.makeText(this, "暂不支持该页面", Toast.LENGTH_SHORT).show();
-            return;
+    /** 供练习 Tab 内部页面控制主底部导航显隐。 */
+    public void setBottomNavigationVisible(boolean visible) {
+        if (bottomNavigation != null) {
+            bottomNavigation.setVisibility(visible ? View.VISIBLE : View.GONE);
         }
-        bottomNavigation.setSelectedItemId(tabId);
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putInt(STATE_SELECTED_TAB, selectedTabId);
-        super.onSaveInstanceState(outState);
     }
 }

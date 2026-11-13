@@ -42,9 +42,7 @@ public class ModuleTabFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_module_tab, container, false);
 
-        int tabId = getArguments() == null
-                ? MainActivity.TAB_PRACTICE
-                : getArguments().getInt(ARG_TAB_ID, MainActivity.TAB_PRACTICE);
+        int tabId = getTabId();
 
         TextView title = root.findViewById(R.id.tvModuleTitle);
         TextView subtitle = root.findViewById(R.id.tvModuleSubtitle);
@@ -69,6 +67,14 @@ public class ModuleTabFragment extends Fragment {
         }
 
         return root;
+    }
+
+
+    /** 子类可固定返回各自 Tab ID，供 Navigation Component 直接实例化。 */
+    protected int getTabId() {
+        return getArguments() == null
+                ? MainActivity.TAB_PRACTICE
+                : getArguments().getInt(ARG_TAB_ID, MainActivity.TAB_PRACTICE);
     }
 
     private ModuleContent contentFor(int tabId) {

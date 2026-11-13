@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="9dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/practice_card"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/practice_card_stroke"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="94dp"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:id="@+id/tvPracticeBankIcon"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:background="@drawable/bg_practice_bank_icon"
+            android:gravity="center"
+            android:text="书"
+            android:textColor="@color/practice_primary"
+            android:textSize="21sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvPracticeBankName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="计算机基础知识"
+                android:textColor="@color/practice_text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvPracticeBankCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="共 3,248 道可练习题"
+                android:textColor="@color/practice_secondary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvPracticeBankTypes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="单选 120 · 多选 80 · 判断 60 · 简答 30"
+                android:textColor="@color/practice_secondary"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvPracticeBankAction"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_practice_outline_pill"
+            android:gravity="center"
+            android:minWidth="72dp"
+            android:paddingStart="9dp"
+            android:paddingEnd="9dp"
+            android:text="去组卷  ›"
+            android:textColor="@color/practice_primary"
+            android:textSize="11sp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

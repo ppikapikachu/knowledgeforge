@@ -19,7 +19,7 @@
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
-            />
+            android:theme="@style/Theme.KnowledgeForge.Home" />
         <activity
             android:name=".ui.auth.RegisterActivity"
             android:screenOrientation="portrait"

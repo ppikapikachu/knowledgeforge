@@ -41,7 +41,7 @@ public class HomeRepository {
 
     public void loadDashboard(DashboardCallback callback) {
         final HomeDashboardData data = new HomeDashboardData();
-        final AtomicInteger pending = new AtomicInteger(4);
+        final AtomicInteger pending = new AtomicInteger(4); // 所有请求完成的判定
         final AtomicBoolean delivered = new AtomicBoolean(false);
 
         Runnable finishOne = () -> {
