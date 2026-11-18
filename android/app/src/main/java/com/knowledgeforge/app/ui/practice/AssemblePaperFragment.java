@@ -13,7 +13,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.card.MaterialCardView;
@@ -59,6 +61,7 @@ public class AssemblePaperFragment extends Fragment {
     private SwitchMaterial switchAllowPartial;
 
     private AssemblePaperViewModel viewModel;
+    private OnBackPressedCallback assemblingBackCallback;
     private boolean rendering;
 
     public AssemblePaperFragment() { }
@@ -84,10 +87,26 @@ public class AssemblePaperFragment extends Fragment {
         super.onViewCreated(root, savedInstanceState);
         bindViews(root);
         initViewModel();
+        initAssemblingBackGuard();
         observeViewModel();
         initListeners(root);
         int bankId = getArguments() == null ? -1 : getArguments().getInt(ARG_BANK_ID, -1);
         viewModel.loadBanks(bankId);
+    }
+
+    /**
+     * 只在组卷请求进行中拦截系统返回。
+     * 其他时间保持 disabled，让 NavController 自动处理返回栈和系统返回手势。
+     */
+    private void initAssemblingBackGuard() {
+        assemblingBackCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                handleBackPressed();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher()
+                .addCallback(getViewLifecycleOwner(), assemblingBackCallback);
     }
 
     private void bindViews(View root) {
@@ -145,6 +164,9 @@ public class AssemblePaperFragment extends Fragment {
 
     private void render(AssemblePaperUiState state) {
         if (state == null || getView() == null) return;
+        if (assemblingBackCallback != null) {
+            assemblingBackCallback.setEnabled(state.isAssembling());
+        }
         rendering = true;
         progressBar.setVisibility(state.isBanksLoading() || state.isKnowledgeLoading()
                 || state.isAssembling() ? View.VISIBLE : View.GONE);
@@ -377,10 +399,26 @@ public class AssemblePaperFragment extends Fragment {
     }
 
     private void goBack() {
-        Fragment parent = getParentFragment();
-        if (parent instanceof PracticeFragment) {
-            ((PracticeFragment) parent).handleBackPressed();
+        // 工具栏返回按钮是页面内的显式操作，因此主动弹出当前目的地。
+        // 系统返回则完全交给 NavController；从子页面返回入口时由 MainActivity 的
+        // destination listener 设置 SavedStateHandle，通知入口页刷新。
+        if (handleBackPressed()) return;
+        if (!isAdded()) return;
+        NavHostFragment.findNavController(this).popBackStack();
+    }
+
+    /**
+     * 只负责判断是否应该阻止返回，不负责执行导航。
+     * @return true 仅表示组卷进行中，需要拦截返回；false 表示允许 NavController 正常返回。
+     */
+    public boolean handleBackPressed() {
+        if (!isAssembling()) return false;
+
+        if (isAdded()) {
+            Toast.makeText(requireContext(),
+                    "正在生成试卷，请稍候完成后再返回", Toast.LENGTH_SHORT).show();
         }
+        return true;
     }
 
     private int getCount(Map<String, Integer> map, String key) {

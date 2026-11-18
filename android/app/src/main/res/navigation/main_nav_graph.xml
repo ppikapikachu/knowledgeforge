@@ -16,11 +16,28 @@
 
     <navigation
         android:id="@id/nav_practice"
-        app:startDestination="@id/practiceFragment">
+        app:startDestination="@id/practiceLandingFragment">
+
+        <!-- 练习入口页：作为练习 Tab 的根页面。 -->
         <fragment
-            android:id="@+id/practiceFragment"
-            android:name="com.knowledgeforge.app.ui.practice.PracticeFragment"
-            android:label="练习" />
+            android:id="@+id/practiceLandingFragment"
+            android:name="com.knowledgeforge.app.ui.practice.PracticeLandingFragment"
+            android:label="练习入口">
+            <action
+                android:id="@+id/action_practiceLandingFragment_to_assemblePaperFragment"
+                app:destination="@id/assemblePaperFragment" />
+        </fragment>
+
+        <!-- 组卷配置页：沿用原来的 selected_bank_id 参数。 -->
+        <fragment
+            android:id="@+id/assemblePaperFragment"
+            android:name="com.knowledgeforge.app.ui.practice.AssemblePaperFragment"
+            android:label="组卷配置">
+            <argument
+                android:name="selected_bank_id"
+                app:argType="integer"
+                android:defaultValue="-1" />
+        </fragment>
     </navigation>
 
     <navigation

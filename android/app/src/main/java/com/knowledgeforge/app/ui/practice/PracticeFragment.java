@@ -38,9 +38,16 @@ public class PracticeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         FragmentManager childManager = getChildFragmentManager();
+        /*
+        因为 Fragment 的重建机制。当用户屏幕旋转、或者切到后台太久被系统回收，重建 PracticeFragment 时，
+        onCreateView 会重新执行。但此时 FragmentManager 内部可能已经恢复了之前的 PracticeLandingFragment。
+        如果不加 if (== null) 判断，每次都 new 一个塞进去，就会出现两个重叠的界面。而有了这个判断，就保证了首屏“只初始化一次”。
+         */
+        //  practiceChildContainer 它就像个空盘子，自己没有任何 UI 内容。
         if (childManager.findFragmentById(R.id.practiceChildContainer) == null) {
             childManager.beginTransaction()
                     .setReorderingAllowed(true)
+                    // 它把 PracticeLandingFragment（练习入口页）塞进了那个空盘子
                     .add(R.id.practiceChildContainer, new PracticeLandingFragment(), TAG_LANDING)
                     .commitNow();
         }
@@ -74,10 +81,12 @@ public class PracticeFragment extends Fragment {
         if (fm.isStateSaved()) return;
         fm.beginTransaction()
                 .setReorderingAllowed(true)
+                // 把之前的入口页替换成了 AssemblePaperFragment
                 .replace(R.id.practiceChildContainer,
                         AssemblePaperFragment.newInstance(selectedBankId), TAG_ASSEMBLE)
-                .addToBackStack(TAG_ASSEMBLE)
+                .addToBackStack(TAG_ASSEMBLE)//  同时把这个界面加入回退栈
                 .commit();
+        // 先判断当前 Fragment 绑定的 Activity 是不是 MainActivity，防止别的activity复用当前fragment，导致这里调用崩溃
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).setBottomNavigationVisible(false);
         }

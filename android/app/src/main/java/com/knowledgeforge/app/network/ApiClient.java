@@ -10,6 +10,7 @@ import com.knowledgeforge.app.network.api.PracticeApiService;
 import com.knowledgeforge.app.network.api.StatisticsApiService;
 import com.knowledgeforge.app.network.api.UserApiService;
 import com.knowledgeforge.app.network.auth.AuthInterceptor;
+import com.knowledgeforge.app.network.auth.TokenRefreshManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -64,6 +65,13 @@ public final class ApiClient {
                 .build();
 
         userApiService = retrofit.create(UserApiService.class);
+
+        // 全 App 只创建一个刷新管理器。刷新接口复用同一个 Retrofit，
+        // AuthInterceptor 会按路径自动跳过 /users/refresh，不会给刷新请求附加旧 Access Token。
+        TokenRefreshManager tokenRefreshManager =
+                new TokenRefreshManager(userApiService, tokenStorage);
+        ApiCallExecutor.setTokenRefreshManager(tokenRefreshManager);
+
         practiceApiService = retrofit.create(PracticeApiService.class);
         statisticsApiService = retrofit.create(StatisticsApiService.class);
         answerApiService = retrofit.create(AnswerApiService.class);

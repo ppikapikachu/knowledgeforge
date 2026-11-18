@@ -3,6 +3,7 @@ package com.knowledgeforge.app.data.repository;
 import com.knowledgeforge.app.data.local.TokenStorage;
 import com.knowledgeforge.app.network.ApiCallExecutor;
 import com.knowledgeforge.app.network.api.UserApiService;
+import com.knowledgeforge.app.network.auth.AuthSessionEventManager;
 import com.knowledgeforge.app.network.callback.ApiCallback;
 import com.knowledgeforge.app.network.model.ApiException;
 import com.knowledgeforge.app.network.model.AuthTokenData;
@@ -71,6 +72,8 @@ public class AuthRepository {
                         try {
                             tokenStorage.saveSession(data);
 
+
+
                         } catch (Exception e) {
 
                             callback.onError(
@@ -86,6 +89,8 @@ public class AuthRepository {
                         }
 
                         // 5. 将用户资料返回给 ViewModel
+                        // 登录成功，恢复有效登录状态。
+                        AuthSessionEventManager.markAuthenticated();
                         callback.onSuccess(data.getUser());
                     }
 
@@ -142,10 +147,13 @@ public class AuthRepository {
                         }
 
                         try {
-                            // 注册成功，保存令牌对
+                            // 注册成功，保存完整令牌对。注册接口会直接创建登录会话。
                             tokenStorage.saveSession(data);
 
-                            // 把用户信息交给 ViewModel
+                            // 清除可能残留的“会话已失效”标记，允许后续 MainActivity 正常启动。
+                            AuthSessionEventManager.markAuthenticated();
+
+                            // 把用户信息交给 ViewModel。
                             callback.onSuccess(data.getUser());
 
                         } catch (Exception e) {

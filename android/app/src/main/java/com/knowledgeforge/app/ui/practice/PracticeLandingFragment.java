@@ -13,6 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavBackStackEntry;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.core.widget.NestedScrollView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -37,6 +40,9 @@ import java.util.Map;
 
 /** 练习入口页：继续练习、自定义组卷、开放题库和真实学习统计。 */
 public class PracticeLandingFragment extends Fragment {
+
+    /** 组卷页返回时通知入口页刷新列表的 SavedStateHandle key。 */
+    public static final String RESULT_KEY_REFRESH = "practice_landing_refresh";
 
     private NestedScrollView scrollView;
     private ProgressBar loading;
@@ -75,6 +81,7 @@ public class PracticeLandingFragment extends Fragment {
         bindViews(root);
         initViewModel();
         observeViewModel();
+        observeNavigationResult();
         initListeners(root);
         viewModel.loadIfNeeded();
     }
@@ -120,6 +127,26 @@ public class PracticeLandingFragment extends Fragment {
                 errorText.setVisibility(View.VISIBLE);
             }
         });
+    }
+
+    /**
+     * 组卷页返回时，通过 NavBackStackEntry 的 SavedStateHandle 通知当前入口页刷新。
+     * 这样保留原先 PracticeFragment.popBackStack 后 refreshData() 的业务行为，
+     * 但不再需要父 Fragment 直接调用子 Fragment。
+     */
+    private void observeNavigationResult() {
+        NavController controller = NavHostFragment.findNavController(this);
+        NavBackStackEntry entry = controller.getCurrentBackStackEntry();
+        if (entry == null) return;
+
+        entry.getSavedStateHandle()
+                .getLiveData(RESULT_KEY_REFRESH, false)
+                .observe(getViewLifecycleOwner(), shouldRefresh -> {
+                    if (Boolean.TRUE.equals(shouldRefresh)) {
+                        entry.getSavedStateHandle().set(RESULT_KEY_REFRESH, false);
+                        refreshData();
+                    }
+                });
     }
 
     private void initListeners(View root) {
@@ -302,10 +329,21 @@ public class PracticeLandingFragment extends Fragment {
     }
 
     private void openAssemble(int bankId) {
-        Fragment parent = getParentFragment();
-        if (parent instanceof PracticeFragment) {
-            ((PracticeFragment) parent).openAssemble(bankId);
+        if (!isAdded() || getView() == null) return;
+
+        NavController controller = NavHostFragment.findNavController(this);
+        // 防止快速连续点击导致在组卷页上重复触发入口页 Action。
+        if (controller.getCurrentDestination() == null
+                || controller.getCurrentDestination().getId() != R.id.practiceLandingFragment) {
+            return;
         }
+
+        Bundle args = new Bundle();
+        args.putInt("selected_bank_id", bankId);
+        controller.navigate(
+                R.id.action_practiceLandingFragment_to_assemblePaperFragment,
+                args
+        );
     }
 
     public void scrollToTop() {
