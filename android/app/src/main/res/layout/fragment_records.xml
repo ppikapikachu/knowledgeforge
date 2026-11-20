@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollRecords"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/records_background"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:overScrollMode="never"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="18dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="26dp">
+
+        <!-- 顶部导航：返回首页、居中标题、记录管理入口。 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnRecordsBack"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="返回首页"
+                android:gravity="center"
+                android:text="‹"
+                android:textColor="@color/records_primary_dark"
+                android:textSize="36sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="练习记录"
+                android:textColor="@color/records_text"
+                android:textSize="21sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/btnRecordsClear"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="管理记录"
+                android:padding="9dp"
+                android:src="@drawable/ic_records_trash"
+                android:tint="@color/records_primary_dark" />
+        </LinearLayout>
+
+        <!-- 蓝色渐变统计卡：总练习次数、总答题数、平均正确率。 -->
+        <LinearLayout
+            android:id="@+id/cardRecordsSummary"
+            android:layout_width="match_parent"
+            android:layout_height="142dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_records_summary"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="12dp">
+
+            <ImageView
+                android:layout_width="66dp"
+                android:layout_height="66dp"
+                android:contentDescription="练习统计"
+                android:padding="5dp"
+                android:src="@drawable/ic_records_summary"
+                android:tint="@color/records_white" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="总练习次数"
+                    android:textColor="#EAF2FF"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvRecordsTotalPractice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:text="0 次"
+                    android:textColor="@color/records_white"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="64dp"
+                android:background="#75FFFFFF" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="总答题数"
+                    android:textColor="#EAF2FF"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvRecordsTotalQuestions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:text="0 题"
+                    android:textColor="@color/records_white"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="64dp"
+                android:background="#75FFFFFF" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="平均正确率"
+                    android:textColor="#EAF2FF"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvRecordsAverageAccuracy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:text="样本不足"
+                    android:textColor="@color/records_white"
+                    android:textSize="23sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 会话状态筛选。后端没有考试/章节/专项分类字段，因此采用真实状态筛选。 -->
+        <LinearLayout
+            android:id="@+id/layoutRecordsFilters"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="28dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tabRecordsAll"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_records_tab_selected"
+                android:gravity="center"
+                android:text="全部"
+                android:textColor="@color/records_white"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tabRecordsInProgress"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_records_tab_normal"
+                android:gravity="center"
+                android:text="进行中"
+                android:textColor="@color/records_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tabRecordsCompleted"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_records_tab_normal"
+                android:gravity="center"
+                android:text="已完成"
+                android:textColor="@color/records_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tabRecordsAbandoned"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_records_tab_normal"
+                android:gravity="center"
+                android:text="已放弃"
+                android:textColor="@color/records_text"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressRecordsLoading"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:indeterminateTint="@color/records_primary"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvRecordsError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_records_empty"
+            android:gravity="center"
+            android:padding="14dp"
+            android:textColor="@color/records_error"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <!-- 历史会话卡片列表；由 RecordsTabFragment 根据分页结果动态填充。 -->
+        <LinearLayout
+            android:id="@+id/containerRecordsList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:orientation="vertical" />
+
+        <TextView
+            android:id="@+id/tvRecordsEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_records_empty"
+            android:gravity="center"
+            android:padding="28dp"
+            android:text="暂无练习记录"
+            android:textColor="@color/records_secondary"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvRecordsFooter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="没有更多记录了"
+            android:textColor="@color/records_secondary"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -26,6 +26,9 @@
             <action
                 android:id="@+id/action_practiceLandingFragment_to_assemblePaperFragment"
                 app:destination="@id/assemblePaperFragment" />
+            <action
+                android:id="@+id/action_practiceLandingFragment_to_quizFragment"
+                app:destination="@id/quizFragment" />
         </fragment>
 
         <!-- 组卷配置页：沿用原来的 selected_bank_id 参数。 -->
@@ -37,16 +40,73 @@
                 android:name="selected_bank_id"
                 app:argType="integer"
                 android:defaultValue="-1" />
+            <action
+                android:id="@+id/action_assemblePaperFragment_to_quizFragment"
+                app:destination="@id/quizFragment" />
+        </fragment>
+
+        <!-- 刷题页：组卷成功和继续练习均通过 session_id 进入。 -->
+        <fragment
+            android:id="@+id/quizFragment"
+            android:name="com.knowledgeforge.app.ui.practice.QuizFragment"
+            android:label="刷题练习">
+            <argument
+                android:name="session_id"
+                app:argType="integer" />
+            <action
+                android:id="@+id/action_quizFragment_to_quizResultFragment"
+                app:destination="@id/quizResultFragment" />
+        </fragment>
+
+        <!-- 整卷结果页：所有题目在同一页面的 ScrollView 中纵向展示。 -->
+        <fragment
+            android:id="@+id/quizResultFragment"
+            android:name="com.knowledgeforge.app.ui.practice.QuizResultFragment"
+            android:label="练习结果">
+            <argument
+                android:name="session_id"
+                app:argType="integer" />
         </fragment>
     </navigation>
 
     <navigation
         android:id="@id/nav_records"
         app:startDestination="@id/recordsFragment">
+        <!-- 记录 Tab 根页面：练习历史列表。 -->
         <fragment
             android:id="@+id/recordsFragment"
             android:name="com.knowledgeforge.app.ui.navigation.RecordsTabFragment"
-            android:label="记录" />
+            android:label="记录">
+            <action
+                android:id="@+id/action_recordsFragment_to_recordsQuizFragment"
+                app:destination="@id/recordsQuizFragment" />
+            <action
+                android:id="@+id/action_recordsFragment_to_recordsQuizResultFragment"
+                app:destination="@id/recordsQuizResultFragment" />
+        </fragment>
+
+        <!-- 记录中的进行中会话复用现有 QuizFragment，参数仍然只有 session_id。 -->
+        <fragment
+            android:id="@+id/recordsQuizFragment"
+            android:name="com.knowledgeforge.app.ui.practice.QuizFragment"
+            android:label="继续练习">
+            <argument
+                android:name="session_id"
+                app:argType="integer" />
+            <action
+                android:id="@+id/action_recordsQuizFragment_to_recordsQuizResultFragment"
+                app:destination="@id/recordsQuizResultFragment" />
+        </fragment>
+
+        <!-- 记录中的已完成会话复用已有的整卷滚动结果页。 -->
+        <fragment
+            android:id="@+id/recordsQuizResultFragment"
+            android:name="com.knowledgeforge.app.ui.practice.QuizResultFragment"
+            android:label="练习结果">
+            <argument
+                android:name="session_id"
+                app:argType="integer" />
+        </fragment>
     </navigation>
 
     <navigation

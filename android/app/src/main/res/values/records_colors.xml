@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="records_background">#F7F9FF</color>
+    <color name="records_card">#FFFFFF</color>
+    <color name="records_text">#171D35</color>
+    <color name="records_secondary">#687493</color>
+    <color name="records_primary">#246BEF</color>
+    <color name="records_primary_dark">#194DAF</color>
+    <color name="records_white">#FFFFFF</color>
+    <color name="records_divider">#DDE5F5</color>
+    <color name="records_error">#D94A50</color>
+    <color name="records_warning">#E99A30</color>
+</resources>

@@ -18,7 +18,6 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.core.widget.NestedScrollView;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.knowledgeforge.app.MainActivity;
 import com.knowledgeforge.app.R;
 import com.knowledgeforge.app.data.repository.PracticeRepository;
@@ -299,12 +298,15 @@ public class PracticeLandingFragment extends Fragment {
             public void onSuccess(SessionResponse result) {
                 if (!isAdded()) return;
                 setContinueEnabled(true);
-                int current = result == null ? targetSession.getCurrentItemOrder() : result.getCurrentItemOrder();
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("练习会话已恢复")
-                        .setMessage("会话已成功恢复，将从第 " + current + " 题继续。\n\n答题界面将在下一步接入。")
-                        .setPositiveButton("知道了", null)
-                        .show();
+                // resume 接口确认会话仍可继续后，携带 session_id 直接进入刷题页。
+                // QuizFragment 会再读取 SessionDetailResponse，恢复题目、草稿、标记和当前题序。
+                Bundle args = new Bundle();
+                args.putInt(QuizFragment.ARG_SESSION_ID, targetSession.getSessionId());
+                NavController controller = NavHostFragment.findNavController(PracticeLandingFragment.this);
+                if (controller.getCurrentDestination() != null
+                        && controller.getCurrentDestination().getId() == R.id.practiceLandingFragment) {
+                    controller.navigate(R.id.action_practiceLandingFragment_to_quizFragment, args);
+                }
             }
 
             @Override

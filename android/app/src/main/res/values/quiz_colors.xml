@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="quiz_page_background">#F5F8FF</color>
+    <color name="quiz_card">#FFFFFFFF</color>
+    <color name="quiz_primary">#246BEE</color>
+    <color name="quiz_primary_dark">#1554D1</color>
+    <color name="quiz_primary_light">#EAF1FF</color>
+    <color name="quiz_text_primary">#17213D</color>
+    <color name="quiz_text_secondary">#68738F</color>
+    <color name="quiz_divider">#D6E0F5</color>
+    <color name="quiz_border">#DCE4F4</color>
+    <color name="quiz_unanswered">#B7C0D2</color>
+    <color name="quiz_success">#16A675</color>
+    <color name="quiz_error">#E2565D</color>
+    <color name="quiz_warning">#E7A32D</color>
+</resources>

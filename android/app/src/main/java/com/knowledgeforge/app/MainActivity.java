@@ -20,6 +20,7 @@ import com.knowledgeforge.app.network.auth.AuthSessionEventManager;
 import com.knowledgeforge.app.ui.home.HomeFragment;
 import com.knowledgeforge.app.ui.login.LoginActivity;
 import com.knowledgeforge.app.ui.practice.PracticeLandingFragment;
+import com.knowledgeforge.app.ui.navigation.RecordsTabFragment;
 
 /**
  * KnowledgeForge 主容器。
@@ -95,13 +96,26 @@ public class MainActivity extends AppCompatActivity {
             }
             previousDestination = destination;
 
+            int destinationId = destination.getId();
             int tabId = findTopLevelTabId(destination);
+
+            // 记录页面采用更偏冷色的浅蓝系统栏，其余旧页面保持原有浅紫系统栏。
+            getWindow().setStatusBarColor(tabId == TAB_RECORDS
+                    ? Color.rgb(247, 249, 255) : Color.rgb(234, 230, 255));
+
+            // 从记录 Tab 打开的答题/结果详情页也隐藏主底部导航，返回记录列表后自动恢复。
+            if (destinationId == R.id.recordsQuizFragment
+                    || destinationId == R.id.recordsQuizResultFragment) {
+                setBottomNavigationVisible(false);
+                return;
+            }
+
             if (tabId != TAB_PRACTICE) {
                 setBottomNavigationVisible(true);
                 return;
             }
 
-            boolean isPracticeLanding = destination.getId() == R.id.practiceLandingFragment;
+            boolean isPracticeLanding = destinationId == R.id.practiceLandingFragment;
             setBottomNavigationVisible(isPracticeLanding);
         });
     }
@@ -195,6 +209,8 @@ public class MainActivity extends AppCompatActivity {
             ((HomeFragment) currentFragment).scrollToTop();
         } else if (tabId == TAB_PRACTICE && currentFragment instanceof PracticeLandingFragment) {
             ((PracticeLandingFragment) currentFragment).scrollToTop();
+        } else if (tabId == TAB_RECORDS && currentFragment instanceof RecordsTabFragment) {
+            ((RecordsTabFragment) currentFragment).scrollToTop();
         }
     }
 

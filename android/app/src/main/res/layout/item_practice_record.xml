@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/records_card"
+    app:cardCornerRadius="22dp"
+    app:cardElevation="1dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="112dp"
+        android:orientation="horizontal"
+        android:paddingStart="15dp"
+        android:paddingTop="13dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="13dp">
+
+        <!-- 左侧类型图标容器，背景颜色会根据会话状态切换。 -->
+        <FrameLayout
+            android:id="@+id/recordIconContainer"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:background="@drawable/bg_records_icon_blue">
+
+            <TextView
+                android:id="@+id/tvRecordIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="▤"
+                android:textColor="@color/records_white"
+                android:textSize="29sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- 试卷标题、状态、练习用时和发生时间。 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="13dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvRecordTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Java 基础知识练习卷"
+                    android:textColor="@color/records_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvRecordStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/bg_records_status"
+                    android:paddingStart="6dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="6dp"
+                    android:paddingBottom="3dp"
+                    android:text="已完成"
+                    android:textColor="@color/records_primary"
+                    android:textSize="10sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="11dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="◷"
+                    android:textColor="@color/records_secondary"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tvRecordDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="用时：00:45:32"
+                    android:textColor="@color/records_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="▦"
+                    android:textColor="@color/records_secondary"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tvRecordDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="2026-11-20 15:22"
+                    android:textColor="@color/records_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 右侧成绩/状态展示区域。 -->
+        <View
+            android:layout_width="1dp"
+            android:layout_height="58dp"
+            android:background="@color/records_divider" />
+
+        <LinearLayout
+            android:layout_width="84dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingStart="6dp">
+
+            <TextView
+                android:id="@+id/tvRecordMetric"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="92%"
+                android:textColor="@color/records_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvRecordMetricLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="正确率"
+                android:textColor="@color/records_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:text="›"
+            android:textColor="@color/records_secondary"
+            android:textSize="26sp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

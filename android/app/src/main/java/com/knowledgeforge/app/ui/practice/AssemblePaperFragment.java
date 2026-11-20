@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -30,6 +32,8 @@ import com.knowledgeforge.app.network.model.AssemblePaperResponse;
 import com.knowledgeforge.app.network.model.KnowledgePoint;
 import com.knowledgeforge.app.network.model.QuestionBank;
 import com.knowledgeforge.app.network.model.SessionResponse;
+import com.knowledgeforge.app.network.callback.ApiCallback;
+import com.knowledgeforge.app.network.model.ApiException;
 import com.knowledgeforge.app.ui.common.Event;
 
 import java.util.ArrayList;
@@ -61,6 +65,8 @@ public class AssemblePaperFragment extends Fragment {
     private SwitchMaterial switchAllowPartial;
 
     private AssemblePaperViewModel viewModel;
+    /** 本页面复用的练习 Repository，用于组卷后缺少 session 时创建练习会话。 */
+    private PracticeRepository repository;
     private OnBackPressedCallback assemblingBackCallback;
     private boolean rendering;
 
@@ -126,7 +132,7 @@ public class AssemblePaperFragment extends Fragment {
 
     private void initViewModel() {
         ApiClient apiClient = ApiClient.getInstance(requireContext());
-        PracticeRepository repository = new PracticeRepository(
+        repository = new PracticeRepository(
                 apiClient.getPracticeApiService(), apiClient.getStatisticsApiService());
         AssemblePaperViewModelFactory factory = new AssemblePaperViewModelFactory(repository);
         viewModel = new ViewModelProvider(this, factory).get(AssemblePaperViewModel.class);
@@ -374,23 +380,74 @@ public class AssemblePaperFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * 展示组卷成功确认。
+     * 组卷接口正常情况下会一起返回首个 session；如果命中历史幂等结果而 session 为空，
+     * 则通过“对试卷再练”接口创建一轮新的会话，再进入刷题页。
+     */
     private void showAssembleSuccess(AssemblePaperResponse result) {
+        if (result == null || result.getPaper() == null) return;
         String title = result.getPaper().getTitle();
         if (title == null || title.trim().isEmpty()) title = "练习试卷";
         SessionResponse session = result.getSession();
         String message = title + "\n共生成 " + result.getPaper().getQuestionCount() + " 道题";
-        if (session != null) {
-            message += "\n练习会话 ID：" + session.getSessionId();
-            message += "\n\n试卷和首次练习会话已创建成功。答题页面将在下一阶段接入。";
+        if (session != null && session.getSessionId() > 0) {
+            message += "\n\n试卷和练习会话已经创建成功，现在开始答题吗？";
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("组卷成功")
+                    .setMessage(message)
+                    .setPositiveButton("开始答题", (dialog, which) -> openQuiz(session.getSessionId()))
+                    .setNegativeButton("留在此页", null)
+                    .show();
         } else {
-            message += "\n\n试卷已生成，但响应中没有返回首次练习会话。";
+            message += "\n\n当前响应没有返回练习会话，开始答题前需要先为这份试卷创建一轮练习。";
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("试卷已生成")
+                    .setMessage(message)
+                    .setPositiveButton("创建会话并答题", (dialog, which) -> createSessionAndOpenQuiz(
+                            result.getPaper().getPaperId()))
+                    .setNegativeButton("留在此页", null)
+                    .show();
         }
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("组卷成功")
-                .setMessage(message)
-                .setPositiveButton("返回练习页", (dialog, which) -> goBack())
-                .setNegativeButton("留在此页", null)
-                .show();
+    }
+
+    /** 为已生成的试卷创建新的练习会话，并在成功后进入刷题页。 */
+    private void createSessionAndOpenQuiz(int paperId) {
+        if (repository == null || paperId <= 0) return;
+        repository.createPaperSession(paperId, new ApiCallback<SessionResponse>() {
+            @Override
+            public void onSuccess(SessionResponse response) {
+                if (!isAdded()) return;
+                if (response == null || response.getSessionId() <= 0) {
+                    Toast.makeText(requireContext(), "练习会话创建成功，但没有返回有效编号", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                openQuiz(response.getSessionId());
+            }
+
+            @Override
+            public void onError(ApiException error) {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), error == null ? "创建练习会话失败" : error.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /**
+     * 导航到刷题页。
+     * popUpTo(assemblePaperFragment, inclusive=true) 使刷题页返回时回到练习入口，
+     * 而不是回到已经完成组卷的配置页面。
+     */
+    private void openQuiz(int sessionId) {
+        if (!isAdded() || sessionId <= 0) return;
+        Bundle args = new Bundle();
+        args.putInt(QuizFragment.ARG_SESSION_ID, sessionId);
+        NavController controller = NavHostFragment.findNavController(this);
+        NavOptions options = new NavOptions.Builder()
+                .setPopUpTo(R.id.assemblePaperFragment, true)
+                .build();
+        controller.navigate(R.id.action_assemblePaperFragment_to_quizFragment, args, options);
     }
 
     public boolean isAssembling() {

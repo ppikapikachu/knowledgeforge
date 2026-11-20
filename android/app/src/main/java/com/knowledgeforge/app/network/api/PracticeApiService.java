@@ -3,15 +3,23 @@ package com.knowledgeforge.app.network.api;
 import com.knowledgeforge.app.network.model.ApiResponse;
 import com.knowledgeforge.app.network.model.AssemblePaperRequest;
 import com.knowledgeforge.app.network.model.AssemblePaperResponse;
+import com.knowledgeforge.app.network.model.DraftSaveRequest;
+import com.knowledgeforge.app.network.model.DraftSaveResponse;
 import com.knowledgeforge.app.network.model.KnowledgePointsResponse;
+import com.knowledgeforge.app.network.model.MarkItemResponse;
+import com.knowledgeforge.app.network.model.MarkRequest;
 import com.knowledgeforge.app.network.model.PageResponse;
+import com.knowledgeforge.app.network.model.PaperDetailResponse;
 import com.knowledgeforge.app.network.model.PaperListItem;
+import com.knowledgeforge.app.network.model.PaperResponse;
 import com.knowledgeforge.app.network.model.ProgressRequest;
 import com.knowledgeforge.app.network.model.ProgressUpdateResponse;
 import com.knowledgeforge.app.network.model.QuestionBank;
+import com.knowledgeforge.app.network.model.SessionAnswersResponse;
 import com.knowledgeforge.app.network.model.SessionDetailResponse;
 import com.knowledgeforge.app.network.model.SessionListItem;
 import com.knowledgeforge.app.network.model.SessionResponse;
+import com.knowledgeforge.app.network.model.SessionResultResponse;
 import com.knowledgeforge.app.network.model.SubmitAnswerRequest;
 import com.knowledgeforge.app.network.model.SubmitAnswerResponse;
 
@@ -21,6 +29,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -180,4 +189,119 @@ public interface PracticeApiService {
      */
     @POST("api/v1/practice/sessions/{session_id}/complete")
     Call<ApiResponse<SessionResponse>> completeSession(@Path("session_id") int sessionId);
+
+    // ==================== 以下为练习模块补充接口（2026-11 新增，不改已有方法） ====================
+
+    /**
+     * 开放题库详情（GET /api/v1/practice/question-banks/{qb_id}）：
+     * 返回题库基本信息 + 可练习题量/题型分布/难度分布/可否组卷及原因；
+     * 题库未开放或不存在统一 40401（不泄露存在性）；只读幂等。
+     * 说明：is_available_for_practice 文档说明恒 true，当前后端实现响应体未包含该字段，
+     * QuestionBank.isAvailableForPractice 反序列化结果可能为 null。
+     *
+     * @param qbId 题库 ID（正整数）
+     * @return 题库详情（字段同列表项：可用题量/分布/可组卷性）
+     */
+    @GET("api/v1/practice/question-banks/{qb_id}")
+    Call<ApiResponse<QuestionBank>> getQuestionBankDetail(@Path("qb_id") int qbId);
+
+    /**
+     * 试卷详情（GET /api/v1/practice/papers/{paper_id}）：
+     * 返回试卷快照头 + 题目面投影 items[]（题干/选项/知识点/分值，
+     * 不含正确答案与解析，白名单投影天然安全）；他人试卷 40401；只读幂等。
+     *
+     * @param paperId 试卷 ID（正整数）
+     * @return 试卷详情（PaperResponse + 题目面投影列表）
+     */
+    @GET("api/v1/practice/papers/{paper_id}")
+    Call<ApiResponse<PaperDetailResponse>> getPaperDetail(@Path("paper_id") int paperId);
+
+    /**
+     * 对试卷再练（POST /api/v1/practice/papers/{paper_id}/sessions）：
+     * 基于既有不可变试卷快照新建练习会话（不重新组卷、不改题目），
+     * 用于同一份试卷多轮练习；已归档试卷拒绝（40001）；非幂等（每次调用新建会话）。
+     *
+     * @param paperId 试卷 ID（正整数）
+     * @return 新建的练习会话
+     */
+    @POST("api/v1/practice/papers/{paper_id}/sessions")
+    Call<ApiResponse<SessionResponse>> createPaperSession(@Path("paper_id") int paperId);
+
+    /**
+     * 归档试卷（PATCH /api/v1/practice/papers/{paper_id}/archive）：
+     * 软归档（status→archived）：归档后不可再发起新练习会话，
+     * 历史试卷与会话仍可查看；幂等（重复归档直接返回）。
+     *
+     * @param paperId 试卷 ID（正整数）
+     * @return 归档后的试卷快照头
+     */
+    @PATCH("api/v1/practice/papers/{paper_id}/archive")
+    Call<ApiResponse<PaperResponse>> archivePaper(@Path("paper_id") int paperId);
+
+    /**
+     * 放弃练习会话（POST /api/v1/practice/sessions/{session_id}/abandon）：
+     * 软结束会话（status→abandoned），不删除已提交答题与草稿数据，
+     * 之后不可 resume/提交（40001）；幂等（重复调用直接返回）。
+     *
+     * @param sessionId 练习会话 ID（正整数）
+     * @return 会话主记录（终态 abandoned）
+     */
+    @POST("api/v1/practice/sessions/{session_id}/abandon")
+    Call<ApiResponse<SessionResponse>> abandonSession(@Path("session_id") int sessionId);
+
+    /**
+     * 整卷结果与解析（GET /api/v1/practice/sessions/{session_id}/result）：
+     * 一次返回会话 + 全部题目结果投影（含我的作答/判分结果）+ 结果汇总（得分等）；
+     * 答案安全投影同会话详情：in_progress/abandoned 会话未提交题目不返回
+     * correct_answer/explanation/is_correct，completed 会话全量回顾；只读幂等。
+     *
+     * @param sessionId 练习会话 ID（正整数）
+     * @return 整卷结果（会话 + 题目结果列表 + 汇总）
+     */
+    @GET("api/v1/practice/sessions/{session_id}/result")
+    Call<ApiResponse<SessionResultResponse>> getSessionResult(@Path("session_id") int sessionId);
+
+    /**
+     * 会话答题记录（GET /api/v1/practice/sessions/{session_id}/answers）：
+     * 每次提交追加一条记录（同 idempotency_key 重复提交不追加），
+     * 按提交时间正序（created_at 正序、id 升序）返回；只读幂等。
+     *
+     * @param sessionId 练习会话 ID（正整数）
+     * @return 会话 ID + 答题记录列表
+     */
+    @GET("api/v1/practice/sessions/{session_id}/answers")
+    Call<ApiResponse<SessionAnswersResponse>> getSessionAnswers(@Path("session_id") int sessionId);
+
+    /**
+     * 保存题目草稿（PUT /api/v1/practice/sessions/{session_id}/items/{paper_item_id}/draft）：
+     * 仅写草稿不判分、不进统计；同一题目项反复保存幂等覆盖，仅保留最新草稿；
+     * answer 传 null 表示清空草稿；已答题项保存草稿后 status 保持 answered 不回退；
+     * completed/abandoned 会话拒绝（40001）。
+     *
+     * @param sessionId   练习会话 ID（正整数）
+     * @param paperItemId 试卷题目项 ID（须属于该会话的试卷）
+     * @param request     草稿内容（answer 按题型多态，可为 null 清空）
+     * @return 题目项状态 + 最新草稿内容
+     */
+    @PUT("api/v1/practice/sessions/{session_id}/items/{paper_item_id}/draft")
+    Call<ApiResponse<DraftSaveResponse>> saveDraft(
+            @Path("session_id") int sessionId,
+            @Path("paper_item_id") int paperItemId,
+            @Body DraftSaveRequest request);
+
+    /**
+     * 标记/取消标记题目（PATCH /api/v1/practice/sessions/{session_id}/items/{paper_item_id}/mark）：
+     * 标记状态与作答状态相互独立，幂等（重复置同一值不报错）；
+     * completed/abandoned 会话拒绝（40001）。
+     *
+     * @param sessionId   练习会话 ID（正整数）
+     * @param paperItemId 试卷题目项 ID（须属于该会话的试卷）
+     * @param request     标记状态（is_marked 必填）
+     * @return 题目项 ID + 当前标记状态
+     */
+    @PATCH("api/v1/practice/sessions/{session_id}/items/{paper_item_id}/mark")
+    Call<ApiResponse<MarkItemResponse>> markItem(
+            @Path("session_id") int sessionId,
+            @Path("paper_item_id") int paperItemId,
+            @Body MarkRequest request);
 }

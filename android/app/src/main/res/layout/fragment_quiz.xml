@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    刷题主界面。
+    页面结构固定为：顶部导航栏 -> 计时/进度区 -> 可滚动题目卡片 -> 底部操作栏。
+    题目答案控件由 QuizFragment 根据 question_type 动态添加到 containerQuizAnswers，
+    因此同一个页面可以显示单选、多选、判断和简答题。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/quizRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/quiz_page_background"
+    android:orientation="vertical">
+
+    <!-- 顶部栏：返回、试卷标题、练习设置。 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:id="@+id/btnQuizBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="返回"
+            android:gravity="center"
+            android:text="‹"
+            android:textColor="@color/quiz_text_primary"
+            android:textSize="34sp" />
+
+        <TextView
+            android:id="@+id/tvQuizTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="刷题练习"
+            android:textColor="@color/quiz_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btnQuizSettings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="练习设置"
+            android:gravity="center"
+            android:text="⚙"
+            android:textColor="@color/quiz_text_primary"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+    <!-- 计时和答题统计条，视觉上对应设计图顶部浅蓝色区域。 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_quiz_status"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="◷"
+                android:textColor="@color/quiz_primary"
+                android:textSize="26sp" />
+
+            <TextView
+                android:id="@+id/tvQuizTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="sans"
+                android:text="00:00:00"
+                android:textColor="@color/quiz_primary"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="14dp"
+                android:background="@color/quiz_divider" />
+
+            <TextView
+                android:id="@+id/tvQuizQuestionIndex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1 / 20 题"
+                android:textColor="@color/quiz_text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvQuizMarkedCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚑ 0"
+                android:textColor="@color/quiz_text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressQuiz"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="12dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_quiz" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvQuizAnsweredCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="已答 0"
+                android:textColor="@color/quiz_text_secondary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:text="●"
+                android:textColor="@color/quiz_unanswered"
+                android:textSize="8sp" />
+
+            <TextView
+                android:id="@+id/tvQuizUnansweredCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="未答 20"
+                android:textColor="@color/quiz_text_secondary"
+                android:textSize="12sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvQuizProgressPercent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5%"
+                android:textColor="@color/quiz_text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 网络加载或错误提示。 -->
+    <ProgressBar
+        android:id="@+id/progressQuizLoading"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="18dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tvQuizError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/bg_quiz_error"
+        android:padding="12dp"
+        android:textColor="@color/quiz_error"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
+    <!-- 题目区域可纵向滚动；底部操作栏始终固定在屏幕下方。 -->
+    <ScrollView
+        android:id="@+id/scrollQuizQuestion"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_quiz_question_card"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <!-- 题型和分值。 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvQuizQuestionType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_quiz_type_pill"
+                    android:paddingStart="12dp"
+                    android:paddingTop="5dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="5dp"
+                    android:text="单选题"
+                    android:textColor="@color/quiz_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvQuizScore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5 分"
+                    android:textColor="@color/quiz_text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- 题干支持多行文本；较长题目随卡片自然增高。 -->
+            <TextView
+                android:id="@+id/tvQuizQuestionContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:lineSpacingExtra="5dp"
+                android:text="题目内容"
+                android:textColor="@color/quiz_text_primary"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <!-- 根据 question_type 动态添加选项、判断按钮或简答输入框。 -->
+            <LinearLayout
+                android:id="@+id/containerQuizAnswers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:orientation="vertical" />
+
+            <!-- 只有题目已提交并收到后端判分后才显示解析，避免未答题答案泄露。 -->
+            <LinearLayout
+                android:id="@+id/cardQuizExplanation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_quiz_explanation"
+                android:orientation="vertical"
+                android:padding="15dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvQuizResultState"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="回答正确"
+                    android:textColor="@color/quiz_success"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvQuizCorrectAnswer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/quiz_text_primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvQuizExplanation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:lineSpacingExtra="3dp"
+                    android:textColor="@color/quiz_text_secondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 底部固定操作区：标记、答题卡、主操作按钮。 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_quiz_footer"
+        android:elevation="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:id="@+id/btnQuizMark"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="7dp"
+            android:layout_weight="0.9"
+            android:background="@drawable/bg_quiz_outline_button"
+            android:gravity="center"
+            android:text="⚑ 标记"
+            android:textColor="@color/quiz_text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/btnQuizAnswerSheet"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="7dp"
+            android:layout_weight="1.05"
+            android:background="@drawable/bg_quiz_outline_button"
+            android:gravity="center"
+            android:text="▦ 答题卡"
+            android:textColor="@color/quiz_text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/btnQuizPrimary"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="3dp"
+            android:layout_weight="1.25"
+            android:background="@drawable/bg_quiz_primary_button"
+            android:gravity="center"
+            android:text="下一题  ›"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>
